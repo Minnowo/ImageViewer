@@ -39,6 +39,33 @@ namespace ImageViewer.Helpers
                 return null;
         }
 
+        public static Size GetImageDimensionsFile(string imagePath)
+        {
+            if (File.Exists(imagePath))
+            {
+                try
+                {
+                    using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (Image image = Image.FromStream(fileStream, false, false))
+                    {
+                        return new Size(image.Width, image.Height);
+                    }
+                }
+                catch
+                {
+                    return Size.Empty;
+                }
+                finally
+                {
+                    // if you don't call collect lots of the memory used by loading the image is held
+                    // when loading a 100mb image 9900 x 9900 without the collect it holds 100mb of memory
+                    GC.Collect();
+                }
+            }
+            else
+                return Size.Empty;
+        }
+
         public static ImageFormat GetImageFormat(string filePath)
         {
             ImageFormat imageFormat = ImageFormat.Png;
@@ -78,6 +105,9 @@ namespace ImageViewer.Helpers
             PathHelper.CreateDirectoryFromFilePath(filePath);
             ImageFormat imageFormat = GetImageFormat(filePath);
 
+            if (img == null)
+                return false;
+
             try
             {
                 img.Save(filePath, imageFormat);
@@ -89,6 +119,11 @@ namespace ImageViewer.Helpers
             }
 
             return false;
+        }
+
+        public static string SaveImageFileDIalog()
+        {
+            return string.Empty;
         }
 
         public static string SaveImageFileDialog(Image img, string filePath = "", bool useLastDirectory = true)

@@ -52,7 +52,6 @@
             this.saveUnscaledImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveScaledImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.copyToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,6 +73,7 @@
             this.fullScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.slideShowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actualSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnTopMain_CloseTab = new System.Windows.Forms.Button();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -151,6 +151,7 @@
             // 
             // pnlTopMain
             // 
+            this.pnlTopMain.Controls.Add(this.btnTopMain_CloseTab);
             this.pnlTopMain.Controls.Add(this.nudTopMain_ZoomPercentage);
             this.pnlTopMain.Controls.Add(this.btnTopMain_Save);
             this.pnlTopMain.Controls.Add(this.btnTopMain_Open);
@@ -234,7 +235,8 @@
             this.selectDirectoryToolStripMenuItem});
             this.cmsCurrentDirectory.Name = "cmsCurrentDirectory";
             this.cmsCurrentDirectory.ShowImageMargin = false;
-            this.cmsCurrentDirectory.Size = new System.Drawing.Size(132, 26);
+            this.cmsCurrentDirectory.Size = new System.Drawing.Size(156, 48);
+            this.cmsCurrentDirectory.Opening += new System.ComponentModel.CancelEventHandler(this.cmsCurrentDirectory_Opening);
             // 
             // selectDirectoryToolStripMenuItem
             // 
@@ -249,7 +251,6 @@
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripSeparator1,
-            this.copyToToolStripMenuItem,
             this.moveToToolStripMenuItem,
             this.renameToolStripMenuItem,
             this.deleteToolStripMenuItem,
@@ -258,7 +259,8 @@
             this.filePropertiesToolStripMenuItem});
             this.cmsFileBtn.Name = "cmsFileBtn";
             this.cmsFileBtn.ShowImageMargin = false;
-            this.cmsFileBtn.Size = new System.Drawing.Size(139, 214);
+            this.cmsFileBtn.Size = new System.Drawing.Size(139, 192);
+            this.cmsFileBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsFileBtn_Opening);
             // 
             // openToolStripMenuItem
             // 
@@ -285,7 +287,6 @@
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // saveUnscaledImageToolStripMenuItem
             // 
@@ -305,14 +306,6 @@
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(135, 6);
-            // 
-            // copyToToolStripMenuItem
-            // 
-            this.copyToToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.copyToToolStripMenuItem.Name = "copyToToolStripMenuItem";
-            this.copyToToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
-            this.copyToToolStripMenuItem.Text = "Copy To";
-            this.copyToToolStripMenuItem.Click += new System.EventHandler(this.copyToToolStripMenuItem_Click);
             // 
             // moveToToolStripMenuItem
             // 
@@ -375,6 +368,7 @@
             this.cmsEditBtn.Name = "cmsEditBtn";
             this.cmsEditBtn.ShowImageMargin = false;
             this.cmsEditBtn.Size = new System.Drawing.Size(136, 192);
+            this.cmsEditBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsEditBtn_Opening);
             // 
             // rotateLeftToolStripMenuItem
             // 
@@ -459,6 +453,7 @@
             this.cmsViewBtn.Name = "cmsViewBtn";
             this.cmsViewBtn.ShowImageMargin = false;
             this.cmsViewBtn.Size = new System.Drawing.Size(107, 70);
+            this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
@@ -483,6 +478,17 @@
             this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.actualSizeToolStripMenuItem_Click);
+            // 
+            // btnTopMain_CloseTab
+            // 
+            this.btnTopMain_CloseTab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTopMain_CloseTab.Location = new System.Drawing.Point(481, 2);
+            this.btnTopMain_CloseTab.Name = "btnTopMain_CloseTab";
+            this.btnTopMain_CloseTab.Size = new System.Drawing.Size(75, 23);
+            this.btnTopMain_CloseTab.TabIndex = 4;
+            this.btnTopMain_CloseTab.Text = "Close Tab";
+            this.btnTopMain_CloseTab.UseVisualStyleBackColor = true;
+            this.btnTopMain_CloseTab.Click += new System.EventHandler(this.btnTopMain_CloseTab_Click);
             // 
             // MainForm
             // 
@@ -532,7 +538,6 @@
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem copyToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem moveToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
@@ -557,6 +562,7 @@
         private System.Windows.Forms.ToolStripMenuItem selectDirectoryToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveUnscaledImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveScaledImageToolStripMenuItem;
+        private System.Windows.Forms.Button btnTopMain_CloseTab;
     }
 }
 

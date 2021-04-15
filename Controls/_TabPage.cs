@@ -61,7 +61,6 @@ namespace ImageViewer.Controls
                 return idMain.ScaledImage;
             }
         }
-
         public Image Image
         {
             get
@@ -70,9 +69,10 @@ namespace ImageViewer.Controls
             }
         }
 
-        private ImageDisplay idMain;
-        public ImageDisplayState state;
+        public ImageDisplayState state { get; private set; }
 
+
+        private ImageDisplay idMain;
         public _TabPage(string path)
         {
             if (!File.Exists(path))

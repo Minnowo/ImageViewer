@@ -60,7 +60,7 @@ namespace ImageViewer.Controls
 
                 ComputeDrawingArea();
 
-                Image scaledIm = new Bitmap(apparentImageSize.Width, apparentImageSize.Height, PixelFormat.Format24bppRgb);
+                Image scaledIm = new Bitmap(apparentImageSize.Width, apparentImageSize.Height);
                 using (Graphics g = Graphics.FromImage(scaledIm))
                 {
                     g.PixelOffsetMode = PixelOffsetMode.Half;
@@ -69,7 +69,7 @@ namespace ImageViewer.Controls
                     g.CompositingMode = CompositingMode.SourceOver;
                     g.CompositingQuality = CompositingQuality.HighSpeed;
 
-                    if (drawWidth < Image.Width)
+                    if (InternalSettings.High_Def_Scale_On_Zoom_Out && drawWidth < Image.Width)
                     {
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     }
@@ -322,7 +322,9 @@ namespace ImageViewer.Controls
 
         private Point PointToImage(Point p)
         {
-            return new Point((int)Math.Round((p.X - origin.X) / zoomFactor), (int)Math.Round((p.Y - origin.Y) / zoomFactor));
+            return new Point(
+                (int)Math.Round((p.X - origin.X) / zoomFactor), 
+                (int)Math.Round((p.Y - origin.Y) / zoomFactor));
         }
 
         private void ImageViewer_MouseDown(object sender, MouseEventArgs e)
@@ -349,13 +351,11 @@ namespace ImageViewer.Controls
 
             if (isLeftClicking)
             {
-                //Console.WriteLine(origin.ToString());
-                //Console.WriteLine("");
                 Point p = PointToImage(e.Location);
                 origin.X = origin.X + (startPoint.X - p.X);
                 origin.Y = origin.Y + (startPoint.Y - p.Y);
                 startPoint = PointToImage(e.Location);
-                //CheckBounds();
+
                 Invalidate();
             }
         }
