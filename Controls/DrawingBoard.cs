@@ -322,7 +322,7 @@ namespace ImageViewer.Controls
 
         private Point PointToImage(Point p)
         {
-            return new Point((int)((p.X + origin.X) / zoomFactor), (int)((p.Y + origin.Y) / zoomFactor));
+            return new Point((int)Math.Round((p.X - origin.X) / zoomFactor), (int)Math.Round((p.Y - origin.Y) / zoomFactor));
         }
 
         private void ImageViewer_MouseDown(object sender, MouseEventArgs e)
@@ -349,8 +349,8 @@ namespace ImageViewer.Controls
 
             if (isLeftClicking)
             {
-                Console.WriteLine(origin.ToString());
-                Console.WriteLine("");
+                //Console.WriteLine(origin.ToString());
+                //Console.WriteLine("");
                 Point p = PointToImage(e.Location);
                 origin.X = origin.X + (startPoint.X - p.X);
                 origin.Y = origin.Y + (startPoint.Y - p.Y);
