@@ -49,6 +49,8 @@
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveUnscaledImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveScaledImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.copyToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -277,10 +279,27 @@
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.saveAsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveUnscaledImageToolStripMenuItem,
+            this.saveScaledImageToolStripMenuItem});
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            // 
+            // saveUnscaledImageToolStripMenuItem
+            // 
+            this.saveUnscaledImageToolStripMenuItem.Name = "saveUnscaledImageToolStripMenuItem";
+            this.saveUnscaledImageToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.saveUnscaledImageToolStripMenuItem.Text = "Save Unscaled Image";
+            this.saveUnscaledImageToolStripMenuItem.Click += new System.EventHandler(this.saveUnscaledImageToolStripMenuItem_Click);
+            // 
+            // saveScaledImageToolStripMenuItem
+            // 
+            this.saveScaledImageToolStripMenuItem.Name = "saveScaledImageToolStripMenuItem";
+            this.saveScaledImageToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.saveScaledImageToolStripMenuItem.Text = "Save Scaled Image";
+            this.saveScaledImageToolStripMenuItem.Click += new System.EventHandler(this.saveScaledImageToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
@@ -536,6 +555,8 @@
         private System.Windows.Forms.ToolStripMenuItem slideShowToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem actualSizeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectDirectoryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveUnscaledImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveScaledImageToolStripMenuItem;
     }
 }
 

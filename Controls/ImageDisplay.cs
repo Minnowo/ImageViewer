@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using ImageViewer.structs;
+
 namespace ImageViewer.Controls
 {
     public partial class ImageDisplay : UserControl
@@ -29,6 +31,15 @@ namespace ImageViewer.Controls
                 }
             }
         }
+
+        public Image ScaledImage
+        {
+            get
+            {
+                return this.drawingBoard1.ScaledImage;
+            }
+        }
+
         public Double ZoomFactor
         {
             get
@@ -107,6 +118,17 @@ namespace ImageViewer.Controls
         }
 
         #region public properties
+
+
+        public ImageDisplayState GetState()
+        {
+            return drawingBoard1.GetState();
+        }
+
+        public void LoadState(ImageDisplayState state)
+        {
+            drawingBoard1.LoadState(state);
+        }
 
         public void FitToScreen()
         {

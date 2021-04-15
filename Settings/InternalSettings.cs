@@ -11,5 +11,6 @@ namespace ImageViewer.Settings
     {
         public static string FolderSelectDialog_Title_Select_a_folder = "Select a folder";
         public static Color DrawingBoard_Clear_Background_Color = Color.Black;
+        public static bool High_Def_Scale_On_Zoom_Out = false;
     }
 }

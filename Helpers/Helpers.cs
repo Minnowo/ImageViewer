@@ -14,5 +14,27 @@ namespace ImageViewer.Helpers
         {
             return OSVersion.Major >= 6;
         }
+
+        public static string GetFilenameExtension(string filePath, bool includeDot = false)
+        {
+            string extension = "";
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                int pos = filePath.LastIndexOf('.');
+
+                if (pos >= 0)
+                {
+                    extension = filePath.Substring(pos + 1);
+
+                    if (includeDot)
+                    {
+                        extension = "." + extension;
+                    }
+                }
+            }
+
+            return extension;
+        }
     }
 }

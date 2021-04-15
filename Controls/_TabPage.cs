@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 
 using ImageViewer.Helpers;
+using ImageViewer.structs;
 
 namespace ImageViewer.Controls
 {
@@ -36,12 +37,15 @@ namespace ImageViewer.Controls
             }
             set
             {
+
                 if (value)
                 {
                     LoadImage();
                 }
                 else
                 {
+                    state = idMain.GetState();
+
                     UnloadImage();
                 }
 
@@ -50,7 +54,24 @@ namespace ImageViewer.Controls
         }
         private bool isCurrentPage = false;
 
-        public ImageDisplay idMain;
+        public Image ScaledImage
+        {
+            get
+            {
+                return idMain.ScaledImage;
+            }
+        }
+
+        public Image Image
+        {
+            get
+            {
+                return idMain.Image;
+            }
+        }
+
+        private ImageDisplay idMain;
+        public ImageDisplayState state;
 
         public _TabPage(string path)
         {
@@ -65,6 +86,8 @@ namespace ImageViewer.Controls
             idMain.Location = new Point(0, 0);
             idMain.Dock = DockStyle.Fill;
 
+            state = ImageDisplayState.empty;
+
             Controls.Add(idMain);
         }
 
@@ -72,10 +95,17 @@ namespace ImageViewer.Controls
         {
             idMain.Image = null;
             idMain.Image = ImageHelper.FastLoadImage(imagePath.FullName);
+
+            if(state != ImageDisplayState.empty)
+                idMain.LoadState(state);
+
+            state = idMain.GetState();
+            Invalidate();
         }
 
         private void UnloadImage()
         {
+            state = idMain.GetState();
             idMain.Image = null;
         }
     }

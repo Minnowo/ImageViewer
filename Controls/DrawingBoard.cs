@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 
 using ImageViewer.Settings;
 using ImageViewer.Helpers;
+using ImageViewer.structs;
 
 namespace ImageViewer.Controls
 {
@@ -45,15 +46,44 @@ namespace ImageViewer.Controls
                 }
 
                 initialDraw = true;
-                originalImage = new Bitmap(value.Width, value.Height, PixelFormat.Format24bppRgb);
-                using (Graphics g = Graphics.FromImage(originalImage))
-                {
-                    g.DrawImage(value, new Point(0, 0));
-                }
+                originalImage = (Bitmap)value;
                 Invalidate();
             }
         }
 
+        public Image ScaledImage
+        {
+            get
+            {
+                if (Image == null)
+                    return null;
+
+                ComputeDrawingArea();
+
+                Image scaledIm = new Bitmap(apparentImageSize.Width, apparentImageSize.Height, PixelFormat.Format24bppRgb);
+                using (Graphics g = Graphics.FromImage(scaledIm))
+                {
+                    g.PixelOffsetMode = PixelOffsetMode.Half;
+                    g.SmoothingMode = SmoothingMode.None;
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    g.CompositingMode = CompositingMode.SourceOver;
+                    g.CompositingQuality = CompositingQuality.HighSpeed;
+
+                    if (drawWidth < Image.Width)
+                    {
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    }
+
+                    g.DrawImage(
+                        originalImage, 
+                        new Rectangle(0, 0, apparentImageSize.Width, apparentImageSize.Height), 
+                        new Rectangle(0, 0, Image.Width, Image.Height), 
+                        GraphicsUnit.Pixel);
+                }
+
+                return scaledIm;
+            }
+        }
 
         public double ZoomFactor
         {
@@ -129,6 +159,43 @@ namespace ImageViewer.Controls
 
         #region public properties
 
+        public ImageDisplayState GetState()
+        {
+            ComputeDrawingArea();
+            return new ImageDisplayState()
+            {
+                ZoomFactor = zoomFactor,
+                DrawWidth = drawWidth,
+                DrawHeight = drawHeight,
+
+                Origin = origin,
+                StartPoint = startPoint,
+                CenterPoint = centerPoint,
+
+                ApparentImageSize = apparentImageSize,
+
+                CenterOnLoad = centerOnLoad,
+                InitialDraw = initialDraw
+            };
+        }
+
+
+        public void LoadState(ImageDisplayState state)
+        {
+            zoomFactor = state.ZoomFactor;
+            drawWidth = state.DrawWidth;
+            drawHeight = state.DrawHeight;
+
+            origin = state.Origin;
+            startPoint = state.StartPoint;
+            centerPoint = state.CenterPoint;
+
+            apparentImageSize = state.ApparentImageSize;
+
+            centerOnLoad = state.CenterOnLoad;
+            initialDraw = state.InitialDraw;
+        }
+
         public void ZoomIn()
         {
             ZoomImage(true);
@@ -155,16 +222,19 @@ namespace ImageViewer.Controls
 
         private void ZoomImage(bool zoomIn)
         {
+            if (isLeftClicking)
+                return;
+
             centerPoint.X = origin.X + srcRect.Width / 2;
             centerPoint.Y = origin.Y + srcRect.Height / 2;
 
             if (zoomIn)
             {
-                zoomFactor = Math.Round(zoomFactor * 1.1d, 2);
+                ZoomFactor = Math.Round(zoomFactor * 1.1d, 2);
             }
             else
             {
-                zoomFactor = Math.Round(zoomFactor * 0.9d, 2);
+                ZoomFactor = Math.Round(zoomFactor * 0.9d, 2);
             }
 
 
@@ -209,7 +279,7 @@ namespace ImageViewer.Controls
             }
             else
             {
-                if(destRect.Width < Image.Width)
+                if(InternalSettings.High_Def_Scale_On_Zoom_Out && destRect.Width < Image.Width)
                 {
                     g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 }
@@ -279,6 +349,8 @@ namespace ImageViewer.Controls
 
             if (isLeftClicking)
             {
+                Console.WriteLine(origin.ToString());
+                Console.WriteLine("");
                 Point p = PointToImage(e.Location);
                 origin.X = origin.X + (startPoint.X - p.X);
                 origin.Y = origin.Y + (startPoint.Y - p.Y);

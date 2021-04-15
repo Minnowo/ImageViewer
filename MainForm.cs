@@ -48,6 +48,8 @@ namespace ImageViewer
         public MainForm()
         {
             InitializeComponent();
+
+            saveToolStripMenuItem.Enabled = false;
         }
 
 
@@ -87,7 +89,26 @@ namespace ImageViewer
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
 
+            ImageHelper.SaveImageFileDialog(currentPage.Image);
+        }
+
+        private void saveUnscaledImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveAsToolStripMenuItem_Click(null, EventArgs.Empty);
+        }
+
+        private void saveScaledImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            using (Image img = currentPage.ScaledImage)
+            {
+                ImageHelper.SaveImageFileDialog(img);
+            }
         }
 
         private void copyToToolStripMenuItem_Click(object sender, EventArgs e)
@@ -290,5 +311,7 @@ namespace ImageViewer
         }
 
         #endregion
+
+
     }
 }
