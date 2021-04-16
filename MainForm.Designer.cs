@@ -36,6 +36,7 @@
             this.tsbMain_Settings = new System.Windows.Forms.ToolStripButton();
             this.tsbMain_CurrentDirectory = new System.Windows.Forms.ToolStripButton();
             this.pnlTopMain = new System.Windows.Forms.Panel();
+            this.btnTopMain_CloseTab = new System.Windows.Forms.Button();
             this.nudTopMain_ZoomPercentage = new System.Windows.Forms.NumericUpDown();
             this.btnTopMain_Save = new System.Windows.Forms.Button();
             this.btnTopMain_Open = new System.Windows.Forms.Button();
@@ -73,7 +74,6 @@
             this.fullScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.slideShowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actualSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnTopMain_CloseTab = new System.Windows.Forms.Button();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -162,12 +162,43 @@
             this.pnlTopMain.Size = new System.Drawing.Size(800, 28);
             this.pnlTopMain.TabIndex = 1;
             // 
+            // btnTopMain_CloseTab
+            // 
+            this.btnTopMain_CloseTab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTopMain_CloseTab.Location = new System.Drawing.Point(481, 2);
+            this.btnTopMain_CloseTab.Name = "btnTopMain_CloseTab";
+            this.btnTopMain_CloseTab.Size = new System.Drawing.Size(75, 23);
+            this.btnTopMain_CloseTab.TabIndex = 4;
+            this.btnTopMain_CloseTab.Text = "Close Tab";
+            this.btnTopMain_CloseTab.UseVisualStyleBackColor = true;
+            this.btnTopMain_CloseTab.Click += new System.EventHandler(this.btnTopMain_CloseTab_Click);
+            // 
             // nudTopMain_ZoomPercentage
             // 
+            this.nudTopMain_ZoomPercentage.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
             this.nudTopMain_ZoomPercentage.Location = new System.Drawing.Point(119, 4);
+            this.nudTopMain_ZoomPercentage.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            this.nudTopMain_ZoomPercentage.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudTopMain_ZoomPercentage.Name = "nudTopMain_ZoomPercentage";
             this.nudTopMain_ZoomPercentage.Size = new System.Drawing.Size(64, 20);
             this.nudTopMain_ZoomPercentage.TabIndex = 3;
+            this.nudTopMain_ZoomPercentage.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
             this.nudTopMain_ZoomPercentage.ValueChanged += new System.EventHandler(this.nudTopMain_ZoomPercentage_ValueChanged);
             // 
             // btnTopMain_Save
@@ -235,7 +266,7 @@
             this.selectDirectoryToolStripMenuItem});
             this.cmsCurrentDirectory.Name = "cmsCurrentDirectory";
             this.cmsCurrentDirectory.ShowImageMargin = false;
-            this.cmsCurrentDirectory.Size = new System.Drawing.Size(156, 48);
+            this.cmsCurrentDirectory.Size = new System.Drawing.Size(132, 26);
             this.cmsCurrentDirectory.Opening += new System.ComponentModel.CancelEventHandler(this.cmsCurrentDirectory_Opening);
             // 
             // selectDirectoryToolStripMenuItem
@@ -478,17 +509,6 @@
             this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.actualSizeToolStripMenuItem_Click);
-            // 
-            // btnTopMain_CloseTab
-            // 
-            this.btnTopMain_CloseTab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnTopMain_CloseTab.Location = new System.Drawing.Point(481, 2);
-            this.btnTopMain_CloseTab.Name = "btnTopMain_CloseTab";
-            this.btnTopMain_CloseTab.Size = new System.Drawing.Size(75, 23);
-            this.btnTopMain_CloseTab.TabIndex = 4;
-            this.btnTopMain_CloseTab.Text = "Close Tab";
-            this.btnTopMain_CloseTab.UseVisualStyleBackColor = true;
-            this.btnTopMain_CloseTab.Click += new System.EventHandler(this.btnTopMain_CloseTab_Click);
             // 
             // MainForm
             // 

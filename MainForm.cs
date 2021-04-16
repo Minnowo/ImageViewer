@@ -43,6 +43,7 @@ namespace ImageViewer
             }
         }
         private _TabPage currentPage;
+        private bool preventOverflow = false;
 
         public MainForm()
         {
@@ -95,7 +96,7 @@ namespace ImageViewer
         {
             string[] openImages = PathHelper.OpenImageFileDialog(true, this);
 
-            if (openImages.Length <= 0)
+            if (openImages == null)
                 return;
 
             int preCount = tcMain.TabPages.Count;
@@ -108,7 +109,7 @@ namespace ImageViewer
                     Tag = new FileInfo(image),
                     Text = Path.GetFileName(image)
                 };
-
+                tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
                 tcMain.TabPages.Add(tp);
             }
 
@@ -126,6 +127,7 @@ namespace ImageViewer
 
             UpdateBottomInfoLabel();
         }
+
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -382,17 +384,22 @@ namespace ImageViewer
 
         private void btnTopMain_Open_Click(object sender, EventArgs e)
         {
-
+            openToolStripMenuItem_Click(null, EventArgs.Empty);
         }
 
         private void btnTopMain_Save_Click(object sender, EventArgs e)
         {
-
+            
         }
 
         private void nudTopMain_ZoomPercentage_ValueChanged(object sender, EventArgs e)
         {
-
+            if (preventOverflow || currentPage == null)
+                return;
+            preventOverflow = true;
+            currentPage.idMain.ExternZoomChange = true;
+            currentPage.idMain.ZoomFactor = (double)nudTopMain_ZoomPercentage.Value / 100d;
+            preventOverflow = false;
         }
 
         private void btnTopMain_CloseTab_Click(object sender, EventArgs e)
@@ -443,6 +450,16 @@ namespace ImageViewer
         }
 
         #endregion
+
+
+        private void IdMain_ZoomChangedEvent(double zoomfactor)
+        {
+            if (preventOverflow || currentPage == null)
+                return;
+            preventOverflow = true;
+            nudTopMain_ZoomPercentage.Value = ((decimal)(zoomfactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
+            preventOverflow = false;
+        }
 
         private void UpdateBottomInfoLabel()
         {

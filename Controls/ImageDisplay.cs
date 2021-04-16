@@ -14,6 +14,9 @@ namespace ImageViewer.Controls
 {
     public partial class ImageDisplay : UserControl
     {
+        public delegate void ZoomFactorChanged(double zoomfactor);
+        public event ZoomFactorChanged ZoomChangedEvent;
+
 
         public Image Image
         {
@@ -107,6 +110,18 @@ namespace ImageViewer.Controls
             }
         }
 
+        public bool ExternZoomChange
+        {
+            get
+            {
+                return drawingBoard1.externZoomChange;
+            }
+            set
+            {
+                drawingBoard1.externZoomChange = value;
+            }
+        }
+
         private bool scrollVisible = true;
         private bool preventUpdate = false;
         public ImageDisplay()
@@ -115,7 +130,9 @@ namespace ImageViewer.Controls
             drawingBoard1.ScrollChanged += DrawingBoard_SetScrollPosition;
             hScrollBar1.ValueChanged += ScrollbarValue_Changed;
             vScrollBar1.ValueChanged += ScrollbarValue_Changed;
+            drawingBoard1.ZoomChangedEvent += OnZoomChanged;
         }
+
 
         #region public properties
 
@@ -148,6 +165,14 @@ namespace ImageViewer.Controls
 
 
         #endregion
+
+        private void OnZoomChanged(double val)
+        {
+            if(ZoomChangedEvent != null)
+            {
+                ZoomChangedEvent(val);
+            }
+        }
 
         private void DrawingBoard_SetScrollPosition(object sender, EventArgs e)
         {

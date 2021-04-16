@@ -71,8 +71,8 @@ namespace ImageViewer.Controls
 
         public ImageDisplayState state { get; private set; }
 
+        public ImageDisplay idMain;
 
-        private ImageDisplay idMain;
         public _TabPage(string path)
         {
             if (!File.Exists(path))
@@ -85,6 +85,7 @@ namespace ImageViewer.Controls
             idMain = new ImageDisplay();
             idMain.Location = new Point(0, 0);
             idMain.Dock = DockStyle.Fill;
+            idMain.CenterOnLoad = true;
 
             state = ImageDisplayState.empty;
 

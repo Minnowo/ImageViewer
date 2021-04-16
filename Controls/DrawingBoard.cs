@@ -21,6 +21,9 @@ namespace ImageViewer.Controls
         public delegate void ScrollPositionChanged(object sender, EventArgs e);
         public event ScrollPositionChanged ScrollChanged;
 
+        public delegate void ZoomFactorChanged(double zoomfactor);
+        public event ZoomFactorChanged ZoomChangedEvent;
+
         public Image Image
         {
             get
@@ -33,7 +36,7 @@ namespace ImageViewer.Controls
                 {
                     originalImage.Dispose();
                     origin = new Point(0, 0);
-                    apparentImageSize = new Size(0, 0);
+                    apparentImageSize = new Size(0,0);
                     zoomFactor = 1f;
                     GC.Collect();
                 }
@@ -46,6 +49,7 @@ namespace ImageViewer.Controls
                 }
 
                 initialDraw = true;
+                apparentImageSize = value.Size;
                 originalImage = (Bitmap)value;
                 Invalidate();
             }
@@ -93,7 +97,7 @@ namespace ImageViewer.Controls
             }
             set
             {
-                zoomFactor = value.Clamp(0.05, 15);
+                zoomFactor = value.Clamp(0.05, 100);
 
                 if (originalImage != null)
                 {
@@ -101,6 +105,7 @@ namespace ImageViewer.Controls
                     apparentImageSize.Width = (int)Math.Round(originalImage.Width * zoomFactor);
                     ComputeDrawingArea();
                 }
+
                 Invalidate();
             }
         }
@@ -127,6 +132,7 @@ namespace ImageViewer.Controls
         }
 
         public bool centerOnLoad { get; set; } = true;
+        public bool externZoomChange { get; set; } = false;
 
         private Bitmap originalImage;
 
@@ -155,6 +161,14 @@ namespace ImageViewer.Controls
             this.MouseUp += ImageViewer_MouseUp;
             this.MouseWheel += ImageViewer_MouseWheel;
             this.MouseMove += ImageViewer_MouseMove;
+        }
+
+        private void OnZoomChanged()
+        {
+            if (ZoomChangedEvent != null)
+            {
+                ZoomChangedEvent(zoomFactor);
+            }
         }
 
         #region public properties
@@ -225,9 +239,6 @@ namespace ImageViewer.Controls
             if (isLeftClicking)
                 return;
 
-            centerPoint.X = origin.X + srcRect.Width / 2;
-            centerPoint.Y = origin.Y + srcRect.Height / 2;
-
             if (zoomIn)
             {
                 ZoomFactor = Math.Round(zoomFactor * 1.1d, 2);
@@ -236,11 +247,17 @@ namespace ImageViewer.Controls
             {
                 ZoomFactor = Math.Round(zoomFactor * 0.9d, 2);
             }
+            
 
+
+            centerPoint.X = origin.X + (srcRect.Width >> 1);
+            centerPoint.Y = origin.Y + (srcRect.Height >> 1);
 
             origin = new Point(centerPoint.X - (int)Math.Round(ClientSize.Width / zoomFactor / 2),
-                                centerPoint.Y - (int)Math.Round(ClientSize.Height / zoomFactor / 2));
+                            centerPoint.Y - (int)Math.Round(ClientSize.Height / zoomFactor / 2));
+            
 
+            OnZoomChanged();
             ComputeDrawingArea();
             Invalidate();
         }
@@ -283,9 +300,31 @@ namespace ImageViewer.Controls
                 {
                     g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 }
-                g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
+                if (externZoomChange)
+                {
+                    if (apparentImageSize.Width < drawWidth)
+                    {
+                        origin.X = -((drawWidth >> 1) - (apparentImageSize.Width >> 1)); // >> 2 = / 2
+                    }
+                    else
+                    {
+                        origin.X = drawWidth >> 2;
+                    }
+
+                    origin.Y = 0;
+
+                    srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
+
+                    g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
+                    externZoomChange = false;
+                }
+                else
+                {
+                    g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
+                }               
             }
 
+            //Console.WriteLine(origin);
             OnScrollChanged();
         }
 
@@ -352,8 +391,13 @@ namespace ImageViewer.Controls
             if (isLeftClicking)
             {
                 Point p = PointToImage(e.Location);
-                origin.X = origin.X + (startPoint.X - p.X);
-                origin.Y = origin.Y + (startPoint.Y - p.Y);
+
+                int minOriginX = -(int)Math.Round(Width / zoomFactor);
+                int minOriginY = -(int)Math.Round(Height / zoomFactor);
+
+                origin.X = (origin.X + (startPoint.X - p.X)).Clamp(minOriginX, Image.Width);
+                origin.Y = (origin.Y + (startPoint.Y - p.Y)).Clamp(minOriginY, Image.Height);
+
                 startPoint = PointToImage(e.Location);
 
                 Invalidate();
