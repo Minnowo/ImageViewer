@@ -230,6 +230,47 @@ namespace ImageViewer.Controls
             else
                 ZoomFactor = Math.Min(ClientSize.Width / originalImage.Width, ClientSize.Height / originalImage.Height);
         }
+
+        public void RotateFlip(RotateFlipType ft)
+        {
+            if (originalImage == null)
+                return;
+
+            originalImage.RotateFlip(ft);
+            this.Invalidate();
+        }
+
+        public void InvertColors()
+        {
+            if (originalImage == null)
+                return;
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+
+                if (InternalSettings.Use_Fast_Invert_Color)
+                {
+                    ImageHelper.FastInvertColors(originalImage);
+                }
+                else
+                {
+                    using(Bitmap tmp = originalImage)
+                    {
+                        originalImage = ImageHelper.InvertColors(tmp);
+                    }
+                }
+
+                Invalidate();
+            }
+            catch{}
+            finally
+            {
+                Cursor = Cursors.Default;
+                GC.Collect(); // required to free memory from FastInvertColors
+            }
+        }
+
         #endregion
 
         #region private properites
@@ -394,7 +435,9 @@ namespace ImageViewer.Controls
 
                 int minOriginX = -(int)Math.Round(Width / zoomFactor);
                 int minOriginY = -(int)Math.Round(Height / zoomFactor);
-
+                
+                // this really upsets me i spent like an hour on the clamp part
+                // just to realize i'm an idiot and the max was just the image size omfg
                 origin.X = (origin.X + (startPoint.X - p.X)).Clamp(minOriginX, Image.Width);
                 origin.Y = (origin.Y + (startPoint.Y - p.Y)).Clamp(minOriginY, Image.Height);
 

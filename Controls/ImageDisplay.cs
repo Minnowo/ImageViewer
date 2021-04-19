@@ -162,11 +162,19 @@ namespace ImageViewer.Controls
             drawingBoard1.ZoomOut();
         }
 
+        public void RotateFlip(RotateFlipType ft)
+        {
+            drawingBoard1.RotateFlip(ft);
+        }
 
+        public void InvertColor()
+        {
+            drawingBoard1.InvertColors();
+        }
 
         #endregion
 
-        private void OnZoomChanged(double val)
+            private void OnZoomChanged(double val)
         {
             if(ZoomChangedEvent != null)
             {

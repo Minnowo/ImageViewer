@@ -11,6 +11,7 @@ using System.IO;
 
 using ImageViewer.Helpers;
 using ImageViewer.structs;
+using ImageViewer.Settings;
 
 namespace ImageViewer.Controls
 {
@@ -29,6 +30,7 @@ namespace ImageViewer.Controls
         }
         private FileInfo imagePath;
 
+
         public bool IsCurrentPage
         {
             get
@@ -40,7 +42,9 @@ namespace ImageViewer.Controls
 
                 if (value)
                 {
+                    Console.WriteLine(DateTime.Now);
                     LoadImage();
+                    Console.WriteLine(DateTime.Now);
                 }
                 else
                 {
@@ -73,6 +77,14 @@ namespace ImageViewer.Controls
 
         public ImageDisplay idMain;
 
+        public bool PathExists
+        {
+            get
+            {
+                return File.Exists(imagePath.FullName);
+            }
+        }
+
         public _TabPage(string path)
         {
             if (!File.Exists(path))
@@ -95,7 +107,28 @@ namespace ImageViewer.Controls
         private void LoadImage()
         {
             idMain.Image = null;
-            idMain.Image = ImageHelper.FastLoadImage(imagePath.FullName);
+
+            string imPath;
+
+            if (imagePath.Exists)
+            {
+                imPath = imagePath.FullName;
+            }
+            else
+            {
+                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK);
+                Program.mainForm.btnTopMain_CloseTab_Click(null, EventArgs.Empty);
+                return;
+            }
+
+            if (InternalSettings.Use_Lite_Load_Image)
+            {
+                idMain.Image = ImageHelper.LiteLoadImage(imPath);
+            }
+            else 
+            { 
+                idMain.Image = ImageHelper.LoadImage(imPath); 
+            }
 
             if(state != ImageDisplayState.empty)
                 idMain.LoadState(state);

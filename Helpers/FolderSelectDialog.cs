@@ -93,7 +93,7 @@ namespace ImageViewer.Helpers
             {
                 bool flag;
 
-                if (Helpers.IsWindowsVistaOrGreater())
+                if (Helper.IsWindowsVistaOrGreater())
                 {
                     Reflector r = new Reflector("System.Windows.Forms");
 

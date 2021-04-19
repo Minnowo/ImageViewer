@@ -1,10 +1,10 @@
-X:\Languages\C#\ImageViewer\bin\Debug\ImageViewer.exe.config
-X:\Languages\C#\ImageViewer\bin\Debug\ImageViewer.exe
-X:\Languages\C#\ImageViewer\bin\Debug\ImageViewer.pdb
-X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.csprojAssemblyReference.cache
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.Properties.Resources.resources
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.csproj.GenerateResource.cache
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.csproj.CoreCompileInputs.cache
-X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.exe
-X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.pdb
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.MainForm.resources
+X:\Languages\C#\ImageViewer\bin\Debug\imview.exe.config
+X:\Languages\C#\ImageViewer\bin\Debug\imview.exe
+X:\Languages\C#\ImageViewer\bin\Debug\imview.pdb
+X:\Languages\C#\ImageViewer\obj\Debug\imview.exe
+X:\Languages\C#\ImageViewer\obj\Debug\imview.pdb
+X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.csprojAssemblyReference.cache

@@ -4,15 +4,53 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using ImageViewer.Settings;
 
 namespace ImageViewer.Helpers
 {
     public static class ImageHelper
     {
-        public static Bitmap FastLoadImage(string imagePath)
+        public static ColorMatrix NegativeColorMatrix = new ColorMatrix(new float[][]
+                {
+        new float[] {-1, 0, 0, 0, 0},
+        new float[] {0, -1, 0, 0, 0},
+        new float[] {0, 0, -1, 0, 0},
+        new float[] {0, 0, 0, 1, 0},
+        new float[] {1, 1, 1, 0, 1}
+                });
+
+        public static Bitmap LoadImage(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(path))
+                {
+                    if (File.Exists(path))
+                    {
+                        return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 
+        /// this is slower, and takes more memory when loading the image in, but after its loaded it uses less memory
+        /// better if you have a really large image, and don't mind a little bit slower loading
+        /// 
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
+        public static Bitmap LiteLoadImage(string imagePath)
         {
             if (File.Exists(imagePath))
             {
@@ -21,7 +59,17 @@ namespace ImageViewer.Helpers
                     using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     using (Image image = Image.FromStream(fileStream, false, false))
                     {
-                        return (Bitmap)image.CloneSafe();
+                        Bitmap bmp = new Bitmap(image.Width, image.Height);
+                        using (Graphics g = Graphics.FromImage(bmp))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+                            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+
+                            g.DrawImage(image, new Point(0, 0));
+                            return bmp;
+                        }
                     }
                 }
                 catch
@@ -30,8 +78,6 @@ namespace ImageViewer.Helpers
                 }
                 finally
                 {
-                    // if you don't call collect lots of the memory used by loading the image is held
-                    // when loading a 100mb image 9900 x 9900 without the collect it holds 100mb of memory
                     GC.Collect();
                 }
             }
@@ -69,7 +115,7 @@ namespace ImageViewer.Helpers
         public static ImageFormat GetImageFormat(string filePath)
         {
             ImageFormat imageFormat = ImageFormat.Png;
-            string ext = Helpers.GetFilenameExtension(filePath);
+            string ext = Helper.GetFilenameExtension(filePath);
 
             if (!string.IsNullOrEmpty(ext))
             {
@@ -115,6 +161,7 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 //e.ShowError();
             }
 
@@ -137,7 +184,7 @@ namespace ImageViewer.Helpers
                 {
                     sfd.FileName = Path.GetFileName(filePath);
 
-                    string ext = Helpers.GetFilenameExtension(filePath);
+                    string ext = Helper.GetFilenameExtension(filePath);
 
                     if (!string.IsNullOrEmpty(ext))
                     {
@@ -176,6 +223,80 @@ namespace ImageViewer.Helpers
             }
 
             return null;
+        }
+
+        public static string[] OpenImageFileDialog(bool multiselect, Form form = null, string initialDirectory = null)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "Image files (*.png, *.jpg, *.jpeg, *.jpe, *.jfif, *.gif, *.bmp, *.tif, *.tiff)|*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif;*.bmp;*.tif;*.tiff|" +
+                    "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
+
+                ofd.Multiselect = multiselect;
+
+                if (!string.IsNullOrEmpty(initialDirectory))
+                {
+                    ofd.InitialDirectory = initialDirectory;
+                }
+
+                if (ofd.ShowDialog(form) == DialogResult.OK)
+                {
+                    return ofd.FileNames;
+                }
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// https://stackoverflow.com/a/11781561
+        /// slower 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static Bitmap InvertColors(Bitmap source)
+        {
+            Bitmap newBitmap = new Bitmap(source.Width, source.Height);
+
+            using (Graphics g = Graphics.FromImage(newBitmap))
+            using (ImageAttributes attributes = new ImageAttributes())
+            {
+                attributes.SetColorMatrix(NegativeColorMatrix);
+
+                g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height),
+                            0, 0, source.Width, source.Height, GraphicsUnit.Pixel, attributes);
+                
+            }
+            return newBitmap;
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/a/24376274
+        /// this is faster than using a color matrix, but also requires 
+        /// a GC.Collect() otherwise it holds memory
+        /// </summary>
+        /// <param name="bitmapImage"></param>
+        public static void FastInvertColors(Bitmap bitmapImage)
+        {
+            BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
+            var bitmapLength = bitmapRead.Stride * bitmapRead.Height;
+            byte[] bitmapBGRA = new byte[bitmapLength];
+            
+            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
+            bitmapImage.UnlockBits(bitmapRead);
+            
+            for (int i = 0; i<bitmapLength; i += 4)
+            {
+                bitmapBGRA[i]     = (byte) (255 - bitmapBGRA[i]);
+                bitmapBGRA[i + 1] = (byte) (255 - bitmapBGRA[i + 1]);
+                bitmapBGRA[i + 2] = (byte) (255 - bitmapBGRA[i + 2]);
+                //        [i + 3] = ALPHA.
+            }
+            
+            BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
+            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
+            bitmapImage.UnlockBits(bitmapWrite);
         }
     }
 }

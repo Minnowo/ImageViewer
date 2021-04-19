@@ -31,27 +31,26 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public static string[] OpenImageFileDialog(bool multiselect, Form form = null, string initialDirectory = null)
+        public static bool DeleteFileOrPath(string path)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog())
+            try
             {
-                ofd.Filter = "Image files (*.png, *.jpg, *.jpeg, *.jpe, *.jfif, *.gif, *.bmp, *.tif, *.tiff)|*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif;*.bmp;*.tif;*.tiff|" +
-                    "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
-
-                ofd.Multiselect = multiselect;
-
-                if (!string.IsNullOrEmpty(initialDirectory))
+                if (File.Exists(path))
                 {
-                    ofd.InitialDirectory = initialDirectory;
+                    File.Delete(path);
+                    return true;
                 }
-
-                if (ofd.ShowDialog(form) == DialogResult.OK)
+                else if (Directory.Exists(path))
                 {
-                    return ofd.FileNames;
+                    Directory.Delete(path);
+                    return true;
                 }
             }
-
-            return null;
+            catch
+            {
+                return false;
+            }
+            return false;
         }
     }
 }

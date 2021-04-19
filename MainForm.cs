@@ -13,6 +13,7 @@ using ImageViewer.Helpers;
 using ImageViewer.Controls;
 using ImageViewer.Native;
 using ImageViewer.Settings;
+using System.Threading;
 
 namespace ImageViewer
 {
@@ -40,17 +41,22 @@ namespace ImageViewer
                 currentPage = value;
                 currentPage.IsCurrentPage = true;
                 tcMain.SelectedTab = value;
+                //ThreadPool.QueueUserWorkItem(state => CheckCache(value));
             }
         }
         private _TabPage currentPage;
         private bool preventOverflow = false;
+        
 
         public MainForm()
         {
             InitializeComponent();
 
             saveToolStripMenuItem.Enabled = false;
+
+            //this.FormClosing += MainForm_FormClosing;
         }
+
 
 
         #region ContextMenuStrip
@@ -68,7 +74,7 @@ namespace ImageViewer
                 imagePropertiesToolStripMenuItem.Enabled = false;
                 filePropertiesToolStripMenuItem.Enabled = false;
             }
-            else if (File.Exists(currentPage.ImagePath.FullName))
+            else if (currentPage.ImagePath.Exists)
             {
                 saveToolStripMenuItem.Enabled = true;
                 saveAsToolStripMenuItem.Enabled = true;
@@ -94,7 +100,7 @@ namespace ImageViewer
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string[] openImages = PathHelper.OpenImageFileDialog(true, this);
+            string[] openImages = ImageHelper.OpenImageFileDialog(true, this);
 
             if (openImages == null)
                 return;
@@ -126,6 +132,7 @@ namespace ImageViewer
             }
 
             UpdateBottomInfoLabel();
+            //ThreadPool.QueueUserWorkItem(state => CheckCache(CurrentPage));
         }
 
 
@@ -155,19 +162,26 @@ namespace ImageViewer
 
         private void moveToToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null || !File.Exists(currentPage.ImagePath.FullName))
+            if (currentPage == null)
                 return;
+
+            string moveTo;
 
             // passing null will use the save file dialog, but won't save anything
             // so it can just be used to get the new path / name
-            string moveTo = ImageHelper.SaveImageFileDialog(null, currentPage.ImagePath.FullName);
+            if (currentPage.ImagePath.Exists)
+                moveTo = ImageHelper.SaveImageFileDialog(null, currentPage.ImagePath.FullName);
+            else
+            {
+                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Delete_Item_Messagebox_Title, MessageBoxButtons.OK);
+                return;
+            }
 
             // delete any files with the new path name
             // since the user is using the file select dialog
             // it will ask them if they want to override files
             // so they will be aware it will delete files
-            if (File.Exists(moveTo))
-                File.Delete(moveTo);
+            PathHelper.DeleteFileOrPath(moveTo);
 
             File.Move(currentPage.ImagePath.FullName, moveTo);
             currentPage.ImagePath = new FileInfo(moveTo);
@@ -180,7 +194,24 @@ namespace ImageViewer
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
 
+            if (!File.Exists(currentPage.ImagePath.FullName))
+            {
+                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                if(MessageBox.Show(this, 
+                    InternalSettings.Delete_Item_Messagebox_Message + currentPage.ImagePath.FullName, 
+                    InternalSettings.Delete_Item_Messagebox_Title, 
+                    MessageBoxButtons.YesNo, 
+                    MessageBoxIcon.None) == DialogResult.Yes)
+                {
+                    PathHelper.DeleteFileOrPath(currentPage.ImagePath.FullName);
+                }
+            }
         }
 
         private void imagePropertiesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -225,22 +256,22 @@ namespace ImageViewer
 
         private void rotateLeftToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate270FlipNone);
         }
 
         private void rotateRightToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate90FlipNone);
         }
 
         private void flipHorizontallyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipX);
         }
 
         private void flipVerticallyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipY);
         }
 
         private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -260,7 +291,7 @@ namespace ImageViewer
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            currentPage.idMain.InvertColor();
         }
 
         #endregion
@@ -402,7 +433,7 @@ namespace ImageViewer
             preventOverflow = false;
         }
 
-        private void btnTopMain_CloseTab_Click(object sender, EventArgs e)
+        public void btnTopMain_CloseTab_Click(object sender, EventArgs e)
         {
             if (currentPage == null)
                 return;
@@ -451,6 +482,39 @@ namespace ImageViewer
 
         #endregion
 
+        private bool ForceClose = false;
+        private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(!ForceClose)
+                e.Cancel = true;
+
+            Hide();
+            if (InternalSettings.Remember_Images_On_Close)
+            {
+                Helper.HashCheck HashCheck = new Helper.HashCheck();
+                foreach (_TabPage tp in tcMain.TabPages)
+                {
+                    string fileHash = await HashCheck.Start(tp.ImagePath.FullName, HashType.SHA256);
+
+                    if (!string.IsNullOrEmpty(fileHash))
+                    {
+                        string cacheImPath = InternalSettings.ImageCacheFolder + "\\" + fileHash + Helper.GetFilenameExtension(tp.ImagePath.FullName, true);
+
+                        if (!File.Exists(cacheImPath))
+                        {
+                            try
+                            {
+                                File.Copy(tp.ImagePath.FullName, cacheImPath);
+                            }
+                            catch{}
+                        }
+                    }
+                }
+            }
+
+            ForceClose = true;
+            Close();
+        }
 
         private void IdMain_ZoomChangedEvent(double zoomfactor)
         {
@@ -463,7 +527,7 @@ namespace ImageViewer
 
         private void UpdateBottomInfoLabel()
         {
-            if (currentPage == null)
+            if (currentPage == null || !currentPage.PathExists)
             {
                 lblBottomMain_Info.Text = "NULL";
             }
@@ -473,11 +537,10 @@ namespace ImageViewer
                     new string[]
                     {
                     string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height),
-                    string.Format("{0}", Helpers.Helpers.SizeSuffix(currentPage.ImagePath.Length)),
+                    string.Format("{0}", Helpers.Helper.SizeSuffix(currentPage.ImagePath.Length)),
                     string.Format("{0}", currentPage.ImagePath.FullName)
                     });
             }
         }
-
     }
 }

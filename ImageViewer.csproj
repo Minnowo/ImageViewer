@@ -7,7 +7,7 @@
     <ProjectGuid>{E2B27B28-955B-4BD0-BB36-2C2D6CC32A65}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>ImageViewer</RootNamespace>
-    <AssemblyName>ImageViewer</AssemblyName>
+    <AssemblyName>imview</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -64,6 +64,7 @@
     <Compile Include="Controls\ImageDisplay.Designer.cs">
       <DependentUpon>ImageDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Structs\ImageDisplayState.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -73,7 +74,7 @@
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\FolderSelectDialog.cs" />
-    <Compile Include="Helpers\Helpers.cs" />
+    <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\ImageHelper.cs" />
     <Compile Include="Helpers\MathHelper.cs" />
     <Compile Include="Helpers\PathHelper.cs" />
