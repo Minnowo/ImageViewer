@@ -14,6 +14,7 @@ using ImageViewer.Controls;
 using ImageViewer.Native;
 using ImageViewer.Settings;
 using System.Threading;
+using ImageViewer.structs;
 
 namespace ImageViewer
 {
@@ -113,8 +114,9 @@ namespace ImageViewer
                 {
                     Name = image,
                     Tag = new FileInfo(image),
-                    Text = Path.GetFileName(image)
+                    Text = Path.GetFileName(image).Truncate(25)
                 };
+                tp.ToolTipText = image;
                 tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
                 tcMain.TabPages.Add(tp);
             }
@@ -276,17 +278,34 @@ namespace ImageViewer
 
         private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
 
+            using(ResizeImageForm form = new ResizeImageForm(currentPage.idMain.Image.Size))
+            {
+                form.ShowDialog();
+
+                ResizeImageFormReturn r = form.GetReturnSize();
+
+                if(r.Result != ResizeImageResult.Cancel)
+                {
+                    using(Image tmp = currentPage.Image)
+                    {
+                        currentPage.idMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
+                    }
+                    UpdateBottomInfoLabel();
+                }
+            }
         }
 
         private void cropToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            
         }
 
         private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            currentPage.idMain.GreyScale();
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)

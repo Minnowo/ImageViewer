@@ -271,6 +271,38 @@ namespace ImageViewer.Controls
             }
         }
 
+        public void GreyScaleImage()
+        {
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+
+                if (InternalSettings.Use_Fast_Grey_Scale)
+                {
+                    ImageHelper.FastGreyScale(originalImage, 
+                        InternalSettings.Grey_Scale_Multipliers[0],
+                        InternalSettings.Grey_Scale_Multipliers[1],
+                        InternalSettings.Grey_Scale_Multipliers[2]);
+                }
+                else
+                {
+                    using (Bitmap tmp = originalImage)
+                    {
+                        Image = ImageHelper.MakeGrayscale(tmp);
+                    }
+                }
+
+                Invalidate();
+            }
+            catch { }
+            finally
+            {
+                Cursor = Cursors.Default;
+                GC.Collect(); // required to free memory from FastInvertColors
+            }
+        }
+
+
         #endregion
 
         #region private properites

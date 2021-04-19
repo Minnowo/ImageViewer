@@ -8,3 +8,4 @@ X:\Languages\C#\ImageViewer\bin\Debug\imview.pdb
 X:\Languages\C#\ImageViewer\obj\Debug\imview.exe
 X:\Languages\C#\ImageViewer\obj\Debug\imview.pdb
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.csprojAssemblyReference.cache
+X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.ResizeImageForm.resources

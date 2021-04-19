@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace ImageViewer.Helpers
 {
@@ -15,6 +16,13 @@ namespace ImageViewer.Helpers
         public static readonly Version OSVersion = Environment.OSVersion.Version;
         public static readonly string[] SizeSuffixes =
                    { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+
+        public static bool ValidSize(Size s)
+        {
+            return (s.Width > 0 && s.Height > 0);
+        }
+
+
         public static string SizeSuffix(Int64 value, int decimalPlaces = 1)
         {
             if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException("decimalPlaces"); }

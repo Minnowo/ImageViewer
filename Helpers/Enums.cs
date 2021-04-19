@@ -15,4 +15,9 @@ namespace ImageViewer.Helpers
         SHA512
     }
 
+    public enum ResizeImageResult
+    {
+        Cancel,
+        Resized
+    }
 }

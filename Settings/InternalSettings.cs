@@ -26,7 +26,13 @@ namespace ImageViewer.Settings
         public static string Item_Does_Not_Exist_Title = "Item not found";
         public static string Item_Does_Not_Exist_Message = "This item does not exist";
 
+        public static string Invalid_Size_Messagebox_Title = "Invalid image size";
+        public static string Invalid_Size_Messagebox_Message = "The image size is not valid";
+
         #endregion
+
+        public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3};
+
         public static Color DrawingBoard_Clear_Background_Color = Color.Black;
 
         public static bool Remember_Images_On_Close = true;
@@ -34,5 +40,6 @@ namespace ImageViewer.Settings
         public static bool High_Def_Scale_On_Zoom_Out = false;
         public static bool Use_Lite_Load_Image = true;
         public static bool Use_Fast_Invert_Color = true;
+        public static bool Use_Fast_Grey_Scale = true;
     }
 }

@@ -39,12 +39,9 @@ namespace ImageViewer.Controls
             }
             set
             {
-
                 if (value)
                 {
-                    Console.WriteLine(DateTime.Now);
                     LoadImage();
-                    Console.WriteLine(DateTime.Now);
                 }
                 else
                 {
@@ -75,7 +72,7 @@ namespace ImageViewer.Controls
 
         public ImageDisplayState state { get; private set; }
 
-        public ImageDisplay idMain;
+        public ImageDisplay idMain { get; private set; }
 
         public bool PathExists
         {

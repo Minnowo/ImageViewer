@@ -172,6 +172,11 @@ namespace ImageViewer.Controls
             drawingBoard1.InvertColors();
         }
 
+        public void GreyScale()
+        {
+            drawingBoard1.GreyScaleImage();
+        }
+
         #endregion
 
             private void OnZoomChanged(double val)

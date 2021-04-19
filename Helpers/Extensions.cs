@@ -5,10 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ImageViewer.structs;
 namespace ImageViewer.Helpers
 {
     public static class Extensions
     {
+        public static Bitmap Resize(this Bitmap bmp, ResizeImage ri)
+        {
+            using(Bitmap b = bmp)
+            {
+                return ImageHelper.ResizeImage(b, ri);
+            }
+        }
+
+        public static string Truncate(this string str, int maxLength)
+        {
+            if (!string.IsNullOrEmpty(str) && str.Length > maxLength)
+            {
+                return str.Substring(0, maxLength);
+            }
+
+            return str;
+        }
+
         public static byte[] ToByteArray(this Image x)
         {
             ImageConverter _imageConverter = new ImageConverter();

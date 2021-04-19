@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -65,7 +66,13 @@
       <DependentUpon>ImageDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Enums.cs" />
-    <Compile Include="Structs\ImageDisplayState.cs" />
+    <Compile Include="ResizeImageForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ResizeImageForm.Designer.cs">
+      <DependentUpon>ResizeImageForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Structs\Structs.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -100,6 +107,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ResizeImageForm.resx">
+      <DependentUpon>ResizeImageForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

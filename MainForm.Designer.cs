@@ -238,6 +238,7 @@
             this.tcMain.Location = new System.Drawing.Point(3, 55);
             this.tcMain.Name = "tcMain";
             this.tcMain.SelectedIndex = 0;
+            this.tcMain.ShowToolTips = true;
             this.tcMain.Size = new System.Drawing.Size(797, 375);
             this.tcMain.TabIndex = 2;
             this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);

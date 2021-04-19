@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ImageViewer.Settings;
+using ImageViewer.structs;
 
 namespace ImageViewer.Helpers
 {
@@ -23,6 +24,35 @@ namespace ImageViewer.Helpers
         new float[] {0, 0, 0, 1, 0},
         new float[] {1, 1, 1, 0, 1}
                 });
+        public static ColorMatrix GreyScaleColorMatrix = new ColorMatrix(
+                   new float[][]
+                   {
+         new float[] {.3f, .3f, .3f, 0, 0},
+         new float[] {.59f, .59f, .59f, 0, 0},
+         new float[] {.11f, .11f, .11f, 0, 0},
+         new float[] {0, 0, 0, 1, 0},
+         new float[] {0, 0, 0, 0, 1}
+                   });
+
+        public  static Bitmap ResizeImage(Image im, ResizeImage ri)
+        {
+            Bitmap newIm = new Bitmap(ri.NewSize.Width, ri.NewSize.Height);
+
+            using(Graphics g = Graphics.FromImage(newIm))
+            {
+                g.InterpolationMode = ri.InterpolationMode;
+                g.SmoothingMode = ri.SmoothingMode;
+                g.CompositingMode = ri.CompositingMode;
+                g.CompositingQuality = ri.CompositingQuality;
+                g.PixelOffsetMode = ri.PixelOffsetMode;
+
+                g.DrawImage(im, 
+                    new Rectangle(new Point(0, 0), ri.NewSize), 
+                    new Rectangle(0, 0, im.Width, im.Height), 
+                    ri.GraphicsUnit);
+            }
+            return newIm;
+        }
 
         public static Bitmap LoadImage(string path)
         {
@@ -294,6 +324,60 @@ namespace ImageViewer.Helpers
                 //        [i + 3] = ALPHA.
             }
             
+            BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
+            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
+            bitmapImage.UnlockBits(bitmapWrite);
+        }
+
+        /// <summary>
+        /// https://web.archive.org/web/20130111215043/http://www.switchonthecode.com/tutorials/csharp-tutorial-convert-a-color-image-to-grayscale
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
+        public static Bitmap MakeGrayscale(Bitmap original)
+        {
+            //create a blank bitmap the same size as original
+            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+            using (Graphics g = Graphics.FromImage(newBitmap)) 
+            using (ImageAttributes attributes = new ImageAttributes())
+            {
+                    attributes.SetColorMatrix(GreyScaleColorMatrix);
+
+                    g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+                       0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+                
+            }
+            return newBitmap;
+        }
+
+        /// <summary>
+        /// this is an edited version of FastInvertColors where i used the greyscale formula from 
+        /// https://web.archive.org/web/20130111215043/http://www.switchonthecode.com/tutorials/csharp-tutorial-convert-a-color-image-to-grayscale
+        /// and stuck that into this better optimized loop
+        /// </summary>
+        /// <param name="bitmapImage"></param>
+        public static void FastGreyScale(Bitmap bitmapImage, double bm = 0.11, double gm = 0.59, double rm = 0.3)
+        {
+            BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
+            var bitmapLength = bitmapRead.Stride * bitmapRead.Height;
+            byte[] bitmapBGRA = new byte[bitmapLength];
+
+            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
+            bitmapImage.UnlockBits(bitmapRead);
+
+            for (int i = 0; i < bitmapLength; i += 4)
+            {
+                byte grayScale =(byte)((bitmapBGRA[i] * bm) + //B
+                                (bitmapBGRA[i + 1] * gm) +  //G
+                                (bitmapBGRA[i + 2] * rm)); //R
+
+                bitmapBGRA[i] = grayScale;
+                bitmapBGRA[i + 1] = grayScale;
+                bitmapBGRA[i + 2] = grayScale;
+                //        [i + 3] = ALPHA.
+            }
+
             BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
             Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
             bitmapImage.UnlockBits(bitmapWrite);
