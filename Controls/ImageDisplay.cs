@@ -110,6 +110,11 @@ namespace ImageViewer.Controls
             }
         }
 
+        /// <summary>
+        /// lets the drawing board know that it should center the image while zooming.
+        /// this value becomes false after use and should always be set true before changing 
+        /// the zoom facotr
+        /// </summary>
         public bool ExternZoomChange
         {
             get
@@ -146,6 +151,7 @@ namespace ImageViewer.Controls
         {
             drawingBoard1.LoadState(state);
         }
+
 
         public void FitToScreen()
         {

@@ -74,6 +74,7 @@
             this.fullScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.slideShowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actualSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiFitToScreen = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -235,6 +236,8 @@
             this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tcMain.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+            this.tcMain.HotTrack = true;
             this.tcMain.Location = new System.Drawing.Point(3, 55);
             this.tcMain.Name = "tcMain";
             this.tcMain.SelectedIndex = 0;
@@ -481,17 +484,18 @@
             this.cmsViewBtn.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fullScreenToolStripMenuItem,
             this.slideShowToolStripMenuItem,
-            this.actualSizeToolStripMenuItem});
+            this.actualSizeToolStripMenuItem,
+            this.tsmiFitToScreen});
             this.cmsViewBtn.Name = "cmsViewBtn";
             this.cmsViewBtn.ShowImageMargin = false;
-            this.cmsViewBtn.Size = new System.Drawing.Size(107, 70);
+            this.cmsViewBtn.Size = new System.Drawing.Size(156, 114);
             this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
             this.fullScreenToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.fullScreenToolStripMenuItem.Name = "fullScreenToolStripMenuItem";
-            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
+            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.fullScreenToolStripMenuItem.Text = "Full Screen";
             this.fullScreenToolStripMenuItem.Click += new System.EventHandler(this.fullScreenToolStripMenuItem_Click);
             // 
@@ -499,7 +503,7 @@
             // 
             this.slideShowToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.slideShowToolStripMenuItem.Name = "slideShowToolStripMenuItem";
-            this.slideShowToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
+            this.slideShowToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.slideShowToolStripMenuItem.Text = "Slide Show";
             this.slideShowToolStripMenuItem.Click += new System.EventHandler(this.slideShowToolStripMenuItem_Click);
             // 
@@ -507,9 +511,16 @@
             // 
             this.actualSizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.actualSizeToolStripMenuItem.Name = "actualSizeToolStripMenuItem";
-            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
+            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.actualSizeToolStripMenuItem_Click);
+            // 
+            // tsmiFitToScreen
+            // 
+            this.tsmiFitToScreen.Name = "tsmiFitToScreen";
+            this.tsmiFitToScreen.Size = new System.Drawing.Size(155, 22);
+            this.tsmiFitToScreen.Text = "Fit To Screen";
+            this.tsmiFitToScreen.Click += new System.EventHandler(this.tsmiFitToScreen_Click);
             // 
             // MainForm
             // 
@@ -584,6 +595,7 @@
         private System.Windows.Forms.ToolStripMenuItem saveUnscaledImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveScaledImageToolStripMenuItem;
         private System.Windows.Forms.Button btnTopMain_CloseTab;
+        private System.Windows.Forms.ToolStripMenuItem tsmiFitToScreen;
     }
 }
 

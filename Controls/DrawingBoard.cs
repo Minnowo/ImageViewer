@@ -110,6 +110,14 @@ namespace ImageViewer.Controls
             }
         }
 
+        public int CenterImageOriginX
+        {
+            get
+            {
+                return -(int)Math.Round(ClientSize.Width / zoomFactor / 2) + (originalImage.Width >> 1);
+            }
+        }
+
         public Point Origin
         {
             get
@@ -223,12 +231,14 @@ namespace ImageViewer.Controls
 
         public void FitToScreen()
         {
-            Origin = new Point(0, 0);
-
             if (originalImage == null)
                 return;
-            else
-                ZoomFactor = Math.Min(ClientSize.Width / originalImage.Width, ClientSize.Height / originalImage.Height);
+
+            // avoid calling update but set the zoom factor for CenterImageOriginX to work
+            zoomFactor = Math.Min((double)ClientSize.Width / originalImage.Width, (double)ClientSize.Height / originalImage.Height); 
+            Origin = new Point(CenterImageOriginX, 0);
+
+            ZoomFactor = zoomFactor; // call invalidate and update apparent size
         }
 
         public void RotateFlip(RotateFlipType ft)
@@ -320,8 +330,6 @@ namespace ImageViewer.Controls
             {
                 ZoomFactor = Math.Round(zoomFactor * 0.9d, 2);
             }
-            
-
 
             centerPoint.X = origin.X + (srcRect.Width >> 1);
             centerPoint.Y = origin.Y + (srcRect.Height >> 1);
@@ -346,58 +354,22 @@ namespace ImageViewer.Controls
             g.CompositingMode = CompositingMode.SourceOver;
             g.CompositingQuality = CompositingQuality.HighSpeed;
 
+            if (externZoomChange || (initialDraw && centerOnLoad))
+            {
+                origin.X = CenterImageOriginX;
+                origin.Y = 0;
+                initialDraw = false;
+                externZoomChange = false;
+            }
+
+            if(InternalSettings.High_Def_Scale_On_Zoom_Out && destRect.Width < Image.Width)
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            }
+
             srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
 
-            if (initialDraw && centerOnLoad)
-            {
-                if (Image.Width < drawWidth)
-                {
-                    destRect.X = ClientSize.Width / 2 - (Image.Width / 2);
-                    origin.X = -(ClientSize.Width / 2 - (Image.Width / 2));
-                }
-                if (Image.Height < drawHeight)
-                {
-                    destRect.Y = ClientSize.Height / 2 - (Image.Height / 2);
-                    origin.Y = -(ClientSize.Height / 2 - (Image.Height / 2));
-                }
-
-
-                g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
-                destRect.X = 0;
-                destRect.Y = 0;
-                initialDraw = false;
-            }
-            else
-            {
-                if(InternalSettings.High_Def_Scale_On_Zoom_Out && destRect.Width < Image.Width)
-                {
-                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                }
-                if (externZoomChange)
-                {
-                    if (apparentImageSize.Width < drawWidth)
-                    {
-                        origin.X = -((drawWidth >> 1) - (apparentImageSize.Width >> 1)); // >> 2 = / 2
-                    }
-                    else
-                    {
-                        origin.X = drawWidth >> 2;
-                    }
-
-                    origin.Y = 0;
-
-                    srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
-
-                    g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
-                    externZoomChange = false;
-                }
-                else
-                {
-                    g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
-                }               
-            }
-
-            //Console.WriteLine(origin);
+            g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
             OnScrollChanged();
         }
 

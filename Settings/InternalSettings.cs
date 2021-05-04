@@ -30,6 +30,7 @@ namespace ImageViewer.Settings
         public static string Invalid_Size_Messagebox_Message = "The image size is not valid";
 
         #endregion
+        public static Font CloseButtonFont = new Font(new Font("Consolas", 10), FontStyle.Bold);
 
         public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3};
 

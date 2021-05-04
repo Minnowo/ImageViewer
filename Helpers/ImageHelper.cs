@@ -87,7 +87,7 @@ namespace ImageViewer.Helpers
                 try
                 {
                     using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (Image image = Image.FromStream(fileStream, false, false))
+                    using (Image image = Image.FromStream(fileStream, true, true))
                     {
                         Bitmap bmp = new Bitmap(image.Width, image.Height);
                         using (Graphics g = Graphics.FromImage(bmp))
@@ -95,9 +95,10 @@ namespace ImageViewer.Helpers
                             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
                             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
                             g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-                            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+                            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
 
-                            g.DrawImage(image, new Point(0, 0));
+                            g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height), new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
                             return bmp;
                         }
                     }

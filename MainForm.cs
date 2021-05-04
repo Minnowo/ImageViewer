@@ -20,6 +20,19 @@ namespace ImageViewer
 {
     public partial class MainForm : Form
     {
+        public string CurrentDirectory 
+        { 
+            get
+            {
+                return currentDirectory;
+            }
+            set 
+            {
+                currentDirectory = value;
+            }
+        }
+        private string currentDirectory = "";
+
         public _TabPage CurrentPage
         {
             get
@@ -46,6 +59,7 @@ namespace ImageViewer
             }
         }
         private _TabPage currentPage;
+        
         private bool preventOverflow = false;
         
 
@@ -55,9 +69,9 @@ namespace ImageViewer
 
             saveToolStripMenuItem.Enabled = false;
 
+            cbTopMain_CurrentDirectory.Text = currentDirectory;
             //this.FormClosing += MainForm_FormClosing;
         }
-
 
 
         #region ContextMenuStrip
@@ -113,9 +127,10 @@ namespace ImageViewer
                 _TabPage tp = new _TabPage(image)
                 {
                     Name = image,
-                    Tag = new FileInfo(image),
-                    Text = Path.GetFileName(image).Truncate(25)
+                    Tag = new FileInfo(image)
                 };
+
+                tp.Text = Path.GetFileName(image).Truncate(25);
                 tp.ToolTipText = image;
                 tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
                 tcMain.TabPages.Add(tp);
@@ -329,12 +344,26 @@ namespace ImageViewer
 
         private void slideShowToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            if (CurrentPage == null)
+                return;
         }
 
         private void actualSizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (CurrentPage == null)
+                return;
 
+            currentPage.idMain.ExternZoomChange = true;
+            currentPage.idMain.ZoomFactor = 1;
+
+        }
+
+        private void tsmiFitToScreen_Click(object sender, EventArgs e)
+        {
+            if (CurrentPage == null)
+                return;
+
+            currentPage.idMain.FitToScreen();
         }
 
         #endregion
@@ -458,6 +487,7 @@ namespace ImageViewer
                 return;
 
             SuspendLayout();
+            btnTopMain_CloseTab.Enabled = false;
 
             _TabPage tmp = currentPage;
             int index = tcMain.SelectedIndex;
@@ -485,6 +515,7 @@ namespace ImageViewer
             tcMain.TabPages.Remove(tmp);
             tmp.Dispose();
 
+            btnTopMain_CloseTab.Enabled = true;
             ResumeLayout();
         }
 
@@ -550,7 +581,7 @@ namespace ImageViewer
             {
                 lblBottomMain_Info.Text = "NULL";
             }
-            else
+            else if (currentPage.Image != null)
             {
                 lblBottomMain_Info.Text = string.Join("     ",
                     new string[]
@@ -561,5 +592,7 @@ namespace ImageViewer
                     });
             }
         }
+
+
     }
 }
