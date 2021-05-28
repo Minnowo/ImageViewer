@@ -16,6 +16,8 @@ namespace ImageViewer.Helpers
 {
     public static class ImageHelper
     {
+        public static readonly ImageFormat DEFAULT_IMAGE_FORMAT = ImageFormat.Png;
+
         public static ColorMatrix NegativeColorMatrix = new ColorMatrix(new float[][]
                 {
         new float[] {-1, 0, 0, 0, 0},
@@ -56,18 +58,15 @@ namespace ImageViewer.Helpers
 
         public static Bitmap LoadImage(string path)
         {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
             try
             {
-                if (!string.IsNullOrEmpty(path))
-                {
-                    if (File.Exists(path))
-                    {
-                        return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
-                    }
-                }
+                return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
             }
-            catch
+            catch(Exception e)
             {
+                e.ShowError();
             }
             return null;
         }
@@ -82,99 +81,89 @@ namespace ImageViewer.Helpers
         /// <returns></returns>
         public static Bitmap LiteLoadImage(string imagePath)
         {
-            if (File.Exists(imagePath))
-            {
-                try
-                {
-                    using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (Image image = Image.FromStream(fileStream, true, true))
-                    {
-                        Bitmap bmp = new Bitmap(image.Width, image.Height);
-                        using (Graphics g = Graphics.FromImage(bmp))
-                        {
-                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-                            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-                            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            if (!File.Exists(imagePath))
+                return null;
 
-                            g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height), new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
-                            return bmp;
-                        }
+            try
+            {
+                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (Image image = Image.FromStream(fileStream, true, true))
+                {
+                    Bitmap bmp = new Bitmap(image.Width, image.Height);
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                        g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+                        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                        g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+
+                        g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height), new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
+                        return bmp;
                     }
                 }
-                catch
-                {
-                    return null;
-                }
-                finally
-                {
-                    GC.Collect();
-                }
             }
-            else
+            catch (Exception e)
+            {
+                e.ShowError();
                 return null;
+            }
+            finally
+            {
+                GC.Collect();
+            }
         }
 
         public static Size GetImageDimensionsFile(string imagePath)
         {
-            if (File.Exists(imagePath))
+            if (!File.Exists(imagePath))
+                return Size.Empty;
+            
+            try
             {
-                try
+                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (Image image = Image.FromStream(fileStream, false, false))
                 {
-                    using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (Image image = Image.FromStream(fileStream, false, false))
-                    {
-                        return new Size(image.Width, image.Height);
-                    }
-                }
-                catch
-                {
-                    return Size.Empty;
-                }
-                finally
-                {
-                    // if you don't call collect lots of the memory used by loading the image is held
-                    // when loading a 100mb image 9900 x 9900 without the collect it holds 100mb of memory
-                    GC.Collect();
+                    return new Size(image.Width, image.Height);
                 }
             }
-            else
+            catch
+            {
                 return Size.Empty;
+            }
+            finally
+            {
+                // if you don't call collect lots of the memory used by loading the image is held
+                // when loading a 100mb image 9900 x 9900 without the collect it holds 100mb of memory
+                GC.Collect();
+            }
         }
 
         public static ImageFormat GetImageFormat(string filePath)
         {
-            ImageFormat imageFormat = ImageFormat.Png;
             string ext = Helper.GetFilenameExtension(filePath);
 
-            if (!string.IsNullOrEmpty(ext))
+            if (string.IsNullOrEmpty(ext))
+                return DEFAULT_IMAGE_FORMAT;
+            
+            switch (ext.Trim().ToLower())
             {
-                switch (ext.Trim().ToLower())
-                {
-                    case "png":
-                        imageFormat = ImageFormat.Png;
-                        break;
-                    case "jpg":
-                    case "jpeg":
-                    case "jpe":
-                    case "jfif":
-                        imageFormat = ImageFormat.Jpeg;
-                        break;
-                    case "gif":
-                        imageFormat = ImageFormat.Gif;
-                        break;
-                    case "bmp":
-                        imageFormat = ImageFormat.Bmp;
-                        break;
-                    case "tif":
-                    case "tiff":
-                        imageFormat = ImageFormat.Tiff;
-                        break;
-                }
+                case "png":
+                default:
+                    return ImageFormat.Png;
+                case "jpg":
+                case "jpeg":
+                case "jpe":
+                case "jfif":
+                    return ImageFormat.Jpeg;
+                case "gif":
+                    return ImageFormat.Gif;
+                case "bmp":
+                    return ImageFormat.Bmp;
+                case "tif":
+                case "tiff":
+                    return ImageFormat.Tiff;
             }
-
-            return imageFormat;
         }
 
         public static bool SaveImage(Image img, string filePath)
@@ -373,9 +362,9 @@ namespace ImageViewer.Helpers
                                 (bitmapBGRA[i + 1] * gm) +  //G
                                 (bitmapBGRA[i + 2] * rm)); //R
 
-                bitmapBGRA[i] = grayScale;
-                bitmapBGRA[i + 1] = grayScale;
-                bitmapBGRA[i + 2] = grayScale;
+                bitmapBGRA[i] = grayScale;      // B
+                bitmapBGRA[i + 1] = grayScale;  // G
+                bitmapBGRA[i + 2] = grayScale;  // R
                 //        [i + 3] = ALPHA.
             }
 

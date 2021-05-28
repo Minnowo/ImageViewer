@@ -30,7 +30,7 @@ namespace ImageViewer.Controls
         }
         private FileInfo imagePath;
 
-
+        public bool ImageLoaded { get; private set; } = false;
         public bool IsCurrentPage
         {
             get
@@ -39,22 +39,48 @@ namespace ImageViewer.Controls
             }
             set
             {
-                if (value)
-                {
-                    LoadImage();
-                }
-                else
+                if(!value)
                 {
                     state = idMain.GetState();
 
                     UnloadImage();
+                    ImageLoaded = false;
                 }
-
                 isCurrentPage = value;
             }
         }
         private bool isCurrentPage = false;
+        public bool PathExists
+        {
+            get
+            {
+                return File.Exists(imagePath.FullName);
+            }
+        }
+        public bool PreventLoadImage
+        {
+            get
+            {
+                return preventLoadImage;
+            }
+            set
+            {
+                preventLoadImage = value;
 
+                // need this here because we want to load
+                // the image on the OnMouseDown event 
+                // rather than OnTabChanged event so that we can close the
+                // tab quickly if they are hitting the close button instead of just selecting the tab
+                if (!value && isCurrentPage && !ImageLoaded)
+                {
+                    LoadImage();
+                }                
+            }
+        }
+        private bool preventLoadImage = false;
+        public ImageDisplayState state { get; private set; }
+
+        public ImageDisplay idMain { get; private set; }
         public Image ScaledImage
         {
             get
@@ -69,18 +95,7 @@ namespace ImageViewer.Controls
                 return idMain.Image;
             }
         }
-
-        public ImageDisplayState state { get; private set; }
-
-        public ImageDisplay idMain { get; private set; }
-
-        public bool PathExists
-        {
-            get
-            {
-                return File.Exists(imagePath.FullName);
-            }
-        }
+       
 
         public _TabPage(string path)
         {
@@ -105,32 +120,37 @@ namespace ImageViewer.Controls
         {
             idMain.Image = null;
 
-            string imPath;
+            if (PreventLoadImage)
+                return;
 
-            if (imagePath.Exists)
+            if (!File.Exists(imagePath.FullName))
             {
-                imPath = imagePath.FullName;
+                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK);
+                Program.mainForm.CloseCurrentTabPage();
+
+                // need to call this here to display the image
+                // of the tab that gets selected after CloseCurrentTabPage
+                if (Program.mainForm.CurrentPage != null)
+                    Program.mainForm.CurrentPage.PreventLoadImage = false;
+
+                return;
+            }
+            
+            if (InternalSettings.Use_Lite_Load_Image)
+            {
+                idMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
             }
             else
             {
-                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK);
-                Program.mainForm.btnTopMain_CloseTab_Click(null, EventArgs.Empty);
-                return;
+                idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
             }
 
-            if (InternalSettings.Use_Lite_Load_Image)
-            {
-                idMain.Image = ImageHelper.LiteLoadImage(imPath);
-            }
-            else 
-            { 
-                idMain.Image = ImageHelper.LoadImage(imPath); 
-            }
-
-            if(state != ImageDisplayState.empty)
+            if (state != ImageDisplayState.empty)
                 idMain.LoadState(state);
 
             state = idMain.GetState();
+            ImageLoaded = true;
+
             Invalidate();
         }
 

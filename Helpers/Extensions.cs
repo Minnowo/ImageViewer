@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 using ImageViewer.structs;
 namespace ImageViewer.Helpers
@@ -33,6 +34,11 @@ namespace ImageViewer.Helpers
             ImageConverter _imageConverter = new ImageConverter();
             byte[] xByte = (byte[])_imageConverter.ConvertTo(x, typeof(byte[]));
             return xByte;
+        }
+
+        public static void ShowError(this Exception e)
+        {
+            MessageBox.Show(null ,e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         public static string ReturnStrHash(this byte[] crypto)

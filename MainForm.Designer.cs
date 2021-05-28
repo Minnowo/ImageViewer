@@ -41,7 +41,7 @@
             this.btnTopMain_Save = new System.Windows.Forms.Button();
             this.btnTopMain_Open = new System.Windows.Forms.Button();
             this.cbTopMain_CurrentDirectory = new System.Windows.Forms.ComboBox();
-            this.tcMain = new System.Windows.Forms.TabControl();
+            this.tcMain = new ImageViewer.Controls._TabControl();
             this.pnlBottomMain = new System.Windows.Forms.Panel();
             this.lblBottomMain_Info = new System.Windows.Forms.Label();
             this.cmsCurrentDirectory = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -236,7 +236,7 @@
             this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tcMain.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+/*            this.tcMain.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;*/
             this.tcMain.HotTrack = true;
             this.tcMain.Location = new System.Drawing.Point(3, 55);
             this.tcMain.Name = "tcMain";
@@ -560,7 +560,7 @@
         private System.Windows.Forms.NumericUpDown nudTopMain_ZoomPercentage;
         private System.Windows.Forms.Button btnTopMain_Save;
         private System.Windows.Forms.Button btnTopMain_Open;
-        private System.Windows.Forms.TabControl tcMain;
+        private ImageViewer.Controls._TabControl tcMain;
         private System.Windows.Forms.Panel pnlBottomMain;
         private System.Windows.Forms.Label lblBottomMain_Info;
         private System.Windows.Forms.ToolStripButton tsbMain_CurrentDirectory;

@@ -55,7 +55,6 @@ namespace ImageViewer
                 currentPage = value;
                 currentPage.IsCurrentPage = true;
                 tcMain.SelectedTab = value;
-                //ThreadPool.QueueUserWorkItem(state => CheckCache(value));
             }
         }
         private _TabPage currentPage;
@@ -146,10 +145,11 @@ namespace ImageViewer
                 {
                     CurrentPage = (_TabPage)tcMain.TabPages[(tcMain.SelectedIndex + 1).Clamp(0, tcMain.TabPages.Count - 1)];
                 }
-            }
 
+                // need to set this here in order for the LoadImage function to be called
+                CurrentPage.PreventLoadImage = false;
+            }
             UpdateBottomInfoLabel();
-            //ThreadPool.QueueUserWorkItem(state => CheckCache(CurrentPage));
         }
 
 
@@ -184,15 +184,15 @@ namespace ImageViewer
 
             string moveTo;
 
-            // passing null will use the save file dialog, but won't save anything
-            // so it can just be used to get the new path / name
-            if (currentPage.ImagePath.Exists)
-                moveTo = ImageHelper.SaveImageFileDialog(null, currentPage.ImagePath.FullName);
-            else
+            if (!currentPage.ImagePath.Exists)
             {
                 MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Delete_Item_Messagebox_Title, MessageBoxButtons.OK);
                 return;
             }
+
+            // passing null will use the save file dialog, but won't save anything
+            // so it can just be used to get the new path / name
+            moveTo = ImageHelper.SaveImageFileDialog(null, currentPage.ImagePath.FullName);
 
             // delete any files with the new path name
             // since the user is using the file select dialog
@@ -217,17 +217,16 @@ namespace ImageViewer
             if (!File.Exists(currentPage.ImagePath.FullName))
             {
                 MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else
+            
+            if(MessageBox.Show(this, 
+                InternalSettings.Delete_Item_Messagebox_Message + currentPage.ImagePath.FullName, 
+                InternalSettings.Delete_Item_Messagebox_Title, 
+                MessageBoxButtons.YesNo, 
+                MessageBoxIcon.None) == DialogResult.Yes)
             {
-                if(MessageBox.Show(this, 
-                    InternalSettings.Delete_Item_Messagebox_Message + currentPage.ImagePath.FullName, 
-                    InternalSettings.Delete_Item_Messagebox_Title, 
-                    MessageBoxButtons.YesNo, 
-                    MessageBoxIcon.None) == DialogResult.Yes)
-                {
-                    PathHelper.DeleteFileOrPath(currentPage.ImagePath.FullName);
-                }
+                PathHelper.DeleteFileOrPath(currentPage.ImagePath.FullName);
             }
         }
 
@@ -302,14 +301,14 @@ namespace ImageViewer
 
                 ResizeImageFormReturn r = form.GetReturnSize();
 
-                if(r.Result != ResizeImageResult.Cancel)
+                if (r.Result == ResizeImageResult.Cancel)
+                    return;
+                
+                using(Image tmp = currentPage.Image)
                 {
-                    using(Image tmp = currentPage.Image)
-                    {
-                        currentPage.idMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
-                    }
-                    UpdateBottomInfoLabel();
+                    currentPage.idMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
                 }
+                UpdateBottomInfoLabel();
             }
         }
 
@@ -353,8 +352,13 @@ namespace ImageViewer
             if (CurrentPage == null)
                 return;
 
+            preventOverflow = true;
+
             currentPage.idMain.ExternZoomChange = true;
             currentPage.idMain.ZoomFactor = 1;
+            nudTopMain_ZoomPercentage.Value = 100;
+
+            preventOverflow = false;
 
         }
 
@@ -363,7 +367,12 @@ namespace ImageViewer
             if (CurrentPage == null)
                 return;
 
+            preventOverflow = true;
+
             currentPage.idMain.FitToScreen();
+            nudTopMain_ZoomPercentage.Value = ((decimal)(currentPage.idMain.ZoomFactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
+
+            preventOverflow = false;
         }
 
         #endregion
@@ -475,48 +484,18 @@ namespace ImageViewer
         {
             if (preventOverflow || currentPage == null)
                 return;
+
             preventOverflow = true;
+
             currentPage.idMain.ExternZoomChange = true;
             currentPage.idMain.ZoomFactor = (double)nudTopMain_ZoomPercentage.Value / 100d;
+
             preventOverflow = false;
         }
 
         public void btnTopMain_CloseTab_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            SuspendLayout();
-            btnTopMain_CloseTab.Enabled = false;
-
-            _TabPage tmp = currentPage;
-            int index = tcMain.SelectedIndex;
-
-            // if the current tab was the last index, 
-            // set the tab page to the "new" last index
-            if (index == tcMain.TabCount - 1 && tcMain.TabCount > 1)
-            {
-                CurrentPage = (_TabPage)tcMain.TabPages[index - 1];
-            }
-            // as long as there is < 2 tabs and it wasn't the last index, 
-            // increase the index by 1, that was it will stay 
-            // in the same index after the tab is removed
-            else if (tcMain.TabPages.Count > 1)
-            {
-                CurrentPage = (_TabPage)tcMain.TabPages[index + 1];
-            }
-            // the current tab is the only tab left
-            // so it can just be removed and set null
-            else
-            {
-                CurrentPage = null;
-            }
-
-            tcMain.TabPages.Remove(tmp);
-            tmp.Dispose();
-
-            btnTopMain_CloseTab.Enabled = true;
-            ResumeLayout();
+            CloseCurrentTabPage();
         }
 
 
@@ -526,6 +505,7 @@ namespace ImageViewer
 
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
         {
+            Console.WriteLine("tab page changed");
             CurrentPage = (_TabPage)tcMain.SelectedTab;
             UpdateBottomInfoLabel();
         }
@@ -564,6 +544,44 @@ namespace ImageViewer
 
             ForceClose = true;
             Close();
+        }
+
+        public void CloseCurrentTabPage()
+        {
+            if (currentPage == null)
+                return;
+
+            SuspendLayout();
+            btnTopMain_CloseTab.Enabled = false;
+
+            _TabPage tmp = currentPage;
+            int index = tcMain.SelectedIndex;
+
+            // if the current tab was the last index, 
+            // set the tab page to the "new" last index
+            if (index == tcMain.TabCount - 1 && tcMain.TabCount > 1)
+            {
+                CurrentPage = (_TabPage)tcMain.TabPages[index - 1];
+            }
+            // as long as there is < 2 tabs and it wasn't the last index, 
+            // increase the index by 1, that was it will stay 
+            // in the same index after the tab is removed
+            else if (tcMain.TabPages.Count > 1)
+            {
+                CurrentPage = (_TabPage)tcMain.TabPages[index + 1];
+            }
+            // the current tab is the only tab left
+            // so it can just be removed and set null
+            else
+            {
+                CurrentPage = null;
+            }
+
+            tcMain.TabPages.Remove(tmp);
+            tmp.Dispose();
+
+            btnTopMain_CloseTab.Enabled = true;
+            ResumeLayout();
         }
 
         private void IdMain_ZoomChangedEvent(double zoomfactor)
