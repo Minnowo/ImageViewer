@@ -53,6 +53,45 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ColorComboBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ColorComboBox.Designer.cs">
+      <DependentUpon>ColorComboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ColorDisplay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ColorDisplay.Designer.cs">
+      <DependentUpon>ColorDisplay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ColorPickerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ColorPickerForm.Designer.cs">
+      <DependentUpon>ColorPickerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPicker.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPickerBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPickerBase.Designer.cs">
+      <DependentUpon>ColorPickerBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPickerBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPickerBox.Designer.cs">
+      <DependentUpon>ColorPickerBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPickerSlider.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ColorPicker\ColorPickerSlider.Designer.cs">
+      <DependentUpon>ColorPickerSlider.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\DrawingBoard.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -71,18 +110,20 @@
     <Compile Include="Controls\_TabControl.Designer.cs">
       <DependentUpon>_TabControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Events\ColorChangedEvent.cs" />
+    <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\Enums.cs" />
-    <Compile Include="ResizeImageForm.cs">
+    <Compile Include="Forms\ResizeImageForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ResizeImageForm.Designer.cs">
+    <Compile Include="Forms\ResizeImageForm.Designer.cs">
       <DependentUpon>ResizeImageForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Structs\Structs.cs" />
-    <Compile Include="MainForm.cs">
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
@@ -101,7 +142,13 @@
     <Compile Include="Controls\_TabPage.Designer.cs">
       <DependentUpon>_TabPage.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="Controls\ColorDisplay.resx">
+      <DependentUpon>ColorDisplay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ColorPickerForm.resx">
+      <DependentUpon>ColorPickerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -114,7 +161,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="ResizeImageForm.resx">
+    <EmbeddedResource Include="Forms\ResizeImageForm.resx">
       <DependentUpon>ResizeImageForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
@@ -134,5 +181,6 @@
   <ItemGroup>
     <None Include="Resources\close.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

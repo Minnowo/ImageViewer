@@ -20,4 +20,38 @@ namespace ImageViewer.Helpers
         Cancel,
         Resized
     }
+
+    public enum ToolTipLocation
+    {
+        Mouse,
+        ControlTop,
+        ControlBottom,
+        ControlLeft,
+        ControlRight
+    }
+
+    public enum DrawStyles
+    {
+        Red,
+        Green,
+        Blue,
+        HSBHue,
+        HSBSaturation,
+        HSBBrightness,
+        HSLHue,
+        HSLSaturation,
+        HSLLightness
+    }
+
+    public enum ColorFormat
+    {
+        RGB,
+        ARGB,
+        Hex,
+        Decminal,
+        CMYK,
+        HSB,
+        HSV,
+        HSL
+    }
 }
