@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
+using ImageViewer.Helpers;
 
 namespace ImageViewer.Settings
 {
@@ -34,7 +35,24 @@ namespace ImageViewer.Settings
 
         public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3};
 
+        public static int Fill_Alpha_Less_Than
+        {
+            get
+            {
+                return fill_Alpha_Less_Than;
+            }
+            set
+            {
+                fill_Alpha_Less_Than = value.Clamp(0, 255);
+            }
+        }
+        private static int fill_Alpha_Less_Than = 128;
+
         public static Color DrawingBoard_Clear_Background_Color = Color.Black;
+        public static Color Fill_Transparent_Color = Color.White;
+
+        public static bool CenterChild_When_Parent_Following_Child = true;
+        public static bool Fill_Transparent = false;
 
         public static bool Remember_Images_On_Close = true;
 

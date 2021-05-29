@@ -139,6 +139,26 @@ namespace ImageViewer.Controls
             }
         }
 
+        public Color FillTransparentColor = Color.White;
+        public int FillAlphaLessThan = 255;
+        public bool FillTransparent
+        {
+            get
+            {
+                return fillTransparent;
+            }
+            set
+            {
+                if (value)
+                {
+                    ImageHelper.FillTransparent(originalImage, FillTransparentColor, FillAlphaLessThan);
+                    Invalidate();
+                }
+
+                fillTransparent = value;
+            }
+        }
+        private bool fillTransparent = false;
         public bool centerOnLoad { get; set; } = true;
         public bool externZoomChange { get; set; } = false;
 

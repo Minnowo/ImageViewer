@@ -33,26 +33,16 @@ namespace ImageViewer
                 return;
 
             UpdateColors(e.Color);
-
-            /*
-            textBox1.Text = colorPicker.SelectedColor.ToHex();
-            textBox2.Text = colorPicker.SelectedColor.ToDecimal().ToString();
-            displayColorLabel.BackColor = colorPicker.SelectedColor;*/
         }
 
         private void ColorComboBox_ColorChanged(object sender, ColorEventArgs e)
         {
-            preventOverflow = true;
-
             UpdateColors(e.Color);
+        }
 
-            /*
-            textBox1.Text = e.Color.ToHex();
-            textBox2.Text = e.Color.ToDecimal().ToString();*/
-
-            //displayColorLabel.BackColor = e.Color;
-
-            preventOverflow = false;
+        public _Color GetCurrentColor()
+        {
+            return cp_ColorPickerMain.SelectedColor;
         }
 
         public void UpdateColors(_Color e)
@@ -155,5 +145,12 @@ namespace ImageViewer
                     break;
             }
         }
+
+        private void CloseForm_Event(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        
     }
 }

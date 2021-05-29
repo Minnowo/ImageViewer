@@ -41,7 +41,6 @@
             this.btnTopMain_Save = new System.Windows.Forms.Button();
             this.btnTopMain_Open = new System.Windows.Forms.Button();
             this.cbTopMain_CurrentDirectory = new System.Windows.Forms.ComboBox();
-            this.tcMain = new ImageViewer.Controls._TabControl();
             this.pnlBottomMain = new System.Windows.Forms.Panel();
             this.lblBottomMain_Info = new System.Windows.Forms.Label();
             this.cmsCurrentDirectory = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -76,6 +75,10 @@
             this.actualSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFitToScreen = new System.Windows.Forms.ToolStripMenuItem();
             this.fillTransparentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tcMain = new ImageViewer.Controls._TabControl();
+            this.tsmi_FillTransparent = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsb_ColorToFillTransparentWith = new System.Windows.Forms.ToolStripMenuItem();
+            this.fillWhenAlphaIsLessThanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -231,22 +234,6 @@
             this.cbTopMain_CurrentDirectory.Name = "cbTopMain_CurrentDirectory";
             this.cbTopMain_CurrentDirectory.Size = new System.Drawing.Size(235, 21);
             this.cbTopMain_CurrentDirectory.TabIndex = 0;
-            // 
-            // tcMain
-            // 
-            this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tcMain.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
-            this.tcMain.HotTrack = true;
-            this.tcMain.Location = new System.Drawing.Point(3, 55);
-            this.tcMain.Name = "tcMain";
-            this.tcMain.Padding = new System.Drawing.Point(20, 4);
-            this.tcMain.SelectedIndex = 0;
-            this.tcMain.ShowToolTips = true;
-            this.tcMain.Size = new System.Drawing.Size(797, 375);
-            this.tcMain.TabIndex = 2;
-            this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);
             // 
             // pnlBottomMain
             // 
@@ -527,10 +514,51 @@
             // 
             // fillTransparentToolStripMenuItem
             // 
+            this.fillTransparentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmi_FillTransparent,
+            this.tsb_ColorToFillTransparentWith,
+            this.fillWhenAlphaIsLessThanToolStripMenuItem});
             this.fillTransparentToolStripMenuItem.Name = "fillTransparentToolStripMenuItem";
             this.fillTransparentToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.fillTransparentToolStripMenuItem.Text = "Fill Transparent";
-            this.fillTransparentToolStripMenuItem.Click += new System.EventHandler(this.fillTransparentToolStripMenuItem_Click);
+            // 
+            // tcMain
+            // 
+            this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tcMain.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
+            this.tcMain.HotTrack = true;
+            this.tcMain.Location = new System.Drawing.Point(3, 55);
+            this.tcMain.Name = "tcMain";
+            this.tcMain.Padding = new System.Drawing.Point(20, 4);
+            this.tcMain.SelectedIndex = 0;
+            this.tcMain.ShowToolTips = true;
+            this.tcMain.Size = new System.Drawing.Size(797, 375);
+            this.tcMain.TabIndex = 2;
+            this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);
+            // 
+            // fillTransparentToolStripMenuItem1
+            // 
+            this.tsmi_FillTransparent.CheckOnClick = true;
+            this.tsmi_FillTransparent.Name = "fillTransparentToolStripMenuItem1";
+            this.tsmi_FillTransparent.Size = new System.Drawing.Size(180, 22);
+            this.tsmi_FillTransparent.Text = "Fill Transparent";
+            this.tsmi_FillTransparent.Click += new System.EventHandler(this.ToggleFillTransparent_Click);
+            // 
+            // colorToolStripMenuItem
+            // 
+            this.tsb_ColorToFillTransparentWith.Name = "colorToolStripMenuItem";
+            this.tsb_ColorToFillTransparentWith.Size = new System.Drawing.Size(180, 22);
+            this.tsb_ColorToFillTransparentWith.Text = "Color";
+            this.tsb_ColorToFillTransparentWith.Click += new System.EventHandler(this.fillTransparentToolStripMenuItem_Click);
+            // 
+            // fillWhenAlphaIsLessThanToolStripMenuItem
+            // 
+            this.fillWhenAlphaIsLessThanToolStripMenuItem.Name = "fillWhenAlphaIsLessThanToolStripMenuItem";
+            this.fillWhenAlphaIsLessThanToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.fillWhenAlphaIsLessThanToolStripMenuItem.Text = "Fill When Alpha Is Less Than";
+            this.fillWhenAlphaIsLessThanToolStripMenuItem.Click += new System.EventHandler(this.fillWhenAlphaIsLessThanToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -607,6 +635,9 @@
         private System.Windows.Forms.Button btnTopMain_CloseTab;
         private System.Windows.Forms.ToolStripMenuItem tsmiFitToScreen;
         private System.Windows.Forms.ToolStripMenuItem fillTransparentToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmi_FillTransparent;
+        private System.Windows.Forms.ToolStripMenuItem tsb_ColorToFillTransparentWith;
+        private System.Windows.Forms.ToolStripMenuItem fillWhenAlphaIsLessThanToolStripMenuItem;
     }
 }
 

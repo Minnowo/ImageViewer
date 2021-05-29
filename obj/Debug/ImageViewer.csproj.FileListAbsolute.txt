@@ -11,3 +11,4 @@ X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.csprojAssemblyReference.cache
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.ResizeImageForm.resources
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.ColorPickerForm.resources
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.Controls.ColorDisplay.resources
+X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.AskForNumericValueForm.resources

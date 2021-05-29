@@ -69,7 +69,8 @@ namespace ImageViewer
             saveToolStripMenuItem.Enabled = false;
 
             cbTopMain_CurrentDirectory.Text = currentDirectory;
-            //this.FormClosing += MainForm_FormClosing;
+
+            UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);
         }
 
 
@@ -319,11 +320,17 @@ namespace ImageViewer
 
         private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
+
             currentPage.idMain.GreyScale();
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
+
             currentPage.idMain.InvertColor();
         }
 
@@ -331,7 +338,61 @@ namespace ImageViewer
         {
             using(ColorPickerForm f = new ColorPickerForm())
             {
+                f.Owner = this;
+                f.TopMost = true;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                f.LocationChanged += ParentFollowChild;
                 f.ShowDialog();
+
+                InternalSettings.Fill_Transparent_Color = f.GetCurrentColor();
+                UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);
+
+                if (currentPage == null)
+                    return;
+
+                currentPage.idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
+            }
+
+            if (currentPage.idMain.FillTransparent)
+                currentPage.idMain.FillTransparent = true;
+        }
+
+
+        private void ToggleFillTransparent_Click(object sender, EventArgs e)
+        {
+            InternalSettings.Fill_Transparent = tsmi_FillTransparent.Checked;
+
+            if (currentPage == null)
+                return;
+            
+            currentPage.idMain.FillTransparent = tsmi_FillTransparent.Checked;
+        }
+
+        private void fillWhenAlphaIsLessThanToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (AskForNumericValueForm f = new AskForNumericValueForm())
+            {
+                f.Text = "Insert Value Between 0 And 255";
+                f.DisplayText = f.Text;
+                f.MinValue = 0;
+                f.MaxValue = 255;
+                f.Value = InternalSettings.Fill_Alpha_Less_Than;
+                f.Owner = this;
+                f.TopMost = true;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                f.LocationChanged += ParentFollowChild;
+
+                f.ShowDialog();
+
+                if (f.Canceled)
+                    return;
+
+                InternalSettings.Fill_Alpha_Less_Than = (int)Math.Round(f.Value);
+
+                if (currentPage == null)
+                    return;
+
+                currentPage.idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
             }
         }
 
@@ -513,8 +574,8 @@ namespace ImageViewer
 
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Console.WriteLine("tab page changed");
             CurrentPage = (_TabPage)tcMain.SelectedTab;
+
             UpdateBottomInfoLabel();
         }
 
@@ -619,5 +680,25 @@ namespace ImageViewer
             }
         }
 
+        private void UpdateTransparentFillIcon(Color c)
+        {
+            tsb_ColorToFillTransparentWith.Image = ImageHelper.CreateSolidColorBitmap(new Size(32, 32), c);
+            tsb_ColorToFillTransparentWith.Invalidate();
+        }
+
+        private void ParentFollowChild(object sender, EventArgs e)
+        {
+            Form f = sender as Form;
+
+            if (f == null)
+                return;
+
+            if (InternalSettings.CenterChild_When_Parent_Following_Child)
+            {
+                this.Location = new Point(f.Location.X - Width/4, f.Location.Y - Height/4);
+                return;
+            }
+            this.Location = f.Location;
+        }
     }
 }

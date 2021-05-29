@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ImageViewer.structs;
+using ImageViewer.Helpers;
 
 namespace ImageViewer.Controls
 {
@@ -43,6 +44,18 @@ namespace ImageViewer.Controls
             }
         }
 
+        public  Color FillTransparentColor
+        {
+            get
+            {
+                return drawingBoard1.FillTransparentColor;
+            }
+            set
+            {
+                drawingBoard1.FillTransparentColor = value;
+            }
+        }
+
         public Double ZoomFactor
         {
             get
@@ -72,6 +85,19 @@ namespace ImageViewer.Controls
                 return drawingBoard1.ApparentImageSize;
             }
         }
+
+        public int FillAlphaLessThan
+        {
+            get
+            {
+                return drawingBoard1.FillAlphaLessThan;
+            }
+            set
+            {
+                drawingBoard1.FillAlphaLessThan = value.Clamp(0, 255);
+            }
+        }
+
         public bool ScrollbarsVisible
         {
             get
@@ -107,6 +133,18 @@ namespace ImageViewer.Controls
             set
             {
                 drawingBoard1.centerOnLoad = value;
+            }
+        }
+
+        public bool FillTransparent
+        {
+            get
+            {
+                return drawingBoard1.FillTransparent;
+            }
+            set
+            {
+                drawingBoard1.FillTransparent = value;
             }
         }
 

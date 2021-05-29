@@ -145,6 +145,13 @@ namespace ImageViewer.Controls
                 idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
             }
 
+            if (InternalSettings.Fill_Transparent)
+            {
+                idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
+                idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
+                idMain.FillTransparent = true;
+            }
+
             if (state != ImageDisplayState.empty)
                 idMain.LoadState(state);
 

@@ -124,24 +124,27 @@ namespace ImageViewer.Controls
 
         private void MouseMoveTimer_Tick(object sender, EventArgs e)
         {
+            if (!isLeftClicking)
+                return;
+
             Point mousePosition = PointToClient(MousePosition);
 
-            if (isLeftClicking && lastClicked != mousePosition)
+            if (lastClicked == mousePosition)
+                return;
+            
+            lastClicked = GetPoint(mousePosition);
+
+            if (this is ColorPickerBox)
             {
-                lastClicked = GetPoint(mousePosition);
-
-                if (this is ColorPickerBox)
-                {
-                    GetBoxColor();
-                }
-                else
-                {
-                    GetSliderColor();
-                }
-
-                OnColorChanged();
-                Refresh();
+                GetBoxColor();
             }
+            else
+            {
+                GetSliderColor();
+            }
+
+            OnColorChanged();
+            Refresh();
         }
 
         private void ClientSizeChanged_Event(object sender, EventArgs e)

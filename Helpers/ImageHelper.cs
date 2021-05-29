@@ -269,6 +269,19 @@ namespace ImageViewer.Helpers
         }
 
 
+        public static Bitmap CreateSolidColorBitmap(Size bmpSize, Color fillColor)
+        {
+            Bitmap b = new Bitmap(bmpSize.Width, bmpSize.Height);
+
+            using(Graphics g = Graphics.FromImage(b))
+            using(SolidBrush brush = new SolidBrush(fillColor))
+            {
+                g.FillRectangle(brush, new Rectangle(0, 0, bmpSize.Width, bmpSize.Height));
+            }
+            return b;
+        }
+
+
         /// <summary>
         /// https://stackoverflow.com/a/11781561
         /// slower 
@@ -366,6 +379,31 @@ namespace ImageViewer.Helpers
                 bitmapBGRA[i + 1] = grayScale;  // G
                 bitmapBGRA[i + 2] = grayScale;  // R
                 //        [i + 3] = ALPHA.
+            }
+
+            BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
+            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
+            bitmapImage.UnlockBits(bitmapWrite);
+        }
+
+        public static void FillTransparent(Bitmap bitmapImage,Color fill, int alphaLessThan = 255)
+        {
+            BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
+            var bitmapLength = bitmapRead.Stride * bitmapRead.Height;
+            byte[] bitmapBGRA = new byte[bitmapLength];
+
+            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
+            bitmapImage.UnlockBits(bitmapRead);
+
+            for (int i = 0; i < bitmapLength; i += 4)
+            {
+                if(bitmapBGRA[i + 3] < alphaLessThan)
+                {
+                    bitmapBGRA[i] = fill.B;      // B
+                    bitmapBGRA[i + 1] = fill.G;  // G
+                    bitmapBGRA[i + 2] = fill.R;  // R
+                    bitmapBGRA[i + 3] = fill.A;  // alpha
+                }
             }
 
             BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);

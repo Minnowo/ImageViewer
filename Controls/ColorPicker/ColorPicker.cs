@@ -20,13 +20,10 @@ namespace ImageViewer.Controls
             }
             set
             {
-                if (selectedColor != value)
-                {
-                    selectedColor = value;
-                    colorBox.SelectedColor = selectedColor;
-                    colorSlider.SelectedColor = selectedColor;
-                    OnColorChanged();
-                }
+                selectedColor = value;
+                colorBox.SelectedColor = selectedColor;
+                colorSlider.SelectedColor = selectedColor;
+                OnColorChanged();
             }
         }
 

@@ -51,6 +51,11 @@ namespace ImageViewer.Helpers
             return hash.ToString();
         }
 
+        public static bool Toggle(this bool input)
+        {
+            return !input;
+        }
+
         public static T Clamp<T>(this T input, T min, T max) where T : IComparable<T>
         {
             return MathHelper.Clamp(input, min, max);

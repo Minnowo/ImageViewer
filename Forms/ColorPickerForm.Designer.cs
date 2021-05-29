@@ -32,23 +32,18 @@
             this.rb_DisplayBlue = new System.Windows.Forms.RadioButton();
             this.rb_DisplayGreen = new System.Windows.Forms.RadioButton();
             this.rb_DisplayRed = new System.Windows.Forms.RadioButton();
-            this.ccb_RGB = new ImageViewer.Controls.ColorComboBox();
             this.pnl_HSLColor = new System.Windows.Forms.Panel();
             this.rb_DisplayLightness = new System.Windows.Forms.RadioButton();
             this.rb_DisplayHSLSaturation = new System.Windows.Forms.RadioButton();
             this.rb_DisplayHSLHue = new System.Windows.Forms.RadioButton();
-            this.ccb_HSL = new ImageViewer.Controls.ColorComboBox();
             this.pnl_HSBColor = new System.Windows.Forms.Panel();
             this.rb_DisplayBrightness = new System.Windows.Forms.RadioButton();
             this.rb_DisplayHSBSaturation = new System.Windows.Forms.RadioButton();
             this.rb_DisplayHSBHue = new System.Windows.Forms.RadioButton();
-            this.ccb_HSB = new ImageViewer.Controls.ColorComboBox();
             this.lbl_RGBColor = new System.Windows.Forms.Label();
             this.lbl_HSBColor = new System.Windows.Forms.Label();
             this.lbl_HSLColor = new System.Windows.Forms.Label();
             this.lbl_CMYKColor = new System.Windows.Forms.Label();
-            this.cd_ColorDisplayMain = new ImageViewer.Controls.ColorDisplay();
-            this.cp_ColorPickerMain = new ImageViewer.Controls.ColorPicker();
             this.lbl_Hex = new System.Windows.Forms.Label();
             this.lbl_Decimal = new System.Windows.Forms.Label();
             this.tb_HexInput = new System.Windows.Forms.TextBox();
@@ -58,7 +53,6 @@
             this.lbl_Ypos = new System.Windows.Forms.Label();
             this.lbl_Xpos = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.ccb_CMYK = new ImageViewer.Controls.ColorComboBox();
             this.btn_CopyRGB = new System.Windows.Forms.Button();
             this.btn_PasteRGB = new System.Windows.Forms.Button();
             this.btn_PasteHSB = new System.Windows.Forms.Button();
@@ -69,6 +63,12 @@
             this.btn_CopyHSL = new System.Windows.Forms.Button();
             this.btn_ScreenColorPicker = new System.Windows.Forms.Button();
             this.btn_Okay = new System.Windows.Forms.Button();
+            this.ccb_CMYK = new ImageViewer.Controls.ColorComboBox();
+            this.cd_ColorDisplayMain = new ImageViewer.Controls.ColorDisplay();
+            this.ccb_HSL = new ImageViewer.Controls.ColorComboBox();
+            this.ccb_HSB = new ImageViewer.Controls.ColorComboBox();
+            this.ccb_RGB = new ImageViewer.Controls.ColorComboBox();
+            this.cp_ColorPickerMain = new ImageViewer.Controls.ColorPicker();
             this.pnl_RGBColor.SuspendLayout();
             this.pnl_HSLColor.SuspendLayout();
             this.pnl_HSBColor.SuspendLayout();
@@ -120,64 +120,6 @@
             this.rb_DisplayRed.Text = "Red";
             this.rb_DisplayRed.UseVisualStyleBackColor = true;
             // 
-            // ccb_RGB
-            // 
-            this.ccb_RGB.ColorFormat = ImageViewer.Helpers.ColorFormat.RGB;
-            this.ccb_RGB.DecimalPlaces = ((byte)(0));
-            this.ccb_RGB.Location = new System.Drawing.Point(3, 3);
-            this.ccb_RGB.MaxValues = new decimal[] {
-        new decimal(new int[] {
-                    255,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    255,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    255,
-                    0,
-                    0,
-                    0})};
-            this.ccb_RGB.MinValues = new decimal[] {
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0})};
-            this.ccb_RGB.Name = "ccb_RGB";
-            this.ccb_RGB.Size = new System.Drawing.Size(212, 23);
-            this.ccb_RGB.TabIndex = 0;
-            this.ccb_RGB.Values = new decimal[] {
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0})};
-            this.ccb_RGB.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
-            // 
             // pnl_HSLColor
             // 
             this.pnl_HSLColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -222,64 +164,6 @@
             this.rb_DisplayHSLHue.TabStop = true;
             this.rb_DisplayHSLHue.Text = "Hue";
             this.rb_DisplayHSLHue.UseVisualStyleBackColor = true;
-            // 
-            // ccb_HSL
-            // 
-            this.ccb_HSL.ColorFormat = ImageViewer.Helpers.ColorFormat.HSL;
-            this.ccb_HSL.DecimalPlaces = ((byte)(1));
-            this.ccb_HSL.Location = new System.Drawing.Point(3, 3);
-            this.ccb_HSL.MaxValues = new decimal[] {
-        new decimal(new int[] {
-                    360,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0})};
-            this.ccb_HSL.MinValues = new decimal[] {
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0})};
-            this.ccb_HSL.Name = "ccb_HSL";
-            this.ccb_HSL.Size = new System.Drawing.Size(212, 23);
-            this.ccb_HSL.TabIndex = 0;
-            this.ccb_HSL.Values = new decimal[] {
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0})};
-            this.ccb_HSL.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
             // 
             // pnl_HSBColor
             // 
@@ -326,64 +210,6 @@
             this.rb_DisplayHSBHue.Text = "Hue";
             this.rb_DisplayHSBHue.UseVisualStyleBackColor = true;
             // 
-            // ccb_HSB
-            // 
-            this.ccb_HSB.ColorFormat = ImageViewer.Helpers.ColorFormat.HSB;
-            this.ccb_HSB.DecimalPlaces = ((byte)(1));
-            this.ccb_HSB.Location = new System.Drawing.Point(3, 3);
-            this.ccb_HSB.MaxValues = new decimal[] {
-        new decimal(new int[] {
-                    360,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0})};
-            this.ccb_HSB.MinValues = new decimal[] {
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0})};
-            this.ccb_HSB.Name = "ccb_HSB";
-            this.ccb_HSB.Size = new System.Drawing.Size(212, 23);
-            this.ccb_HSB.TabIndex = 0;
-            this.ccb_HSB.Values = new decimal[] {
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0})};
-            this.ccb_HSB.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
-            // 
             // lbl_RGBColor
             // 
             this.lbl_RGBColor.AutoSize = true;
@@ -419,27 +245,6 @@
             this.lbl_CMYKColor.Size = new System.Drawing.Size(37, 13);
             this.lbl_CMYKColor.TabIndex = 6;
             this.lbl_CMYKColor.Text = "CMYK";
-            // 
-            // cd_ColorDisplayMain
-            // 
-            this.cd_ColorDisplayMain.BorderColor = System.Drawing.Color.Black;
-            this.cd_ColorDisplayMain.CurrentColor = System.Drawing.Color.Maroon;
-            this.cd_ColorDisplayMain.LastColor = System.Drawing.Color.Red;
-            this.cd_ColorDisplayMain.Location = new System.Drawing.Point(308, 221);
-            this.cd_ColorDisplayMain.Name = "cd_ColorDisplayMain";
-            this.cd_ColorDisplayMain.ShowToolTipAfter = 255;
-            this.cd_ColorDisplayMain.Size = new System.Drawing.Size(52, 49);
-            this.cd_ColorDisplayMain.TabIndex = 8;
-            // 
-            // cp_ColorPickerMain
-            // 
-            this.cp_ColorPickerMain.AutoSize = true;
-            this.cp_ColorPickerMain.DrawStyle = ImageViewer.Helpers.DrawStyles.HSBHue;
-            this.cp_ColorPickerMain.Location = new System.Drawing.Point(12, 12);
-            this.cp_ColorPickerMain.Name = "cp_ColorPickerMain";
-            this.cp_ColorPickerMain.Size = new System.Drawing.Size(290, 261);
-            this.cp_ColorPickerMain.TabIndex = 0;
-            this.cp_ColorPickerMain.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorPicker_ColorChanged);
             // 
             // lbl_Hex
             // 
@@ -521,78 +326,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(220, 50);
             this.panel1.TabIndex = 17;
-            // 
-            // ccb_CMYK
-            // 
-            this.ccb_CMYK.ColorFormat = ImageViewer.Helpers.ColorFormat.CMYK;
-            this.ccb_CMYK.DecimalPlaces = ((byte)(1));
-            this.ccb_CMYK.Location = new System.Drawing.Point(3, 3);
-            this.ccb_CMYK.MaxValues = new decimal[] {
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    100,
-                    0,
-                    0,
-                    0})};
-            this.ccb_CMYK.MinValues = new decimal[] {
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    0,
-                    0,
-                    0,
-                    0})};
-            this.ccb_CMYK.Name = "ccb_CMYK";
-            this.ccb_CMYK.Size = new System.Drawing.Size(212, 23);
-            this.ccb_CMYK.TabIndex = 0;
-            this.ccb_CMYK.Values = new decimal[] {
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0}),
-        new decimal(new int[] {
-                    1,
-                    0,
-                    0,
-                    0})};
             // 
             // btn_CopyRGB
             // 
@@ -698,12 +431,281 @@
             this.btn_Okay.TabIndex = 27;
             this.btn_Okay.Text = "Ok";
             this.btn_Okay.UseVisualStyleBackColor = true;
+            this.btn_Okay.Click += new System.EventHandler(this.CloseForm_Event);
+            // 
+            // ccb_CMYK
+            // 
+            this.ccb_CMYK.ColorFormat = ImageViewer.Helpers.ColorFormat.CMYK;
+            this.ccb_CMYK.DecimalPlaces = ((byte)(1));
+            this.ccb_CMYK.Location = new System.Drawing.Point(3, 3);
+            this.ccb_CMYK.MaxValues = new decimal[] {
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0})};
+            this.ccb_CMYK.MinValues = new decimal[] {
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0})};
+            this.ccb_CMYK.Name = "ccb_CMYK";
+            this.ccb_CMYK.Size = new System.Drawing.Size(212, 23);
+            this.ccb_CMYK.TabIndex = 0;
+            this.ccb_CMYK.Values = new decimal[] {
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0})};
+            // 
+            // cd_ColorDisplayMain
+            // 
+            this.cd_ColorDisplayMain.BackColor = System.Drawing.Color.Black;
+            this.cd_ColorDisplayMain.BorderColor = System.Drawing.Color.Black;
+            this.cd_ColorDisplayMain.CurrentColor = System.Drawing.Color.Maroon;
+            this.cd_ColorDisplayMain.LastColor = System.Drawing.Color.Red;
+            this.cd_ColorDisplayMain.Location = new System.Drawing.Point(308, 221);
+            this.cd_ColorDisplayMain.Name = "cd_ColorDisplayMain";
+            this.cd_ColorDisplayMain.ShowToolTipAfter = 255;
+            this.cd_ColorDisplayMain.Size = new System.Drawing.Size(52, 49);
+            this.cd_ColorDisplayMain.TabIndex = 8;
+            // 
+            // ccb_HSL
+            // 
+            this.ccb_HSL.ColorFormat = ImageViewer.Helpers.ColorFormat.HSL;
+            this.ccb_HSL.DecimalPlaces = ((byte)(1));
+            this.ccb_HSL.Location = new System.Drawing.Point(3, 3);
+            this.ccb_HSL.MaxValues = new decimal[] {
+        new decimal(new int[] {
+                    360,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0})};
+            this.ccb_HSL.MinValues = new decimal[] {
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0})};
+            this.ccb_HSL.Name = "ccb_HSL";
+            this.ccb_HSL.Size = new System.Drawing.Size(212, 23);
+            this.ccb_HSL.TabIndex = 0;
+            this.ccb_HSL.Values = new decimal[] {
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0})};
+            this.ccb_HSL.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
+            // 
+            // ccb_HSB
+            // 
+            this.ccb_HSB.ColorFormat = ImageViewer.Helpers.ColorFormat.HSB;
+            this.ccb_HSB.DecimalPlaces = ((byte)(1));
+            this.ccb_HSB.Location = new System.Drawing.Point(3, 3);
+            this.ccb_HSB.MaxValues = new decimal[] {
+        new decimal(new int[] {
+                    360,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    100,
+                    0,
+                    0,
+                    0})};
+            this.ccb_HSB.MinValues = new decimal[] {
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0})};
+            this.ccb_HSB.Name = "ccb_HSB";
+            this.ccb_HSB.Size = new System.Drawing.Size(212, 23);
+            this.ccb_HSB.TabIndex = 0;
+            this.ccb_HSB.Values = new decimal[] {
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0})};
+            this.ccb_HSB.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
+            // 
+            // ccb_RGB
+            // 
+            this.ccb_RGB.ColorFormat = ImageViewer.Helpers.ColorFormat.RGB;
+            this.ccb_RGB.DecimalPlaces = ((byte)(0));
+            this.ccb_RGB.Location = new System.Drawing.Point(3, 3);
+            this.ccb_RGB.MaxValues = new decimal[] {
+        new decimal(new int[] {
+                    255,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    255,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    255,
+                    0,
+                    0,
+                    0})};
+            this.ccb_RGB.MinValues = new decimal[] {
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    0,
+                    0,
+                    0,
+                    0})};
+            this.ccb_RGB.Name = "ccb_RGB";
+            this.ccb_RGB.Size = new System.Drawing.Size(212, 23);
+            this.ccb_RGB.TabIndex = 0;
+            this.ccb_RGB.Values = new decimal[] {
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0}),
+        new decimal(new int[] {
+                    1,
+                    0,
+                    0,
+                    0})};
+            this.ccb_RGB.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
+            // 
+            // cp_ColorPickerMain
+            // 
+            this.cp_ColorPickerMain.AutoSize = true;
+            this.cp_ColorPickerMain.DrawStyle = ImageViewer.Helpers.DrawStyles.HSBHue;
+            this.cp_ColorPickerMain.Location = new System.Drawing.Point(12, 12);
+            this.cp_ColorPickerMain.Name = "cp_ColorPickerMain";
+            this.cp_ColorPickerMain.Size = new System.Drawing.Size(290, 261);
+            this.cp_ColorPickerMain.TabIndex = 0;
+            this.cp_ColorPickerMain.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorPicker_ColorChanged);
             // 
             // ColorPickerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(775, 355);
+            this.ClientSize = new System.Drawing.Size(775, 277);
             this.Controls.Add(this.btn_Okay);
             this.Controls.Add(this.btn_ScreenColorPicker);
             this.Controls.Add(this.btn_PasteHSL);
@@ -732,7 +734,10 @@
             this.Controls.Add(this.pnl_HSBColor);
             this.Controls.Add(this.pnl_RGBColor);
             this.Controls.Add(this.cp_ColorPickerMain);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "ColorPickerForm";
+            this.ShowIcon = false;
             this.Text = "ColorPickerForm";
             this.pnl_RGBColor.ResumeLayout(false);
             this.pnl_RGBColor.PerformLayout();

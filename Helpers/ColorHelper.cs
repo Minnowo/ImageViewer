@@ -164,6 +164,15 @@ namespace ImageViewer.Helpers
             Alpha = (ushort)a;
         }
 
+        public CMYK(float c, float m, float y, float k, float a = 255) : this()
+        {
+            C100 = c;
+            M100 = m;
+            Y100 = y;
+            K100 = k;
+            Alpha = (ushort)a;
+        }
+
         public override string ToString()
         {
             return string.Format("{0}, {1}, {2}, {3}",
@@ -1049,7 +1058,7 @@ namespace ImageViewer.Helpers
             Match matchCMYK = Regex.Match(input, @"^([0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|100)(?:\s|,)+([0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|100)(?:\s|,)+([0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|100)(?:\s|,)+([0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|100)(?:\s)?$");
             if (matchCMYK.Success)
             {
-                color = new CMYK(int.Parse(matchCMYK.Groups[1].Value), int.Parse(matchCMYK.Groups[2].Value), int.Parse(matchCMYK.Groups[3].Value), int.Parse(matchCMYK.Groups[4].Value));
+                color = new CMYK(float.Parse(matchCMYK.Groups[1].Value), float.Parse(matchCMYK.Groups[2].Value), float.Parse(matchCMYK.Groups[3].Value), float.Parse(matchCMYK.Groups[4].Value));
                 return true;
             }
             color = Color.Empty;
