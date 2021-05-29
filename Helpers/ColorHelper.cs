@@ -344,6 +344,14 @@ namespace ImageViewer.Helpers
             alpha = (ushort)a;
         }
 
+        public HSL(float h, float s, float l, int a = 255) : this()
+        {
+            Hue360 = h;
+            Saturation100 = s;
+            Lightness100 = l;
+            Alpha = (ushort)a;
+        }
+
         public override string ToString()
         {
             return string.Format("{0}, {1}, {2}",
@@ -1081,6 +1089,18 @@ namespace ImageViewer.Helpers
                 return true;
             }
             color = HSB.Empty;
+            return false;
+        }
+
+        public static bool ParseHSL(string input, out HSL color)
+        {
+            Match matchHSL = Regex.Match(input, @"^([1-2]?[0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|3[0-5][0-9](?:[.][0-9]?[0-9]?[0-9]|)|360)(?:\s|,)+([0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|100)(?:\s|,)+([0-9]?[0-9](?:[.][0-9]?[0-9]?[0-9]|)|100)(?:\s)?$");
+            if (matchHSL.Success)
+            {
+                color = new HSL(float.Parse(matchHSL.Groups[1].Value), float.Parse(matchHSL.Groups[2].Value), float.Parse(matchHSL.Groups[3].Value));
+                return true;
+            }
+            color = HSL.Empty;
             return false;
         }
 

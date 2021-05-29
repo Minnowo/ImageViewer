@@ -111,6 +111,7 @@
       <DependentUpon>_TabControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Events\ColorChangedEvent.cs" />
+    <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Forms\ResizeImageForm.cs">

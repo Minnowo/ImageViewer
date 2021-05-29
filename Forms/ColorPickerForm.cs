@@ -85,15 +85,49 @@ namespace ImageViewer
             if (b == null)
                 return;
 
+            string clipboardText = Clipboard.GetText();
+
+            if (string.IsNullOrEmpty(clipboardText))
+                return;
+
             switch (b.Name)
             {
                 case "btn_PasteRGB":
+
+                    Color rgb = Color.White;
+
+                    if(ColorHelper.ParseRGB(clipboardText, out rgb))
+                    {
+                        cp_ColorPickerMain.SelectedColor = rgb;
+                    }
                     break;
+
                 case "btn_PasteHSB":
+
+                    HSB hsb = Color.White;
+
+                    if (ColorHelper.ParseHSB(clipboardText, out hsb))
+                    {
+                        cp_ColorPickerMain.SelectedColor = hsb.ToColor();
+                    }
                     break;
                 case "btn_PasteHSL":
+
+                    HSL hsl = Color.White;
+
+                    if (ColorHelper.ParseHSL(clipboardText, out hsl))
+                    {
+                        cp_ColorPickerMain.SelectedColor = hsl.ToColor();
+                    }
                     break;
                 case "btn_PasteCMYK":
+
+                    CMYK cmyk = Color.White;
+
+                    if (ColorHelper.ParseCMYK(clipboardText, out cmyk))
+                    {
+                        cp_ColorPickerMain.SelectedColor = cmyk.ToColor();
+                    }
                     break;
             }
         }
@@ -108,12 +142,16 @@ namespace ImageViewer
             switch (b.Name)
             {
                 case "btn_CopyRGB":
+                    ClipboardHelper.FormatCopyColor(ColorFormat.RGB, cp_ColorPickerMain.SelectedColor);
                     break;
                 case "btn_CopyHSB":
+                    ClipboardHelper.FormatCopyColor(ColorFormat.HSB, cp_ColorPickerMain.SelectedColor);
                     break;
                 case "btn_CopyHSL":
+                    ClipboardHelper.FormatCopyColor(ColorFormat.HSL, cp_ColorPickerMain.SelectedColor);
                     break;
                 case "btn_CopyCMYK":
+                    ClipboardHelper.FormatCopyColor(ColorFormat.CMYK, cp_ColorPickerMain.SelectedColor);
                     break;
             }
         }
