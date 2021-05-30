@@ -118,7 +118,7 @@ namespace ImageViewer.Controls
             }
         }
 
-        public Point Origin
+        public PointF Origin
         {
             get
             {
@@ -167,8 +167,8 @@ namespace ImageViewer.Controls
         private Rectangle srcRect;
         private Rectangle destRect;
 
-        private Point startPoint;
-        private Point origin = new Point(0, 0);
+        private PointF startPoint;
+        private PointF origin = new Point(0, 0);
         private Point centerPoint;
 
         private Size apparentImageSize = new Size(0, 0);
@@ -351,8 +351,10 @@ namespace ImageViewer.Controls
                 ZoomFactor = Math.Round(zoomFactor * 0.9d, 2);
             }
 
-            centerPoint.X = origin.X + (srcRect.Width >> 1);
-            centerPoint.Y = origin.Y + (srcRect.Height >> 1);
+            centerPoint.X = (int)Math.Round(origin.X + (srcRect.Width >> 1));
+            //centerPoint.X = origin.X + (srcRect.Width >> 1);
+            centerPoint.Y = (int)Math.Round(origin.Y + (srcRect.Height >> 1));
+            //centerPoint.Y = origin.Y + (srcRect.Height >> 1);
 
             origin = new Point(centerPoint.X - (int)Math.Round(ClientSize.Width / zoomFactor / 2),
                             centerPoint.Y - (int)Math.Round(ClientSize.Height / zoomFactor / 2));
@@ -387,7 +389,8 @@ namespace ImageViewer.Controls
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             }
 
-            srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
+            srcRect = new Rectangle((int)Math.Round(origin.X), (int)Math.Round(origin.Y), drawWidth, drawHeight);
+            //srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
 
             g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
             OnScrollChanged();
@@ -424,11 +427,11 @@ namespace ImageViewer.Controls
             this.Focus();
         }
 
-        private Point PointToImage(Point p)
+        private PointF PointToImage(Point p)
         {
-            return new Point(
-                (int)Math.Round((p.X - origin.X) / zoomFactor), 
-                (int)Math.Round((p.Y - origin.Y) / zoomFactor));
+            return new PointF(
+                (p.X - origin.X) / (float)zoomFactor, 
+                (p.Y - origin.Y) / (float)zoomFactor);
         }
 
         private void ImageViewer_MouseDown(object sender, MouseEventArgs e)
@@ -455,11 +458,13 @@ namespace ImageViewer.Controls
 
             if (isLeftClicking)
             {
-                Point p = PointToImage(e.Location);
+                PointF p = PointToImage(e.Location);
 
+                //float minOriginX = -(Width / (float)zoomFactor);
+                //float minOriginY = -(Height / (float)zoomFactor);
                 int minOriginX = -(int)Math.Round(Width / zoomFactor);
                 int minOriginY = -(int)Math.Round(Height / zoomFactor);
-                
+
                 // this really upsets me i spent like an hour on the clamp part
                 // just to realize i'm an idiot and the max was just the image size omfg
                 origin.X = (origin.X + (startPoint.X - p.X)).Clamp(minOriginX, Image.Width);

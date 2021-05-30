@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ImageViewer.Helpers;
 using ImageViewer.Settings;
+
+using System.Drawing;
 namespace ImageViewer
 {
     static class Program
@@ -18,8 +20,6 @@ namespace ImageViewer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            PathHelper.CreateDirectory(InternalSettings.ImageCacheFolder);
 
             mainForm = new MainForm();
             Application.Run(mainForm);

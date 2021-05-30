@@ -49,8 +49,9 @@ namespace ImageViewer.structs
         public int DrawWidth;
         public int DrawHeight;
 
-        public Point Origin;
-        public Point StartPoint;
+        //public Point Origin;
+        public PointF Origin;
+        public PointF StartPoint;
         public Point CenterPoint;
 
         public Size ApparentImageSize;

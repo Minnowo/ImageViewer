@@ -85,7 +85,6 @@ namespace ImageViewer
                 renameToolStripMenuItem.Enabled = false;
                 deleteToolStripMenuItem.Enabled = false;
                 imagePropertiesToolStripMenuItem.Enabled = false;
-                filePropertiesToolStripMenuItem.Enabled = false;
             }
             else if (currentPage.ImagePath.Exists)
             {
@@ -95,7 +94,6 @@ namespace ImageViewer
                 renameToolStripMenuItem.Enabled = true;
                 deleteToolStripMenuItem.Enabled = true;
                 imagePropertiesToolStripMenuItem.Enabled = true;
-                filePropertiesToolStripMenuItem.Enabled = true;
             }
             // if the path doesn't exist, but the current tab is loaded
             // the image is still in memory and can be re-saved
@@ -107,7 +105,6 @@ namespace ImageViewer
                 renameToolStripMenuItem.Enabled = false;
                 deleteToolStripMenuItem.Enabled = false;
                 imagePropertiesToolStripMenuItem.Enabled = false;
-                filePropertiesToolStripMenuItem.Enabled = false;
             }
         }
 
@@ -235,18 +232,13 @@ namespace ImageViewer
                 return;
 
             ImagePropertiesForm f = new ImagePropertiesForm();
-            
-                //f.Image = (Bitmap)currentPage.idMain.Image;
-                
-                f.Show();
 
+            f.Owner = this;
+            f.StartPosition = FormStartPosition.CenterScreen;
+
+            f.Show();
+ 
             f.UpdateImageInfo(currentPage.ImagePath.FullName);
-
-        }
-
-        private void filePropertiesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
         }
 
         #endregion
@@ -582,10 +574,6 @@ namespace ImageViewer
         #endregion
 
         private bool ForceClose = false;
-        private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-
-        }
 
         private void MainWindow_Resize(object sender, EventArgs e)
         {

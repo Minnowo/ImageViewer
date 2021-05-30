@@ -22,6 +22,9 @@ namespace ImageViewer
 
         public void UpdateImageInfo(string path)
         {
+            if (!File.Exists(path))
+                return;
+
             using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (Image image = Image.FromStream(fileStream, false, false))
             {

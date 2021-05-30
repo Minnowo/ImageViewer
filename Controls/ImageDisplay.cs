@@ -67,7 +67,7 @@ namespace ImageViewer.Controls
                 drawingBoard1.ZoomFactor = value;
             }
         }
-        public Point Origin
+        public PointF Origin
         {
             get
             {
@@ -249,7 +249,8 @@ namespace ImageViewer.Controls
             {
                 hScrollBar1.LargeChange = factoredWidth;
                 hScrollBar1.Enabled = true;
-                hScrollBar1.Value = drawingBoard1.Origin.X;
+                hScrollBar1.Value = (int)Math.Round(drawingBoard1.Origin.X);
+                //hScrollBar1.Value = drawingBoard1.Origin.X;
             }
 
             if (factoredHeight >= drawingBoard1.Image.Height)
@@ -261,7 +262,8 @@ namespace ImageViewer.Controls
             {
                 vScrollBar1.Enabled = true;
                 vScrollBar1.LargeChange = factoredHeight;
-                vScrollBar1.Value = drawingBoard1.Origin.Y;
+                vScrollBar1.Value = (int)Math.Round(drawingBoard1.Origin.Y);
+                //vScrollBar1.Value = drawingBoard1.Origin.Y;
             }
             preventUpdate = false;
         }

@@ -36,6 +36,7 @@ namespace ImageViewer.Helpers
          new float[] {0, 0, 0, 0, 1}
                    });
 
+
         public  static Bitmap ResizeImage(Image im, ResizeImage ri)
         {
             Bitmap newIm = new Bitmap(ri.NewSize.Width, ri.NewSize.Height);
@@ -267,6 +268,7 @@ namespace ImageViewer.Helpers
 
             return null;
         }
+
 
 
     // https://stackoverflow.com/a/6336453
