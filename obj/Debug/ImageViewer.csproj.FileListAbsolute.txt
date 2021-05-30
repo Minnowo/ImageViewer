@@ -12,3 +12,4 @@ X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.ResizeImageForm.resources
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.ColorPickerForm.resources
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.Controls.ColorDisplay.resources
 X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.AskForNumericValueForm.resources
+X:\Languages\C#\ImageViewer\obj\Debug\ImageViewer.ImagePropertiesForm.resources

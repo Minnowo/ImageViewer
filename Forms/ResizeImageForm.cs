@@ -88,7 +88,7 @@ namespace ImageViewer
         {
             Size newImSize = new Size((int)numericUpDown1.Value, (int)numericUpDown2.Value);
 
-            if (Helper.ValidSize(newImSize))
+            if (Helpers.Helper.ValidSize(newImSize))
             {
                 result = ResizeImageResult.Resized;
                 Close();

@@ -269,6 +269,17 @@ namespace ImageViewer.Helpers
         }
 
 
+    // https://stackoverflow.com/a/6336453
+    public static string GetMimeType(Image i)
+        {
+            var imgguid = i.RawFormat.Guid;
+            foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
+            {
+                if (codec.FormatID == imgguid)
+                    return codec.MimeType;
+            }
+            return "image/unknown";
+        }
         public static Bitmap CreateSolidColorBitmap(Size bmpSize, Color fillColor)
         {
             Bitmap b = new Bitmap(bmpSize.Width, bmpSize.Height);

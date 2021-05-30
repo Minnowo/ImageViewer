@@ -51,6 +51,9 @@ namespace ImageViewer.Settings
         public static Color DrawingBoard_Clear_Background_Color = Color.Black;
         public static Color Fill_Transparent_Color = Color.White;
 
+        public static bool Fit_Image_When_Maximized = true;
+        public static bool Fit_Image_On_Resize = true;
+
         public static bool CenterChild_When_Parent_Following_Child = true;
         public static bool Fill_Transparent = false;
 

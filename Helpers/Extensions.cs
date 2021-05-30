@@ -51,6 +51,8 @@ namespace ImageViewer.Helpers
             return hash.ToString();
         }
 
+
+
         public static bool Toggle(this bool input)
         {
             return !input;

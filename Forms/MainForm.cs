@@ -68,8 +68,6 @@ namespace ImageViewer
 
             saveToolStripMenuItem.Enabled = false;
 
-            cbTopMain_CurrentDirectory.Text = currentDirectory;
-
             UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);
         }
 
@@ -233,6 +231,16 @@ namespace ImageViewer
 
         private void imagePropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
+
+            ImagePropertiesForm f = new ImagePropertiesForm();
+            
+                //f.Image = (Bitmap)currentPage.idMain.Image;
+                
+                f.Show();
+
+            f.UpdateImageInfo(currentPage.ImagePath.FullName);
 
         }
 
@@ -433,15 +441,7 @@ namespace ImageViewer
 
         private void tsmiFitToScreen_Click(object sender, EventArgs e)
         {
-            if (CurrentPage == null)
-                return;
-
-            preventOverflow = true;
-
-            currentPage.idMain.FitToScreen();
-            nudTopMain_ZoomPercentage.Value = ((decimal)(currentPage.idMain.ZoomFactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
-
-            preventOverflow = false;
+            FitCurrentToScreen();
         }
 
         #endregion
@@ -584,35 +584,26 @@ namespace ImageViewer
         private bool ForceClose = false;
         private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(!ForceClose)
-                e.Cancel = true;
 
-            Hide();
-            if (InternalSettings.Remember_Images_On_Close)
+        }
+
+        private void MainWindow_Resize(object sender, EventArgs e)
+        {
+            switch (WindowState)
             {
-                Helper.HashCheck HashCheck = new Helper.HashCheck();
-                foreach (_TabPage tp in tcMain.TabPages)
-                {
-                    string fileHash = await HashCheck.Start(tp.ImagePath.FullName, HashType.SHA256);
+                case FormWindowState.Maximized:
+                    if(InternalSettings.Fit_Image_When_Maximized)
+                        FitCurrentToScreen();
+                    break;
 
-                    if (!string.IsNullOrEmpty(fileHash))
-                    {
-                        string cacheImPath = InternalSettings.ImageCacheFolder + "\\" + fileHash + Helper.GetFilenameExtension(tp.ImagePath.FullName, true);
+                case FormWindowState.Minimized:
+                    break;
 
-                        if (!File.Exists(cacheImPath))
-                        {
-                            try
-                            {
-                                File.Copy(tp.ImagePath.FullName, cacheImPath);
-                            }
-                            catch{}
-                        }
-                    }
-                }
+                case FormWindowState.Normal:
+                    if(InternalSettings.Fit_Image_On_Resize)
+                        FitCurrentToScreen();
+                    break;
             }
-
-            ForceClose = true;
-            Close();
         }
 
         public void CloseCurrentTabPage()
@@ -621,7 +612,6 @@ namespace ImageViewer
                 return;
 
             SuspendLayout();
-            btnTopMain_CloseTab.Enabled = false;
 
             _TabPage tmp = currentPage;
             int index = tcMain.SelectedIndex;
@@ -649,7 +639,6 @@ namespace ImageViewer
             tcMain.TabPages.Remove(tmp);
             tmp.Dispose();
 
-            btnTopMain_CloseTab.Enabled = true;
             ResumeLayout();
         }
 
@@ -700,5 +689,20 @@ namespace ImageViewer
             }
             this.Location = f.Location;
         }
+
+        private void FitCurrentToScreen()
+        {
+            if (CurrentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            currentPage.idMain.FitToScreen();
+            nudTopMain_ZoomPercentage.Value = ((decimal)(currentPage.idMain.ZoomFactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
+
+            preventOverflow = false;
+        }
+
+
     }
 }

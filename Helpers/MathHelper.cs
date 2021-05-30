@@ -9,6 +9,11 @@ namespace ImageViewer.Helpers
 {
     public static class MathHelper
     {
+        public static double Average(double num1, double num2)
+        {
+            return (num1 + num2) / 2;
+        }
+
         public static T Clamp<T>(T num, T min, T max) where T : IComparable<T>
         {
             if (num.CompareTo(min) <= 0) return min;

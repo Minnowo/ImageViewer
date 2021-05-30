@@ -13,6 +13,9 @@ namespace ImageViewer.Helpers
 {
     public static class Helper
     {
+        public const byte PixelPerInch = 96;
+        public const float PixelPerCm = 37.8f;
+
         public static readonly Version OSVersion = Environment.OSVersion.Version;
         public static readonly string[] SizeSuffixes =
                    { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
@@ -88,6 +91,16 @@ namespace ImageViewer.Helpers
             return result;
         }
 
+        public static string ColorArrayToString(Color[] input)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (Color c in input)
+            {
+                sb.Append(c.ToString() + " | ");
+            }
+            return sb.ToString();
+        }
         public class HashCheck
         {
             public bool isRunning { get; private set; } = false;
