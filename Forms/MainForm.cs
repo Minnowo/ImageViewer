@@ -573,7 +573,6 @@ namespace ImageViewer
 
         #endregion
 
-        private bool ForceClose = false;
 
         private void MainWindow_Resize(object sender, EventArgs e)
         {
