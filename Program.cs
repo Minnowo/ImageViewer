@@ -21,6 +21,25 @@ namespace ImageViewer
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            if (InternalSettings.CPU_Type_x64)
+            {
+                if (System.IO.File.Exists(InternalSettings.libwebP_x64))
+                {
+                    // if the right dll exists we can allow use of webp images
+                    InternalSettings.WebP_Plugin_Exists = true;
+                    InternalSettings.Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
+                }
+            }
+            else
+            {
+                if (System.IO.File.Exists(InternalSettings.libwebP_x86))
+                {
+                    // if the right dll exists we can allow use of webp images
+                    InternalSettings.WebP_Plugin_Exists = true;
+                    InternalSettings.Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
+                }
+            }
+
             mainForm = new MainForm();
             Application.Run(mainForm);
         }

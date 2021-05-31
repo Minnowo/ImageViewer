@@ -13,11 +13,11 @@ namespace ImageViewer.Settings
     {
         public static string FolderSelectDialog_Title_Select_a_folder = "Select a folder";
 
-        #region Paths
+        public static string Save_File_Dialog_Default = "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
 
-        public static string ImageCacheFolder = Directory.GetCurrentDirectory() + "\\imCache";
+        public static string WebP_File_Dialog_Option = "WebP (*.webp)|*.webp";
 
-        #endregion
+        public static List<string> Open_All_Image_Files_File_Dialog_Options = new List<string> { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff" };
 
         #region message box 
 
@@ -31,6 +31,14 @@ namespace ImageViewer.Settings
         public static string Invalid_Size_Messagebox_Message = "The image size is not valid";
 
         #endregion
+
+        #region plugin dll paths
+
+        public const string libwebP_x64 = "plugins\\libwebp_x64.dll";
+        public const string libwebP_x86 = "plugins\\libwebp_x86.dll";
+
+        #endregion
+
         public static Font CloseButtonFont = new Font(new Font("Consolas", 10), FontStyle.Bold);
 
         public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3};
@@ -51,6 +59,8 @@ namespace ImageViewer.Settings
         public static Color DrawingBoard_Clear_Background_Color = Color.Black;
         public static Color Fill_Transparent_Color = Color.White;
 
+        public static WebPQuality WebpQuality_Default = new WebPQuality(Format.EncodeLossy, 74, 6);
+
         public static bool Fit_Image_When_Maximized = true;
         public static bool Fit_Image_On_Resize = true;
 
@@ -63,5 +73,9 @@ namespace ImageViewer.Settings
         public static bool Use_Lite_Load_Image = true;
         public static bool Use_Fast_Invert_Color = true;
         public static bool Use_Fast_Grey_Scale = true;
+
+        public static bool WebP_Plugin_Exists = false;
+
+        public static bool CPU_Type_x64 = IntPtr.Size == 8;
     }
 }

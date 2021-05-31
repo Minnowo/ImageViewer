@@ -16,7 +16,7 @@ namespace ImageViewer.Helpers
 {
     public static class ImageHelper
     {
-        public static readonly ImageFormat DEFAULT_IMAGE_FORMAT = ImageFormat.Png;
+        public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
 
         public static ColorMatrix NegativeColorMatrix = new ColorMatrix(new float[][]
                 {
@@ -57,16 +57,42 @@ namespace ImageViewer.Helpers
             return newIm;
         }
 
+        public static Bitmap LoadWebP(string path)
+        {
+            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
+
+            try
+            {
+                using (WebP webp = new WebP())
+                    return webp.Load(path);   
+            }
+            catch (Exception e)
+            {
+                e.ShowError();
+            }
+            return null;
+        }
+
         public static Bitmap LoadImage(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
+
+            if (Path.GetExtension(path) == ".webp")
+                return LoadWebP(path);
+
             try
             {
                 return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
             }
             catch(Exception e)
             {
+                // in case the file doesn't have proper extension there is no harm in trying to load as webp
+                Bitmap tryLoadWebP;
+                if ((tryLoadWebP = LoadWebP(path)) != null)
+                    return tryLoadWebP;
+                    
                 e.ShowError();
             }
             return null;
@@ -78,16 +104,19 @@ namespace ImageViewer.Helpers
         /// better if you have a really large image, and don't mind a little bit slower loading
         /// 
         /// </summary>
-        /// <param name="imagePath"></param>
+        /// <param name="path"></param>
         /// <returns></returns>
-        public static Bitmap LiteLoadImage(string imagePath)
+        public static Bitmap LiteLoadImage(string path)
         {
-            if (!File.Exists(imagePath))
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
+
+            if (Path.GetExtension(path) == ".webp")
+                return LoadWebP(path);
 
             try
             {
-                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (Image image = Image.FromStream(fileStream, true, true))
                 {
                     Bitmap bmp = new Bitmap(image.Width, image.Height);
@@ -106,6 +135,11 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
+                // in case the file doesn't have proper extension there is no harm in trying to load as webp
+                Bitmap tryLoadWebP;
+                if ((tryLoadWebP = LoadWebP(path)) != null)
+                    return tryLoadWebP;
+
                 e.ShowError();
                 return null;
             }
@@ -140,7 +174,27 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public static ImageFormat GetImageFormat(string filePath)
+        public static ImageFormat GetImageFormat(ImgFormat fmt)
+        {
+            switch (fmt)
+            {
+                default:
+                case ImgFormat.png:
+                    return ImageFormat.Png;
+                case ImgFormat.jpg:
+                    return ImageFormat.Jpeg;
+                case ImgFormat.bmp:
+                    return ImageFormat.Bmp;
+                case ImgFormat.gif:
+                    return ImageFormat.Gif;
+                case ImgFormat.tif:
+                    return ImageFormat.Tiff;
+                case ImgFormat.webp:
+                    return null;
+            }
+        }
+
+        public static ImgFormat GetImageFormat(string filePath)
         {
             string ext = Helper.GetFilenameExtension(filePath);
 
@@ -151,34 +205,91 @@ namespace ImageViewer.Helpers
             {
                 case "png":
                 default:
-                    return ImageFormat.Png;
+                    return ImgFormat.png;
                 case "jpg":
                 case "jpeg":
                 case "jpe":
                 case "jfif":
-                    return ImageFormat.Jpeg;
+                    return ImgFormat.jpg;
                 case "gif":
-                    return ImageFormat.Gif;
+                    return ImgFormat.gif;
                 case "bmp":
-                    return ImageFormat.Bmp;
+                    return ImgFormat.bmp;
                 case "tif":
                 case "tiff":
-                    return ImageFormat.Tiff;
+                    return ImgFormat.tif;
+                case "webp":
+                    return ImgFormat.webp;
             }
+        }
+
+        public static bool SaveWebp(Bitmap img, string filePath, WebPQuality q)
+        {
+            if (string.IsNullOrEmpty(filePath) || img == null)
+                return false;
+
+            if(q == WebPQuality.empty)
+                q = InternalSettings.WebpQuality_Default;
+
+            byte[] rawWebP;
+
+            try
+            {
+                using (WebP webp = new WebP())
+                {
+                    switch (q.Format)
+                    {
+                        default:
+                        case Format.EncodeLossless:
+                            rawWebP = webp.EncodeLossless(img, q.Speed);
+                            break;
+                        case Format.EncodeNearLossless:
+                            rawWebP = webp.EncodeNearLossless(img, q.Quality, q.Speed);
+                            break;
+                        case Format.EncodeLossy:
+                            rawWebP = webp.EncodeLossy(img, q.Quality, q.Speed);
+                            break;
+                    }
+
+                    File.WriteAllBytes(filePath, rawWebP);
+                }
+                return true;
+            }
+            catch(Exception e)
+            {
+                e.ShowError();
+            }
+            finally
+            {
+                GC.Collect();
+            }
+            return false;
+        }
+
+        public static bool SaveWebp(Image img, string filePath, WebPQuality q)
+        {
+            return SaveWebp((Bitmap)img, filePath, q);
         }
 
         public static bool SaveImage(Image img, string filePath)
         {
             PathHelper.CreateDirectoryFromFilePath(filePath);
-            ImageFormat imageFormat = GetImageFormat(filePath);
+            ImageFormat imageFormat = GetImageFormat(GetImageFormat(filePath));
 
-            if (img == null)
+            if (img == null || string.IsNullOrEmpty(filePath))
                 return false;
 
             try
             {
-                img.Save(filePath, imageFormat);
-                return true;
+                if(imageFormat == null)
+                {
+                    return SaveWebp(img, filePath, WebPQuality.empty);
+                }
+                else
+                {
+                    img.Save(filePath, imageFormat);
+                    return true;
+                }
             }
             catch (Exception e)
             {
@@ -189,17 +300,15 @@ namespace ImageViewer.Helpers
             return false;
         }
 
-        public static string SaveImageFileDIalog()
-        {
-            return string.Empty;
-        }
-
         public static string SaveImageFileDialog(Image img, string filePath = "", bool useLastDirectory = true)
         {
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
-                sfd.Filter = "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
+                sfd.Filter = InternalSettings.Save_File_Dialog_Default;
                 sfd.DefaultExt = "png";
+
+                if (InternalSettings.WebP_Plugin_Exists)
+                    sfd.Filter += "|" + InternalSettings.WebP_File_Dialog_Option;
 
                 if (!string.IsNullOrEmpty(filePath))
                 {
@@ -250,8 +359,10 @@ namespace ImageViewer.Helpers
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
-                ofd.Filter = "Image files (*.png, *.jpg, *.jpeg, *.jpe, *.jfif, *.gif, *.bmp, *.tif, *.tiff)|*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif;*.bmp;*.tif;*.tiff|" +
-                    "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
+                ofd.Filter = "Image files (" + string.Join(", ", InternalSettings.Open_All_Image_Files_File_Dialog_Options) + ")|" + string.Join(";", InternalSettings.Open_All_Image_Files_File_Dialog_Options);
+
+                if (InternalSettings.WebP_Plugin_Exists)
+                    ofd.Filter += "|" + InternalSettings.WebP_File_Dialog_Option;
 
                 ofd.Multiselect = multiselect;
 

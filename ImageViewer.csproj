@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -157,6 +158,8 @@
     <Compile Include="Controls\_TabPage.Designer.cs">
       <DependentUpon>_TabPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\WebPHelper.cs" />
+    <Compile Include="Misc\WebPQuality.cs" />
     <EmbeddedResource Include="Controls\ColorDisplay.resx">
       <DependentUpon>ColorDisplay.cs</DependentUpon>
     </EmbeddedResource>

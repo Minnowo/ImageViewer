@@ -54,4 +54,14 @@ namespace ImageViewer.Helpers
         HSV,
         HSL
     }
+
+    public enum ImgFormat
+    {
+        png,
+        jpg,
+        tif,
+        bmp,
+        gif,
+        webp
+    }
 }
