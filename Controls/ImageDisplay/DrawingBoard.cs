@@ -73,11 +73,6 @@ namespace ImageViewer.Controls
                     g.CompositingMode = CompositingMode.SourceOver;
                     g.CompositingQuality = CompositingQuality.HighSpeed;
 
-                    if (InternalSettings.High_Def_Scale_On_Zoom_Out && drawWidth < Image.Width)
-                    {
-                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    }
-
                     g.DrawImage(
                         originalImage, 
                         new Rectangle(0, 0, apparentImageSize.Width, apparentImageSize.Height), 
@@ -86,6 +81,39 @@ namespace ImageViewer.Controls
                 }
 
                 return scaledIm;
+            }
+        }
+
+        public Image SelectedRegion
+        {
+            get
+            {
+                if (isRightClicking)
+                    return null;
+
+                //int originXOffset = (int)Math.Round(origin.X * zoomFactor);
+                //int originYOffset = (int)Math.Round(origin.Y * zoomFactor);
+                Point topLeftPoint = PointToImage(selectionBox.Location, true);
+                //topLeftPoint.X -= originXOffset;
+                //topLeftPoint.Y -= originYOffset;
+                Size scaledSize = new Size((int)Math.Round(selectionBox.Width / ZoomFactor), (int)Math.Round(selectionBox.Height / ZoomFactor));
+
+                Bitmap selectedRegionImage = new Bitmap(selectionBox.Width, selectionBox.Height);
+                using (Graphics g = Graphics.FromImage(selectedRegionImage))
+                {
+                    g.PixelOffsetMode = PixelOffsetMode.Half;
+                    g.SmoothingMode = SmoothingMode.None;
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    g.CompositingMode = CompositingMode.SourceOver;
+                    g.CompositingQuality = CompositingQuality.HighSpeed;
+
+                    g.DrawImage(originalImage,
+                        new Rectangle(0, 0, selectionBox.Width, selectionBox.Height),
+                        new Rectangle(topLeftPoint, scaledSize),
+                        GraphicsUnit.Pixel);
+                }
+
+                return selectedRegionImage;
             }
         }
 
@@ -118,6 +146,14 @@ namespace ImageViewer.Controls
             }
         }
 
+        public int CenterImageOriginY
+        {
+            get
+            {
+                return -(int)Math.Round(ClientSize.Height / zoomFactor / 2) + (originalImage.Height >> 1);
+            }
+        }
+
         public PointF Origin
         {
             get
@@ -139,8 +175,6 @@ namespace ImageViewer.Controls
             }
         }
 
-        public Color FillTransparentColor = Color.White;
-        public int FillAlphaLessThan = 255;
         public bool FillTransparent
         {
             get
@@ -159,16 +193,57 @@ namespace ImageViewer.Controls
             }
         }
         private bool fillTransparent = false;
-        public bool centerOnLoad { get; set; } = true;
-        public bool externZoomChange { get; set; } = false;
+
+        public bool FitToScreenOnLoad
+        {
+            get
+            {
+                return fitToScreenOnLoad;
+            }
+            set
+            {
+                if (value)
+                    centerOnLoad = false;
+
+                fitToScreenOnLoad = value;
+            }
+        }
+        private bool fitToScreenOnLoad = true;
+
+        public bool CenterOnLoad
+        {
+            get
+            {
+                return centerOnLoad;
+            }
+            set
+            {
+                if (value)
+                    fitToScreenOnLoad = false;
+
+                centerOnLoad = value;
+            }
+        }
+        private bool centerOnLoad = true;
+
+        public bool externZoomChange = false;
+
+        public Color FillTransparentColor = Color.White;
+        public int FillAlphaLessThan = 255;
+
 
         private Bitmap originalImage;
+        private Pen selectionBoxPen = Pens.Black;
 
         private Rectangle srcRect;
         private Rectangle destRect;
+        public Rectangle selectionBox;
 
-        private PointF startPoint;
         private PointF origin = new Point(0, 0);
+        private PointF leftClickStart;
+
+        public Point rightClickStart = Point.Empty;
+        public Point rightClickEnd = Point.Empty;
         private Point centerPoint;
 
         private Size apparentImageSize = new Size(0, 0);
@@ -178,7 +253,9 @@ namespace ImageViewer.Controls
 
         private double zoomFactor = 1.0d;
 
+        private bool isRightClicking = false;
         private bool isLeftClicking = false;
+        private bool drawingSelectionBox = false;
         private bool initialDraw = false;
 
         public DrawingBoard()
@@ -188,18 +265,10 @@ namespace ImageViewer.Controls
             this.MouseDown += ImageViewer_MouseDown;
             this.MouseUp += ImageViewer_MouseUp;
             this.MouseWheel += ImageViewer_MouseWheel;
-            this.MouseMove += ImageViewer_MouseMove;
+            this.MouseMove += ImageViewer_MouseMove; 
         }
 
-        private void OnZoomChanged()
-        {
-            if (ZoomChangedEvent != null)
-            {
-                ZoomChangedEvent(zoomFactor);
-            }
-        }
-
-        #region public properties
+        #region public methods
 
         public ImageDisplayState GetState()
         {
@@ -211,7 +280,7 @@ namespace ImageViewer.Controls
                 DrawHeight = drawHeight,
 
                 Origin = origin,
-                StartPoint = startPoint,
+                StartPoint = leftClickStart,
                 CenterPoint = centerPoint,
 
                 ApparentImageSize = apparentImageSize,
@@ -221,7 +290,6 @@ namespace ImageViewer.Controls
             };
         }
 
-
         public void LoadState(ImageDisplayState state)
         {
             zoomFactor = state.ZoomFactor;
@@ -229,7 +297,7 @@ namespace ImageViewer.Controls
             drawHeight = state.DrawHeight;
 
             origin = state.Origin;
-            startPoint = state.StartPoint;
+            leftClickStart = state.StartPoint;
             centerPoint = state.CenterPoint;
 
             apparentImageSize = state.ApparentImageSize;
@@ -248,7 +316,6 @@ namespace ImageViewer.Controls
             ZoomImage(false);
         }
 
-
         public void FitToScreen()
         {
             if (originalImage == null)
@@ -258,7 +325,8 @@ namespace ImageViewer.Controls
             zoomFactor = Math.Min((double)ClientSize.Width / originalImage.Width, (double)ClientSize.Height / originalImage.Height); 
             Origin = new Point(CenterImageOriginX, 0);
 
-            ZoomFactor = zoomFactor; // call invalidate and update apparent size
+            // call invalidate and update apparent size
+            ZoomFactor = zoomFactor; 
         }
 
         public void RotateFlip(RotateFlipType ft)
@@ -328,14 +396,30 @@ namespace ImageViewer.Controls
             finally
             {
                 Cursor = Cursors.Default;
-                GC.Collect(); // required to free memory from FastInvertColors
+                GC.Collect(); // required to free memory from FastGreyScale
             }
         }
 
 
         #endregion
 
-        #region private properites
+        #region private methods
+
+        private void OnScrollChanged()
+        {
+            if (ScrollChanged != null)
+            {
+                ScrollChanged(this, EventArgs.Empty);
+            }
+        }
+
+        private void OnZoomChanged()
+        {
+            if (ZoomChangedEvent != null)
+            {
+                ZoomChangedEvent(zoomFactor);
+            }
+        }
 
         private void ZoomImage(bool zoomIn)
         {
@@ -344,11 +428,11 @@ namespace ImageViewer.Controls
 
             if (zoomIn)
             {
-                ZoomFactor = Math.Round(zoomFactor * 1.1d, 2);
+                ZoomFactor = Math.Round(zoomFactor * 1.1d, 5);
             }
             else
             {
-                ZoomFactor = Math.Round(zoomFactor * 0.9d, 2);
+                ZoomFactor = Math.Round(zoomFactor * 0.9d, 5);
             }
 
             centerPoint.X = (int)Math.Round(origin.X + (srcRect.Width >> 1));
@@ -376,17 +460,22 @@ namespace ImageViewer.Controls
             g.CompositingMode = CompositingMode.SourceOver;
             g.CompositingQuality = CompositingQuality.HighSpeed;
 
-            if (externZoomChange || (initialDraw && centerOnLoad))
+            if (externZoomChange || initialDraw)
             {
-                origin.X = CenterImageOriginX;
-                origin.Y = 0;
+                if (centerOnLoad || externZoomChange)
+                {
+                    origin.X = CenterImageOriginX;
+                    origin.Y = CenterImageOriginY;
+                    externZoomChange = false;
+                }
+                else if(FitToScreenOnLoad)
+                {
+                    initialDraw = false;
+                    FitToScreen();
+                    return;
+                }
+                
                 initialDraw = false;
-                externZoomChange = false;
-            }
-
-            if(InternalSettings.High_Def_Scale_On_Zoom_Out && destRect.Width < Image.Width)
-            {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             }
 
             srcRect = new Rectangle((int)Math.Round(origin.X), (int)Math.Round(origin.Y), drawWidth, drawHeight);
@@ -396,6 +485,23 @@ namespace ImageViewer.Controls
             OnScrollChanged();
         }
 
+        private void DrawDragBox(Graphics g)
+        {
+            g.DrawLine(selectionBoxPen, rightClickStart, new Point(rightClickEnd.X, rightClickStart.Y));
+            g.DrawLine(selectionBoxPen, rightClickStart, new Point(rightClickStart.X, rightClickEnd.Y));
+            g.DrawLine(selectionBoxPen, new Point(rightClickEnd.X, rightClickStart.Y), rightClickEnd);
+            g.DrawLine(selectionBoxPen, new Point(rightClickStart.X, rightClickEnd.Y), rightClickEnd);
+
+            
+            selectionBox = new Rectangle(
+                // we want the point to be top left of the rectangle
+                Math.Min(rightClickStart.X, rightClickEnd.X),
+                Math.Min(rightClickStart.Y, rightClickEnd.Y), 
+                Math.Abs(rightClickStart.X - rightClickEnd.X), 
+                Math.Abs(rightClickStart.Y - rightClickEnd.Y));
+
+            drawingSelectionBox = true;
+        }
 
         private void ImageViewer_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -422,16 +528,12 @@ namespace ImageViewer.Controls
                 case MouseButtons.Left:
                     isLeftClicking = false;
                     break;
+                case MouseButtons.Right:
+                    isRightClicking = false;
+                    break;
             }
 
             this.Focus();
-        }
-
-        private PointF PointToImage(Point p)
-        {
-            return new PointF(
-                (p.X - origin.X) / (float)zoomFactor, 
-                (p.Y - origin.Y) / (float)zoomFactor);
         }
 
         private void ImageViewer_MouseDown(object sender, MouseEventArgs e)
@@ -442,9 +544,15 @@ namespace ImageViewer.Controls
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    startPoint = PointToImage(e.Location);
+                    leftClickStart = PointToImage(e.Location);
                     ComputeDrawingArea();
                     isLeftClicking = true;
+                    break;
+
+                case MouseButtons.Right:
+                    rightClickStart = e.Location;
+                    isRightClicking = true;
+                    ComputeDrawingArea();
                     break;
             }
 
@@ -467,15 +575,21 @@ namespace ImageViewer.Controls
 
                 // this really upsets me i spent like an hour on the clamp part
                 // just to realize i'm an idiot and the max was just the image size omfg
-                origin.X = (origin.X + (startPoint.X - p.X)).Clamp(minOriginX, Image.Width);
-                origin.Y = (origin.Y + (startPoint.Y - p.Y)).Clamp(minOriginY, Image.Height);
+                origin.X = (origin.X + (leftClickStart.X - p.X)).Clamp(minOriginX, Image.Width);
+                origin.Y = (origin.Y + (leftClickStart.Y - p.Y)).Clamp(minOriginY, Image.Height);
 
-                startPoint = PointToImage(e.Location);
+                leftClickStart = PointToImage(e.Location);
 
+                Invalidate();
+                return;
+            }
+
+            if (isRightClicking)
+            {
+                rightClickEnd = e.Location;
                 Invalidate();
             }
         }
-
 
         private void ComputeDrawingArea()
         {
@@ -483,13 +597,20 @@ namespace ImageViewer.Controls
             drawWidth = (int)(Width / zoomFactor);
         }
 
-        private void OnScrollChanged()
+        private Point PointToImage(Point p, bool asPoint = false)
         {
-            if (ScrollChanged != null)
-            {
-                ScrollChanged(this, EventArgs.Empty);
-            }
+            return new Point(
+                (int)Math.Round((p.X - origin.X) / zoomFactor),
+                (int)Math.Round((p.Y - origin.Y) / zoomFactor));
         }
+
+        private PointF PointToImage(Point p)
+        {
+            return new PointF(
+                    (p.X - origin.X) / (float)zoomFactor,
+                    (p.Y - origin.Y) / (float)zoomFactor);
+        }
+
         #endregion
 
         #region Overrides
@@ -498,10 +619,12 @@ namespace ImageViewer.Controls
         {
             e.Graphics.Clear(InternalSettings.DrawingBoard_Clear_Background_Color);
             Graphics g = e.Graphics;
-            //g.CompositingMode = CompositingMode.SourceCopy;
-            DrawImage(g);
+            drawingSelectionBox = false;
 
-            //base.OnPaint(e);
+            DrawImage(g); 
+
+            if(isRightClicking)
+                DrawDragBox(g);
         }
 
         protected override void OnSizeChanged(EventArgs e)

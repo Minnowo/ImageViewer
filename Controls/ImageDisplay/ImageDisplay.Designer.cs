@@ -28,23 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.drawingBoard1 = new ImageViewer.Controls.DrawingBoard();
+            this.drawingBoard = new ImageViewer.Controls.DrawingBoard();
             this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
             this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this.SuspendLayout();
             // 
             // drawingBoard1
             // 
-            this.drawingBoard1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.drawingBoard.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.drawingBoard1.Image = null;
-            this.drawingBoard1.Location = new System.Drawing.Point(0, 0);
-            this.drawingBoard1.Name = "drawingBoard1";
-            this.drawingBoard1.Origin = new System.Drawing.Point(0, 0);
-            this.drawingBoard1.Size = new System.Drawing.Size(200, 137);
-            this.drawingBoard1.TabIndex = 0;
-            this.drawingBoard1.ZoomFactor = 1D;
+            this.drawingBoard.Image = null;
+            this.drawingBoard.Location = new System.Drawing.Point(0, 0);
+            this.drawingBoard.Name = "drawingBoard1";
+            this.drawingBoard.Origin = new System.Drawing.Point(0, 0);
+            this.drawingBoard.Size = new System.Drawing.Size(200, 137);
+            this.drawingBoard.TabIndex = 0;
+            this.drawingBoard.ZoomFactor = 1D;
             // 
             // hScrollBar1
             // 
@@ -74,7 +74,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.vScrollBar1);
             this.Controls.Add(this.hScrollBar1);
-            this.Controls.Add(this.drawingBoard1);
+            this.Controls.Add(this.drawingBoard);
             this.Name = "ImageView";
             this.Size = new System.Drawing.Size(217, 155);
             this.ResumeLayout(false);
@@ -83,7 +83,7 @@
 
         #endregion
 
-        private DrawingBoard drawingBoard1;
+        private DrawingBoard drawingBoard;
         private System.Windows.Forms.HScrollBar hScrollBar1;
         private System.Windows.Forms.VScrollBar vScrollBar1;
     }

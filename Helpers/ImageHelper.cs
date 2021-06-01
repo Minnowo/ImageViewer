@@ -437,7 +437,7 @@ namespace ImageViewer.Helpers
         public static void FastInvertColors(Bitmap bitmapImage)
         {
             BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            var bitmapLength = bitmapRead.Stride * bitmapRead.Height;
+            int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
             byte[] bitmapBGRA = new byte[bitmapLength];
             
             Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
@@ -487,7 +487,7 @@ namespace ImageViewer.Helpers
         public static void FastGreyScale(Bitmap bitmapImage, double bm = 0.11, double gm = 0.59, double rm = 0.3)
         {
             BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            var bitmapLength = bitmapRead.Stride * bitmapRead.Height;
+            int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
             byte[] bitmapBGRA = new byte[bitmapLength];
 
             Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
@@ -513,7 +513,7 @@ namespace ImageViewer.Helpers
         public static void FillTransparent(Bitmap bitmapImage,Color fill, int alphaLessThan = 255)
         {
             BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            var bitmapLength = bitmapRead.Stride * bitmapRead.Height;
+            int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
             byte[] bitmapBGRA = new byte[bitmapLength];
 
             Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);

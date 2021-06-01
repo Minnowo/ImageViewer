@@ -65,7 +65,7 @@ namespace ImageViewer
         public MainForm()
         {
             InitializeComponent();
-
+            KeyPreview = true;
             saveToolStripMenuItem.Enabled = false;
 
             UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);
@@ -127,6 +127,8 @@ namespace ImageViewer
 
                 tp.Text = Path.GetFileName(image).Truncate(25);
                 tp.ToolTipText = image;
+                tp.idMain.ScrollbarsVisible = false;
+                tp.idMain.FitToScreenOnLoad = true;
                 tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
                 tcMain.TabPages.Add(tp);
             }
@@ -400,14 +402,15 @@ namespace ImageViewer
 
         #region cmsViewBtn
 
+        
+
         private void cmsViewBtn_Opening(object sender, CancelEventArgs e)
         {
-
         }
 
         private void fullScreenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            currentPage.idMain.ShowFullScreen();
         }
 
         private void slideShowToolStripMenuItem_Click(object sender, EventArgs e)
@@ -690,6 +693,21 @@ namespace ImageViewer
             preventOverflow = false;
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            //Console.WriteLine("key down");
+            switch (e.KeyData)
+            {
+                case (Keys.C | Keys.Control):
 
+                    using (Image toCopy = currentPage.idMain.SelectedRegion)
+                    {
+                        ClipboardHelper.CopyImageDefault(toCopy);
+                    }
+
+                    break;
+            }
+            base.OnKeyDown(e);
+        }
     }
 }

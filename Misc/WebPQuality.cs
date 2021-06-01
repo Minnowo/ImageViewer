@@ -46,8 +46,6 @@ namespace ImageViewer
         }
         private int quality;
 
-        private bool isEmpty;
-
         public WebPQuality(Format fmt, int quality, int speed) : this()
         {
             Format = fmt;

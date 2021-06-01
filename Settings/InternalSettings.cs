@@ -69,7 +69,6 @@ namespace ImageViewer.Settings
 
         public static bool Remember_Images_On_Close = true;
 
-        public static bool High_Def_Scale_On_Zoom_Out = false;
         public static bool Use_Lite_Load_Image = true;
         public static bool Use_Fast_Invert_Color = true;
         public static bool Use_Fast_Grey_Scale = true;
@@ -77,5 +76,12 @@ namespace ImageViewer.Settings
         public static bool WebP_Plugin_Exists = false;
 
         public static bool CPU_Type_x64 = IntPtr.Size == 8;
+
+
+        public static void EnabledLibwebPExtension()
+        {
+            WebP_Plugin_Exists = true;
+            Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
+        }
     }
 }
