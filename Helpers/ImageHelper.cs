@@ -76,6 +76,48 @@ namespace ImageViewer.Helpers
             return results;
         }
 
+        /// <summary>
+        /// update the data in memory of toUpdate and replace it with the data
+        /// from toReplaceIt, useful if you want to update an image passed into a function
+        /// </summary>
+        /// <param name="toUpdate"></param>
+        /// <param name="toReplaceIt"></param>
+        public static void UpdateBitmap(Bitmap toUpdate, Bitmap toReplaceIt)
+        {
+            BitmapData bmpData = toUpdate.LockBits(new Rectangle(0, 0, toUpdate.Width, toUpdate.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            ARGB[] data = toReplaceIt.GetPixelsFrom32BitArgbImage();
+
+            unsafe
+            {
+                ARGB* pixelPtr;
+
+                // Get a pointer to the beginning of the pixel data region
+                // The upper-left corner
+                pixelPtr = (ARGB*)bmpData.Scan0;
+
+                // Iterate through rows and columns
+                for (int row = 0; row < toUpdate.Height; row++)
+                {
+                    for (int col = 0; col < toUpdate.Width; col++)
+                    {
+                        int index;
+                        ARGB color;
+
+                        index = row * toUpdate.Width + col;
+                        color = data[index];
+
+                        // Set the pixel (fast!)
+                        *pixelPtr = color;
+
+                        // Update the pointer
+                        pixelPtr++;
+                    }
+                }
+            }
+
+            toUpdate.UnlockBits(bmpData);
+        }
+
         public static Bitmap ToBitmap(this ARGB[] data, Size size)
         {
             int height;

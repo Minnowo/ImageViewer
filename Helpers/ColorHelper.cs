@@ -7,7 +7,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
-
+using System.IO;
 
 namespace ImageViewer.Helpers
 {
@@ -1233,6 +1233,206 @@ namespace ImageViewer.Helpers
         public static byte ValidColor(byte number)
         {
             return number.Clamp<byte>(0, 255);
+        }
+
+        // https://www.cyotek.com/blog/loading-the-color-palette-from-a-bbm-lbm-image-file-using-csharp#files
+        public static List<ARGB> ReadColorMap(string fileName)
+        {
+            List<ARGB> colorPalette;
+
+            colorPalette = new List<ARGB>();
+
+            using (FileStream stream = File.OpenRead(fileName))
+            {
+                byte[] buffer;
+                string header;
+
+                // read the FORM header that identifies the document as an IFF file
+                buffer = new byte[4];
+                stream.Read(buffer, 0, buffer.Length);
+                if (Encoding.ASCII.GetString(buffer) != "FORM")
+                    throw new InvalidDataException("Form header not found.");
+
+                // the next value is the size of all the data in the FORM chunk
+                // We don't actually need this value, but we have to read it
+                // regardless to advance the stream
+                Helper.ReadInt(stream);
+
+                // read either the PBM or ILBM header that identifies this document as an image file
+                stream.Read(buffer, 0, buffer.Length);
+                header = Encoding.ASCII.GetString(buffer);
+                if (header != "PBM " && header != "ILBM")
+                    throw new InvalidDataException("Bitmap header not found.");
+
+                while (stream.Read(buffer, 0, buffer.Length) == buffer.Length)
+                {
+                    int chunkLength;
+
+                    chunkLength = Helper.ReadInt(stream);
+
+                    if (Encoding.ASCII.GetString(buffer) != "CMAP")
+                    {
+                        // some other LBM chunk, skip it
+                        if (stream.CanSeek)
+                            stream.Seek(chunkLength, SeekOrigin.Current);
+                        else
+                        {
+                            for (int i = 0; i < chunkLength; i++)
+                                stream.ReadByte();
+                        }
+                    }
+                    else
+                    {
+                        // color map chunk!
+                        for (int i = 0; i < chunkLength / 3; i++)
+                        {
+                            int r;
+                            int g;
+                            int b;
+
+                            r = stream.ReadByte();
+                            g = stream.ReadByte();
+                            b = stream.ReadByte();
+
+                            colorPalette.Add(ARGB.FromArgb(255, r.ToByte(), g.ToByte(), b.ToByte()));
+                        }
+
+                        // all done so stop reading the rest of the file
+                        break;
+                    }
+
+                    // chunks always contain an even number of bytes even if the recorded length is odd
+                    // if the length is odd, then there's a padding byte in the file - just read and discard
+                    if (chunkLength % 2 != 0)
+                        stream.ReadByte();
+                }
+            }
+
+            return colorPalette;
+        }
+
+        // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
+        public static List<ARGB> ReadPhotoShopSwatchFile(string fileName)
+        {
+            List<ARGB> colorPalette;
+
+            using (Stream stream = File.OpenRead(fileName))
+            {
+                FileVersion version;
+
+                // read the version, which occupies two bytes
+                version = (FileVersion)Helper.ReadInt16(stream);
+
+                if (version != FileVersion.Version1 && version != FileVersion.Version2)
+                    throw new InvalidDataException("Invalid version information.");
+
+                // the specification states that a version2 palette follows a version1
+                // the only difference between version1 and version2 is the inclusion 
+                // of a name property. Perhaps there's addtional color spaces as well
+                // but we can't support them all anyway
+                // I noticed some files no longer include a version 1 palette
+
+                colorPalette = ReadSwatches(stream, version);
+                if (version == FileVersion.Version1)
+                {
+                    version = (FileVersion)Helper.ReadInt16(stream);
+                    if (version == FileVersion.Version2)
+                        colorPalette = ReadSwatches(stream, version);
+                }
+            }
+
+            return colorPalette;
+        }
+
+
+        // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
+        private static List<ARGB> ReadSwatches(Stream stream, FileVersion version)
+        {
+            int colorCount;
+            List<ARGB> results;
+
+            results = new List<ARGB>();
+
+            // read the number of colors, which also occupies two bytes
+            colorCount = Helper.ReadInt16(stream);
+
+            for (int i = 0; i < colorCount; i++)
+            {
+                ColorSpace colorSpace;
+                int value1;
+                int value2;
+                int value3;
+                int value4;
+
+                // again, two bytes for the color space
+                colorSpace = (ColorSpace)(Helper.ReadInt16(stream));
+
+                value1 = Helper.ReadInt16(stream);
+                value2 = Helper.ReadInt16(stream);
+                value3 = Helper.ReadInt16(stream);
+                value4 = Helper.ReadInt16(stream);
+
+                if (version == FileVersion.Version2)
+                {
+                    int length;
+
+                    // need to read the name even though currently our colour collection doesn't support names
+                    length = Helper.ReadInt32(stream);
+                    Helper.ReadString(stream, length);
+                }
+
+                switch (colorSpace)
+                {
+                    case ColorSpace.Rgb:
+                        int red;
+                        int green;
+                        int blue;
+
+                        // RGB.
+                        // The first three values in the color data are red , green , and blue . They are full unsigned
+                        //  16-bit values as in Apple's RGBColor data structure. Pure red = 65535, 0, 0.
+
+                        red = value1 / 256; // 0-255
+                        green = value2 / 256; // 0-255
+                        blue = value3 / 256; // 0-255
+
+                        results.Add(ARGB.FromArgb(red.ToByte(), green.ToByte(), blue.ToByte()));
+                        break;
+
+                    case ColorSpace.Hsb:
+                        float hue;
+                        float saturation;
+                        float brightness;
+
+                        // HSB.
+                        // The first three values in the color data are hue , saturation , and brightness . They are full 
+                        // unsigned 16-bit values as in Apple's HSVColor data structure. Pure red = 0,65535, 65535.
+
+                        hue = value1 / 182.04f; // 0-359
+                        saturation = value2 / 655.35f; // 0-100
+                        brightness = value3 / 655.35f; // 0-100
+
+                        results.Add(new HSB(hue, saturation, brightness).ToColor());
+                        break;
+
+                    case ColorSpace.Grayscale:
+
+                        int gray;
+
+                        // Grayscale.
+                        // The first value in the color data is the gray value, from 0...10000.
+
+                        gray = (int)(value1 / 39.0625); // 0-255
+
+                        results.Add(ARGB.FromArgb(gray.ToByte(), gray.ToByte(), gray.ToByte()));
+                        break;
+
+                    default:
+                        throw new InvalidDataException(string.Format("Color space '{0}' not supported.", colorSpace));
+                }
+            }
+
+            return results;
         }
     }
 }

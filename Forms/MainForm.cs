@@ -405,6 +405,8 @@ namespace ImageViewer
                 df.LocationChanged += ParentFollowChild;
 
                 df.ShowDialog();
+
+                currentPage.idMain.Update();
             }
         }
         #endregion
@@ -683,7 +685,27 @@ namespace ImageViewer
 
             if (InternalSettings.CenterChild_When_Parent_Following_Child)
             {
-                this.Location = new Point(f.Location.X - Width/4, f.Location.Y - Height/4);
+                Point p = f.Location;
+
+                if(f.Width < Width)
+                {
+                    p.X -= Math.Abs(Width - f.Width) / 2;
+                }
+                else
+                {
+                    p.X += Math.Abs(Width - f.Width) / 2;
+                }
+
+                if (f.Height < Height)
+                {
+                    p.Y -= Math.Abs(Height - f.Height) / 2;
+                }
+                else
+                {
+                    p.Y += Math.Abs(Height - f.Height) / 2;
+                }
+
+                this.Location = p;
                 return;
             }
             this.Location = f.Location;

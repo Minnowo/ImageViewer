@@ -13,6 +13,10 @@ namespace ImageViewer.Settings
     {
         public static string FolderSelectDialog_Title_Select_a_folder = "Select a folder";
 
+        public const string All_Files_File_Dialog = "All Files (*.*)|*.";
+
+        public static string Color_Palette_File_Dialog = "Color Palettes (*.aco, *.lbm, *bbm)|*.aco;*lbm;*bbm;| ACO (*.aco)|*.aco| LBM (*.lbm)|*.lbm| BBM (*.bmm)|*.bbm";
+
         public static string Save_File_Dialog_Default = "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
 
         public static string WebP_File_Dialog_Option = "WebP (*.webp)|*.webp";
@@ -37,6 +41,14 @@ namespace ImageViewer.Settings
         public const string libwebP_x64 = "plugins\\libwebp_x64.dll";
         public const string libwebP_x86 = "plugins\\libwebp_x86.dll";
 
+        #endregion
+
+        #region rate limits
+
+        public static short Fit_To_Screen_On_Resize_Limit = 250;
+
+        public static short Dither_Threshold_Update_Limit = 1000;
+        
         #endregion
 
         public static Font CloseButtonFont = new Font(new Font("Consolas", 10), FontStyle.Bold);

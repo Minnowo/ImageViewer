@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Forms;
+using ImageViewer.Settings;
 
 namespace ImageViewer.Helpers
 {
@@ -19,6 +21,74 @@ namespace ImageViewer.Helpers
         public static readonly Version OSVersion = Environment.OSVersion.Version;
         public static readonly string[] SizeSuffixes =
                    { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+
+        public static string[] AskOpenFile(string initialDir="", Form form =null, string DialogFilter = InternalSettings.All_Files_File_Dialog, bool multiSelect = false)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = DialogFilter;
+
+                ofd.Multiselect = multiSelect;
+
+                if (!string.IsNullOrEmpty(initialDir))
+                {
+                    ofd.InitialDirectory = initialDir;
+                }
+
+                if (ofd.ShowDialog(form) == DialogResult.OK)
+                {
+                    return ofd.FileNames;
+                }
+            }
+
+            return null;
+        }
+
+        public static string ReadString(Stream stream, int length)
+        {
+            // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
+            byte[] buffer;
+
+            buffer = new byte[length * 2];
+
+            stream.Read(buffer, 0, buffer.Length);
+
+            return Encoding.BigEndianUnicode.GetString(buffer);
+        }
+
+        /// <summary>
+        /// Reads a 32bit unsigned integer in big-endian format.
+        /// </summary>
+        /// <param name="stream">The stream to read the data from.</param>
+        /// <returns>The unsigned 32bit integer cast to an <c>Int32</c>.</returns>
+        public static int ReadInt32(Stream stream)
+        {
+            // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
+            return ((byte)stream.ReadByte() << 24) | ((byte)stream.ReadByte() << 16) | ((byte)stream.ReadByte() << 8) | ((byte)stream.ReadByte() << 0);
+        }
+
+        /// <summary>
+        /// Reads a 16bit unsigned integer in big-endian format.
+        /// </summary>
+        /// <param name="stream">The stream to read the data from.</param>
+        /// <returns>The unsigned 16bit integer cast to an <c>Int32</c>.</returns>
+        public static int ReadInt16(Stream stream)
+        {
+            // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
+            return (stream.ReadByte() << 8) | (stream.ReadByte() << 0);
+        }
+
+        public static int ReadInt(Stream stream)
+        {
+            byte[] buffer;
+
+            // big endian conversion: http://stackoverflow.com/a/14401341/148962
+
+            buffer = new byte[4];
+            stream.Read(buffer, 0, buffer.Length);
+
+            return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
+        }
 
         public static bool ValidSize(Size s)
         {

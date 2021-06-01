@@ -51,7 +51,12 @@
             this.rb_NoColor = new System.Windows.Forms.RadioButton();
             this.rb_MonochromeColor = new System.Windows.Forms.RadioButton();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.imageDisplay2 = new ImageViewer.Controls.ImageDisplay();
+            this.label5 = new System.Windows.Forms.Label();
+            this.btn_LoadCustomPalette = new System.Windows.Forms.Button();
+            this.rb_UseCustomPalette = new System.Windows.Forms.RadioButton();
+            this.lbl_CustomPaletteDisplay = new System.Windows.Forms.Label();
+            this.lbl_BlacknWhiteThreshold = new System.Windows.Forms.Label();
+            this.imageDisplay = new ImageViewer.Controls.ImageDisplay();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nud_ColorThreshhold)).BeginInit();
             this.panel2.SuspendLayout();
@@ -59,7 +64,13 @@
             // 
             // panel1
             // 
+            this.panel1.AutoScroll = true;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.lbl_BlacknWhiteThreshold);
+            this.panel1.Controls.Add(this.lbl_CustomPaletteDisplay);
+            this.panel1.Controls.Add(this.rb_UseCustomPalette);
+            this.panel1.Controls.Add(this.btn_LoadCustomPalette);
+            this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.cb_ColorPallete);
             this.panel1.Controls.Add(this.nud_ColorThreshhold);
             this.panel1.Controls.Add(this.panel2);
@@ -80,30 +91,36 @@
             "8",
             "16",
             "256"});
-            this.cb_ColorPallete.Location = new System.Drawing.Point(166, 92);
+            this.cb_ColorPallete.Location = new System.Drawing.Point(126, 78);
             this.cb_ColorPallete.Name = "cb_ColorPallete";
-            this.cb_ColorPallete.Size = new System.Drawing.Size(84, 21);
+            this.cb_ColorPallete.Size = new System.Drawing.Size(124, 21);
             this.cb_ColorPallete.TabIndex = 5;
+            this.cb_ColorPallete.SelectedIndexChanged += new System.EventHandler(this.ColorPaletteChanged);
             // 
             // nud_ColorThreshhold
             // 
-            this.nud_ColorThreshhold.Location = new System.Drawing.Point(166, 53);
+            this.nud_ColorThreshhold.Location = new System.Drawing.Point(126, 49);
             this.nud_ColorThreshhold.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.nud_ColorThreshhold.Name = "nud_ColorThreshhold";
-            this.nud_ColorThreshhold.Size = new System.Drawing.Size(87, 20);
+            this.nud_ColorThreshhold.Size = new System.Drawing.Size(127, 20);
             this.nud_ColorThreshhold.TabIndex = 4;
             this.nud_ColorThreshhold.Value = new decimal(new int[] {
             128,
             0,
             0,
             0});
+            this.nud_ColorThreshhold.ValueChanged += new System.EventHandler(this.ColorThreshold_Changed);
             // 
             // panel2
             // 
+            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel2.AutoScroll = true;
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel2.Controls.Add(this.btn_Cancel);
             this.panel2.Controls.Add(this.btn_Save);
@@ -126,7 +143,6 @@
             this.panel2.Controls.Add(this.rb_BurkesDither);
             this.panel2.Controls.Add(this.rb_FloySteinbergDither);
             this.panel2.Controls.Add(this.rb_NoDither);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 143);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(253, 308);
@@ -169,9 +185,9 @@
             this.label4.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label4.Location = new System.Drawing.Point(13, 221);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.Size = new System.Drawing.Size(33, 13);
             this.label4.TabIndex = 17;
-            this.label4.Text = "label4";
+            this.label4.Text = "Other";
             // 
             // label3
             // 
@@ -378,7 +394,7 @@
             // rb_FullColor
             // 
             this.rb_FullColor.AutoSize = true;
-            this.rb_FullColor.Location = new System.Drawing.Point(3, 92);
+            this.rb_FullColor.Location = new System.Drawing.Point(9, 76);
             this.rb_FullColor.Name = "rb_FullColor";
             this.rb_FullColor.Size = new System.Drawing.Size(49, 17);
             this.rb_FullColor.TabIndex = 2;
@@ -391,7 +407,7 @@
             // 
             this.rb_NoColor.AutoSize = true;
             this.rb_NoColor.Checked = true;
-            this.rb_NoColor.Location = new System.Drawing.Point(4, 30);
+            this.rb_NoColor.Location = new System.Drawing.Point(10, 24);
             this.rb_NoColor.Name = "rb_NoColor";
             this.rb_NoColor.Size = new System.Drawing.Size(51, 17);
             this.rb_NoColor.TabIndex = 1;
@@ -403,7 +419,7 @@
             // rb_MonochromeColor
             // 
             this.rb_MonochromeColor.AutoSize = true;
-            this.rb_MonochromeColor.Location = new System.Drawing.Point(4, 53);
+            this.rb_MonochromeColor.Location = new System.Drawing.Point(10, 47);
             this.rb_MonochromeColor.Name = "rb_MonochromeColor";
             this.rb_MonochromeColor.Size = new System.Drawing.Size(88, 17);
             this.rb_MonochromeColor.TabIndex = 0;
@@ -417,30 +433,80 @@
             this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
-            // imageDisplay2
+            // label5
             // 
-            this.imageDisplay2.CenterOnLoad = false;
-            this.imageDisplay2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.imageDisplay2.ExternZoomChange = false;
-            this.imageDisplay2.FillAlphaLessThan = 255;
-            this.imageDisplay2.FillTransparent = false;
-            this.imageDisplay2.FillTransparentColor = System.Drawing.Color.White;
-            this.imageDisplay2.FitToScreenOnLoad = true;
-            this.imageDisplay2.Image = null;
-            this.imageDisplay2.Location = new System.Drawing.Point(0, 0);
-            this.imageDisplay2.Name = "imageDisplay2";
-            this.imageDisplay2.Origin = ((System.Drawing.PointF)(resources.GetObject("imageDisplay2.Origin")));
-            this.imageDisplay2.ScrollbarsVisible = false;
-            this.imageDisplay2.Size = new System.Drawing.Size(545, 453);
-            this.imageDisplay2.TabIndex = 2;
-            this.imageDisplay2.ZoomFactor = 1D;
+            this.label5.AutoSize = true;
+            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label5.Location = new System.Drawing.Point(1, 8);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(87, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "Color Conversion";
+            // 
+            // btn_LoadCustomPalette
+            // 
+            this.btn_LoadCustomPalette.Location = new System.Drawing.Point(126, 105);
+            this.btn_LoadCustomPalette.Name = "btn_LoadCustomPalette";
+            this.btn_LoadCustomPalette.Size = new System.Drawing.Size(124, 23);
+            this.btn_LoadCustomPalette.TabIndex = 7;
+            this.btn_LoadCustomPalette.Text = "Load Custom Palette";
+            this.btn_LoadCustomPalette.UseVisualStyleBackColor = true;
+            this.btn_LoadCustomPalette.Click += new System.EventHandler(this.LoadColorPalette_Clicked);
+            // 
+            // rb_UseCustomPalette
+            // 
+            this.rb_UseCustomPalette.AutoSize = true;
+            this.rb_UseCustomPalette.Location = new System.Drawing.Point(9, 108);
+            this.rb_UseCustomPalette.Name = "rb_UseCustomPalette";
+            this.rb_UseCustomPalette.Size = new System.Drawing.Size(82, 17);
+            this.rb_UseCustomPalette.TabIndex = 8;
+            this.rb_UseCustomPalette.TabStop = true;
+            this.rb_UseCustomPalette.Text = "Use Custom";
+            this.rb_UseCustomPalette.UseVisualStyleBackColor = true;
+            this.rb_UseCustomPalette.CheckedChanged += new System.EventHandler(this.ColorRadioButton_Changed);
+            // 
+            // lbl_CustomPaletteDisplay
+            // 
+            this.lbl_CustomPaletteDisplay.AutoSize = true;
+            this.lbl_CustomPaletteDisplay.Location = new System.Drawing.Point(26, 128);
+            this.lbl_CustomPaletteDisplay.Name = "lbl_CustomPaletteDisplay";
+            this.lbl_CustomPaletteDisplay.Size = new System.Drawing.Size(33, 13);
+            this.lbl_CustomPaletteDisplay.TabIndex = 9;
+            this.lbl_CustomPaletteDisplay.Text = "None";
+            // 
+            // lbl_BlacknWhiteThreshold
+            // 
+            this.lbl_BlacknWhiteThreshold.AutoSize = true;
+            this.lbl_BlacknWhiteThreshold.Location = new System.Drawing.Point(123, 33);
+            this.lbl_BlacknWhiteThreshold.Name = "lbl_BlacknWhiteThreshold";
+            this.lbl_BlacknWhiteThreshold.Size = new System.Drawing.Size(115, 13);
+            this.lbl_BlacknWhiteThreshold.TabIndex = 10;
+            this.lbl_BlacknWhiteThreshold.Text = "Black White Threshold";
+            // 
+            // imageDisplay
+            // 
+            this.imageDisplay.CenterOnLoad = false;
+            this.imageDisplay.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.imageDisplay.ExternZoomChange = false;
+            this.imageDisplay.FillAlphaLessThan = 255;
+            this.imageDisplay.FillTransparent = false;
+            this.imageDisplay.FillTransparentColor = System.Drawing.Color.White;
+            this.imageDisplay.FitToScreenOnLoad = true;
+            this.imageDisplay.Image = null;
+            this.imageDisplay.Location = new System.Drawing.Point(0, 0);
+            this.imageDisplay.Name = "imageDisplay";
+            this.imageDisplay.Origin = ((System.Drawing.PointF)(resources.GetObject("imageDisplay.Origin")));
+            this.imageDisplay.ScrollbarsVisible = false;
+            this.imageDisplay.Size = new System.Drawing.Size(545, 453);
+            this.imageDisplay.TabIndex = 2;
+            this.imageDisplay.ZoomFactor = 1D;
             // 
             // DitherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 453);
-            this.Controls.Add(this.imageDisplay2);
+            this.Controls.Add(this.imageDisplay);
             this.Controls.Add(this.panel1);
             this.Name = "DitherForm";
             this.Text = "DitherForm";
@@ -484,6 +550,11 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker;
         private System.Windows.Forms.ComboBox cb_ColorPallete;
         private System.Windows.Forms.NumericUpDown nud_ColorThreshhold;
-        private Controls.ImageDisplay imageDisplay2;
+        private Controls.ImageDisplay imageDisplay;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lbl_CustomPaletteDisplay;
+        private System.Windows.Forms.RadioButton rb_UseCustomPalette;
+        private System.Windows.Forms.Button btn_LoadCustomPalette;
+        private System.Windows.Forms.Label lbl_BlacknWhiteThreshold;
     }
 }

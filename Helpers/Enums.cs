@@ -64,4 +64,19 @@ namespace ImageViewer.Helpers
         gif,
         webp
     }
+
+    public enum ColorSpace
+    {
+        Rgb = 0,
+        Hsb = 1,
+        Cmyk = 2,
+        Lab = 7,
+        Grayscale = 8
+    }
+
+    public enum FileVersion
+    {
+        Version1 = 1,
+        Version2
+    }
 }

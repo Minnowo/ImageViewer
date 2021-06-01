@@ -265,6 +265,11 @@ namespace ImageViewer.Controls
 
         #region public properties
 
+        public void Update()
+        {
+            drawingBoard.Invalidate();
+        }
+
         /// <summary>
         /// 
         /// get the current ImageDisplayState from the drawing board
