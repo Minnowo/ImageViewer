@@ -2,7 +2,7 @@
 
 namespace ImageViewer.Helpers.Transforms
 {
-  internal interface IPixelTransform
+  public interface IPixelTransform
   {
     #region Methods
 

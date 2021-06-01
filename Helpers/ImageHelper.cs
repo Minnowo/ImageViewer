@@ -37,100 +37,101 @@ namespace ImageViewer.Helpers
                    });
 
 
+    
 
-    internal static ARGB[] GetPixelsFrom32BitArgbImage(this Bitmap bitmap)
-    {
-        int width;
-        int height;
-        BitmapData bitmapData;
-        ARGB[] results;
-
-        // NOTE: As the name should give a hint, it only supports 32bit ARGB images.
-        // Don't rely on this for production, it needs expanding to support multiple other types
-
-        width = bitmap.Width;
-        height = bitmap.Height;
-        results = new ARGB[width * height];
-        bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-        unsafe
+        public static ARGB[] GetPixelsFrom32BitArgbImage(this Bitmap bitmap)
         {
-            ARGB* pixel;
+            int width;
+            int height;
+            BitmapData bitmapData;
+            ARGB[] results;
 
-            pixel = (ARGB*)bitmapData.Scan0;
+            // NOTE: As the name should give a hint, it only supports 32bit ARGB images.
+            // Don't rely on this for production, it needs expanding to support multiple other types
 
-            for (int row = 0; row < height; row++)
+            width = bitmap.Width;
+            height = bitmap.Height;
+            results = new ARGB[width * height];
+            bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+            unsafe
             {
-                for (int col = 0; col < width; col++)
-                {
-                    results[row * width + col] = *pixel;
+                ARGB* pixel;
 
-                    pixel++;
+                pixel = (ARGB*)bitmapData.Scan0;
+
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        results[row * width + col] = *pixel;
+
+                        pixel++;
+                    }
                 }
             }
+
+            bitmap.UnlockBits(bitmapData);
+
+            return results;
         }
 
-        bitmap.UnlockBits(bitmapData);
-
-        return results;
-    }
-
-    public static Bitmap ToBitmap(this ARGB[] data, Size size)
-    {
-        int height;
-        int width;
-        BitmapData bitmapData;
-        Bitmap result;
-
-        // Based on code from http://blog.biophysengr.net/2011/11/rapid-bitmap-access-using-unsafe-code.html
-
-        result = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
-        width = result.Width;
-        height = result.Height;
-
-        // Lock the entire bitmap
-        bitmapData = result.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-
-        //Enter unsafe mode so that we can use pointers
-        unsafe
+        public static Bitmap ToBitmap(this ARGB[] data, Size size)
         {
-            ARGB* pixelPtr;
+            int height;
+            int width;
+            BitmapData bitmapData;
+            Bitmap result;
 
-            // Get a pointer to the beginning of the pixel data region
-            // The upper-left corner
-            pixelPtr = (ARGB*)bitmapData.Scan0;
+            // Based on code from http://blog.biophysengr.net/2011/11/rapid-bitmap-access-using-unsafe-code.html
 
-            // Iterate through rows and columns
-            for (int row = 0; row < size.Height; row++)
+            result = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
+            width = result.Width;
+            height = result.Height;
+
+            // Lock the entire bitmap
+            bitmapData = result.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+
+            //Enter unsafe mode so that we can use pointers
+            unsafe
             {
-                for (int col = 0; col < size.Width; col++)
+                ARGB* pixelPtr;
+
+                // Get a pointer to the beginning of the pixel data region
+                // The upper-left corner
+                pixelPtr = (ARGB*)bitmapData.Scan0;
+
+                // Iterate through rows and columns
+                for (int row = 0; row < size.Height; row++)
                 {
-                    int index;
-                    ARGB color;
+                    for (int col = 0; col < size.Width; col++)
+                    {
+                        int index;
+                        ARGB color;
 
-                    index = row * size.Width + col;
-                    color = data[index];
+                        index = row * size.Width + col;
+                        color = data[index];
 
-                    // Set the pixel (fast!)
-                    *pixelPtr = color;
+                        // Set the pixel (fast!)
+                        *pixelPtr = color;
 
-                    // Update the pointer
-                    pixelPtr++;
+                        // Update the pointer
+                        pixelPtr++;
+                    }
                 }
             }
+
+            // Unlock the bitmap
+            result.UnlockBits(bitmapData);
+
+            return result;
         }
 
-        // Unlock the bitmap
-        result.UnlockBits(bitmapData);
-
-        return result;
-    }
-
-        public  static Bitmap ResizeImage(Image im, ResizeImage ri)
+        public static Bitmap ResizeImage(Image im, ResizeImage ri)
         {
             Bitmap newIm = new Bitmap(ri.NewSize.Width, ri.NewSize.Height);
 
-            using(Graphics g = Graphics.FromImage(newIm))
+            using (Graphics g = Graphics.FromImage(newIm))
             {
                 g.InterpolationMode = ri.InterpolationMode;
                 g.SmoothingMode = ri.SmoothingMode;
@@ -138,9 +139,9 @@ namespace ImageViewer.Helpers
                 g.CompositingQuality = ri.CompositingQuality;
                 g.PixelOffsetMode = ri.PixelOffsetMode;
 
-                g.DrawImage(im, 
-                    new Rectangle(new Point(0, 0), ri.NewSize), 
-                    new Rectangle(0, 0, im.Width, im.Height), 
+                g.DrawImage(im,
+                    new Rectangle(new Point(0, 0), ri.NewSize),
+                    new Rectangle(0, 0, im.Width, im.Height),
                     ri.GraphicsUnit);
             }
             return newIm;
@@ -154,7 +155,7 @@ namespace ImageViewer.Helpers
             try
             {
                 using (WebP webp = new WebP())
-                    return webp.Load(path);   
+                    return webp.Load(path);
             }
             catch (Exception e)
             {
@@ -175,13 +176,13 @@ namespace ImageViewer.Helpers
             {
                 return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 // in case the file doesn't have proper extension there is no harm in trying to load as webp
                 Bitmap tryLoadWebP;
                 if ((tryLoadWebP = LoadWebP(path)) != null)
                     return tryLoadWebP;
-                    
+
                 e.ShowError();
             }
             return null;
@@ -242,7 +243,7 @@ namespace ImageViewer.Helpers
         {
             if (!File.Exists(imagePath))
                 return Size.Empty;
-            
+
             try
             {
                 using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -289,7 +290,7 @@ namespace ImageViewer.Helpers
 
             if (string.IsNullOrEmpty(ext))
                 return DEFAULT_IMAGE_FORMAT;
-            
+
             switch (ext.Trim().ToLower())
             {
                 case "png":
@@ -317,7 +318,7 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(filePath) || img == null)
                 return false;
 
-            if(q == WebPQuality.empty)
+            if (q == WebPQuality.empty)
                 q = InternalSettings.WebpQuality_Default;
 
             byte[] rawWebP;
@@ -344,7 +345,7 @@ namespace ImageViewer.Helpers
                 }
                 return true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 e.ShowError();
             }
@@ -370,7 +371,7 @@ namespace ImageViewer.Helpers
 
             try
             {
-                if(imageFormat == null)
+                if (imageFormat == null)
                 {
                     return SaveWebp(img, filePath, WebPQuality.empty);
                 }
@@ -471,8 +472,8 @@ namespace ImageViewer.Helpers
 
 
 
-    // https://stackoverflow.com/a/6336453
-    public static string GetMimeType(Image i)
+        // https://stackoverflow.com/a/6336453
+        public static string GetMimeType(Image i)
         {
             var imgguid = i.RawFormat.Guid;
             foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
@@ -486,8 +487,8 @@ namespace ImageViewer.Helpers
         {
             Bitmap b = new Bitmap(bmpSize.Width, bmpSize.Height);
 
-            using(Graphics g = Graphics.FromImage(b))
-            using(SolidBrush brush = new SolidBrush(fillColor))
+            using (Graphics g = Graphics.FromImage(b))
+            using (SolidBrush brush = new SolidBrush(fillColor))
             {
                 g.FillRectangle(brush, new Rectangle(0, 0, bmpSize.Width, bmpSize.Height));
             }
@@ -512,7 +513,7 @@ namespace ImageViewer.Helpers
 
                 g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height),
                             0, 0, source.Width, source.Height, GraphicsUnit.Pixel, attributes);
-                
+
             }
             return newBitmap;
         }
@@ -528,18 +529,18 @@ namespace ImageViewer.Helpers
             BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
             int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
             byte[] bitmapBGRA = new byte[bitmapLength];
-            
+
             Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
             bitmapImage.UnlockBits(bitmapRead);
-            
-            for (int i = 0; i<bitmapLength; i += 4)
+
+            for (int i = 0; i < bitmapLength; i += 4)
             {
-                bitmapBGRA[i]     = (byte) (255 - bitmapBGRA[i]);
-                bitmapBGRA[i + 1] = (byte) (255 - bitmapBGRA[i + 1]);
-                bitmapBGRA[i + 2] = (byte) (255 - bitmapBGRA[i + 2]);
+                bitmapBGRA[i] = (byte)(255 - bitmapBGRA[i]);
+                bitmapBGRA[i + 1] = (byte)(255 - bitmapBGRA[i + 1]);
+                bitmapBGRA[i + 2] = (byte)(255 - bitmapBGRA[i + 2]);
                 //        [i + 3] = ALPHA.
             }
-            
+
             BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
             Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
             bitmapImage.UnlockBits(bitmapWrite);
@@ -555,14 +556,14 @@ namespace ImageViewer.Helpers
             //create a blank bitmap the same size as original
             Bitmap newBitmap = new Bitmap(original.Width, original.Height);
 
-            using (Graphics g = Graphics.FromImage(newBitmap)) 
+            using (Graphics g = Graphics.FromImage(newBitmap))
             using (ImageAttributes attributes = new ImageAttributes())
             {
-                    attributes.SetColorMatrix(GreyScaleColorMatrix);
+                attributes.SetColorMatrix(GreyScaleColorMatrix);
 
-                    g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
-                       0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
-                
+                g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+                   0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+
             }
             return newBitmap;
         }
@@ -584,7 +585,7 @@ namespace ImageViewer.Helpers
 
             for (int i = 0; i < bitmapLength; i += 4)
             {
-                byte grayScale =(byte)((bitmapBGRA[i] * bm) + //B
+                byte grayScale = (byte)((bitmapBGRA[i] * bm) + //B
                                 (bitmapBGRA[i + 1] * gm) +  //G
                                 (bitmapBGRA[i + 2] * rm)); //R
 
@@ -599,7 +600,7 @@ namespace ImageViewer.Helpers
             bitmapImage.UnlockBits(bitmapWrite);
         }
 
-        public static void FillTransparent(Bitmap bitmapImage,Color fill, int alphaLessThan = 255)
+        public static void FillTransparent(Bitmap bitmapImage, Color fill, int alphaLessThan = 255)
         {
             BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
             int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
@@ -610,7 +611,7 @@ namespace ImageViewer.Helpers
 
             for (int i = 0; i < bitmapLength; i += 4)
             {
-                if(bitmapBGRA[i + 3] < alphaLessThan)
+                if (bitmapBGRA[i + 3] < alphaLessThan)
                 {
                     bitmapBGRA[i] = fill.B;      // B
                     bitmapBGRA[i + 1] = fill.G;  // G

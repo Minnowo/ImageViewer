@@ -10,55 +10,33 @@ using System.Windows.Forms;
 using ImageViewer.Helpers;
 using ImageViewer.Helpers.Dithering;
 using ImageViewer.Helpers.Transforms;
+using ImageViewer.Settings;
 
 
 namespace ImageViewer
 {
     public partial class DitherForm : Form
     {
-
-        private Bitmap _image;
-
-        private ARGB[] _originalImage;
-
-        private RadioButton _previousDitherSelection;
-
-        private RadioButton _previousTransformSelection;
-
-        private Bitmap _transformed;
-
-        private ARGB[] _transformedImage;
+        private Bitmap originalImage;
 
         public DitherForm(Bitmap img)
         {
             if (img == null)
                 return;
+
             InitializeComponent();
 
-            _image = img;
+            rb_MonochromeColor.Checked = true;
+            cb_ColorPallete.SelectedIndex = 0;
+            rb_NoDither.Checked = true;
+
+            originalImage = img;
+
             RequestImageTransform();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                this._transformed?.Dispose();
-                this._image?.Dispose();
-
-                if (components != null)
-                {
-                    components.Dispose();
-                }
-            }
-            base.Dispose(disposing);
         }
 
         public void ColorRadioButton_Changed(object sender, EventArgs e)
         {
-            //this.UpdateRadioSelection(sender as RadioButton, ref _previousTransformSelection);
-
-            //monochromePanel.Enabled = monochromeRadioButton.Checked;
             cb_ColorPallete.Enabled = rb_FullColor.Checked;
 
             this.RequestImageTransform();
@@ -70,93 +48,56 @@ namespace ImageViewer
 
             this.RequestImageTransform();
         }
-
+       
         private void RequestImageTransform()
         {
-            if (_image != null && !backgroundWorker.IsBusy)
+            if (originalImage != null && !backgroundWorker.IsBusy)
             {
                 WorkerData workerData;
                 IPixelTransform transform;
                 IErrorDiffusion ditherer;
                 Bitmap image;
 
-                //statusToolStripStatusLabel.Text = "Running image transform...";
                 Cursor.Current = Cursors.WaitCursor;
                 this.UseWaitCursor = true;
 
-                transform = this.GetPixelTransform();
-                ditherer = this.GetDitheringInstance();
-                image = _image.Copy();
+                transform = GetPixelTransform();
+                ditherer = GetDitheringInstance();
+                image = originalImage.CloneSafe();
 
                 workerData = new WorkerData
                 {
                     Image = image,
                     Transform = transform,
-                    Dither = ditherer,
-                    ColorCount = this.GetMaximumColorCount()
+                    Dither = ditherer
                 };
 
-#if USEWORKER
-        backgroundWorker.RunWorkerAsync(workerData);
-#else
-                backgroundWorker_RunWorkerCompleted(backgroundWorker, new RunWorkerCompletedEventArgs(this.GetTransformedImage(workerData), null, false));
-#endif
+                if (InternalSettings.Use_Async_Dither)
+                {
+
+                    backgroundWorker.RunWorkerAsync(workerData);
+                }
+                else
+                {
+                    backgroundWorker_RunWorkerCompleted(backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
+                }
             }
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-
             if (e.Error != null)
             {
                 MessageBox.Show("Failed to transform image. " + e.Error.GetBaseException().Message, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
-                _transformed = e.Result as Bitmap;
-                _transformedImage = _transformed.GetPixelsFrom32BitArgbImage();
-
-                pictureBox1.Image = _transformed;
-
-                ThreadPool.QueueUserWorkItem(state =>
-                {
-                    int count;
-
-                    count = this.GetColorCount(_transformedImage);
-
-                    //this.UpdateColorCount(transformedColorsToolStripStatusLabel, count);
-                });
+                imageDisplay2.Image = e.Result as Bitmap;
+                imageDisplay2.FitToScreen();
             }
 
-            //statusToolStripStatusLabel.Text = string.Empty;
             Cursor.Current = Cursors.Default;
             this.UseWaitCursor = false;
-        }
-
-        private void UpdateColorCount(ToolStripItem control, int count)
-        {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new Action<ToolStripItem, int>(this.UpdateColorCount), control, count);
-            }
-            else
-            {
-                control.Text = count.ToString();
-            }
-        }
-
-        private int GetColorCount(ARGB[] pixels)
-        {
-            HashSet<int> colors;
-
-            colors = new HashSet<int>();
-
-            foreach (ARGB color in pixels)
-            {
-                colors.Add(color.ToArgb());
-            }
-
-            return colors.Count;
         }
 
         private IPixelTransform GetPixelTransform()
@@ -253,33 +194,47 @@ namespace ImageViewer
             return result;
         }
 
-        private int GetMaximumColorCount()
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            int result;
+            WorkerData data;
 
-            result = 256;
+            data = (WorkerData)e.Argument;
 
-            if (rb_MonochromeColor.Checked)
+            e.Result = DitherHelper.GetTransformedImage(data);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                result = 2;
-            }
-            else if (rb_FullColor.Checked)
-            {
-                switch (cb_ColorPallete.SelectedIndex)
+                // we don't ever dispose of the originalImage because 
+                // we don't clone it before calling this class
+                //originalImage.Dispose();
+                //Console.WriteLine("");
+                imageDisplay2.Image = null;
+
+                if (components != null)
                 {
-                    case 0:
-                        result = 8;
-                        break;
-                    case 1:
-                        result = 16;
-                        break;
-                    case 2:
-                        result = 256;
-                        break;
+                    components.Dispose();
                 }
             }
+            base.Dispose(disposing);
+        }
 
-            return result;
+        private void btn_Save_Click(object sender, EventArgs e)
+        {
+            originalImage = (Bitmap)imageDisplay2.Image.CloneSafe();
+            Close();
+        }
+
+        private void btn_Cancel_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void btn_Refresh_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

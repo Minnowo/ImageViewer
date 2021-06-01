@@ -9,7 +9,7 @@ using ImageViewer.Helpers.Transforms;
 
 namespace ImageViewer.Helpers
 {
-    internal sealed class WorkerData
+    public sealed class WorkerData
     {
         public Bitmap Image { get; set; }
 
@@ -17,6 +17,5 @@ namespace ImageViewer.Helpers
 
         public IPixelTransform Transform { get; set; }
 
-        public int ColorCount { get; set; }
     }
 }

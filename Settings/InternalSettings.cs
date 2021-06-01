@@ -72,6 +72,7 @@ namespace ImageViewer.Settings
         public static bool Use_Lite_Load_Image = true;
         public static bool Use_Fast_Invert_Color = true;
         public static bool Use_Fast_Grey_Scale = true;
+        public static bool Use_Async_Dither = true;
 
         public static bool WebP_Plugin_Exists = false;
 

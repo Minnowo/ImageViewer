@@ -62,6 +62,7 @@
     <Compile Include="Forms\DitherForm.Designer.cs">
       <DependentUpon>DitherForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DitherHelper.cs" />
     <Compile Include="Helpers\DitherWorkerData.cs" />
     <Compile Include="Forms\AskForNumericValueForm.cs">
       <SubType>Form</SubType>

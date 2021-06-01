@@ -394,11 +394,16 @@ namespace ImageViewer
 
         private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage.idMain == null)
+            if (currentPage == null)
                 return;
 
-            using(DitherForm df = new DitherForm((Bitmap)currentPage.idMain.Image.CloneSafe())) 
+            using (DitherForm df = new DitherForm((Bitmap)currentPage.idMain.Image))
             {
+                df.Owner = this;
+                df.TopMost = true;
+                df.StartPosition = FormStartPosition.CenterScreen;
+                df.LocationChanged += ParentFollowChild;
+
                 df.ShowDialog();
             }
         }
