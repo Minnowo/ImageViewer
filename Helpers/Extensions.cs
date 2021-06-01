@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,22 @@ namespace ImageViewer.Helpers
         #endregion
 
         #region Bitmap / Image Extensions
+
+        public static Bitmap Copy(this Image image)
+        {
+            Bitmap copy;
+
+            copy = new Bitmap(image.Size.Width, image.Size.Height, PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(copy))
+            {
+                g.Clear(Color.Transparent);
+                g.PageUnit = GraphicsUnit.Pixel;
+                g.DrawImage(image, new Rectangle(Point.Empty, image.Size));
+            }
+
+            return copy;
+        }
 
         public static Bitmap Resize(this Bitmap bmp, ResizeImage ri)
         {
@@ -59,6 +76,11 @@ namespace ImageViewer.Helpers
         }
 
         #endregion
+
+        public static byte ToByte(this int input)
+        {
+            return (byte)input.Clamp(0, 255);
+        }
 
         public static void ShowError(this Exception e)
         {

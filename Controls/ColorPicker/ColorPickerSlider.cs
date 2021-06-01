@@ -35,7 +35,7 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB color = new HSB(0, 100, 100, SelectedColor.argb.A);
+                HSB color = new HSB(0f, 100, 100, SelectedColor.argb.A);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -123,7 +123,7 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB color = new HSB(0, 100, 100, SelectedColor.argb.A);
+                HSB color = new HSB(0f, 100, 100, SelectedColor.argb.A);
 
                 for (int y = 0; y < clientHeight; y++)
                 {

@@ -302,18 +302,18 @@ namespace ImageViewer.Controls
 
                 // RGB Color Space
                 case DrawStyles.Red:
-                    selectedColor.argb.B = (int)Math.Round(255 * (double)lastClicked.X / (clientWidth));
-                    selectedColor.argb.G = (int)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
+                    selectedColor.argb.B = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
+                    selectedColor.argb.G = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Green:
-                    selectedColor.argb.B = (int)Math.Round(255 * (double)lastClicked.X / (clientWidth));
-                    selectedColor.argb.R = (int)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
+                    selectedColor.argb.B = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
+                    selectedColor.argb.R = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Blue:
-                    selectedColor.argb.R = (int)Math.Round(255 * (double)lastClicked.X / (clientWidth));
-                    selectedColor.argb.G = (int)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
+                    selectedColor.argb.R = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
+                    selectedColor.argb.G = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
                     selectedColor.UpdateARGB();
                     break;
             }
@@ -353,15 +353,15 @@ namespace ImageViewer.Controls
 
                 // RGB Color Space
                 case DrawStyles.Red:
-                    selectedColor.argb.R = 255 - (int)Math.Round(255 * (double)lastClicked.Y / clientHeight);
+                    selectedColor.argb.R = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Green:
-                    selectedColor.argb.G = 255 - (int)Math.Round(255 * (double)lastClicked.Y / clientHeight);
+                    selectedColor.argb.G = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Blue:
-                    selectedColor.argb.B = 255 - (int)Math.Round(255 * (double)lastClicked.Y / clientHeight);
+                    selectedColor.argb.B = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateARGB();
                     break;
             }

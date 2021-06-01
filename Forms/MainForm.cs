@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
@@ -13,7 +8,6 @@ using ImageViewer.Helpers;
 using ImageViewer.Controls;
 using ImageViewer.Native;
 using ImageViewer.Settings;
-using System.Threading;
 using ImageViewer.structs;
 
 namespace ImageViewer
@@ -398,11 +392,21 @@ namespace ImageViewer
             }
         }
 
+        private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage.idMain == null)
+                return;
+
+            using(DitherForm df = new DitherForm((Bitmap)currentPage.idMain.Image.CloneSafe())) 
+            {
+                df.ShowDialog();
+            }
+        }
         #endregion
 
         #region cmsViewBtn
 
-        
+
 
         private void cmsViewBtn_Opening(object sender, CancelEventArgs e)
         {
@@ -695,7 +699,6 @@ namespace ImageViewer
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            //Console.WriteLine("key down");
             switch (e.KeyData)
             {
                 case (Keys.C | Keys.Control):
@@ -709,5 +712,6 @@ namespace ImageViewer
             }
             base.OnKeyDown(e);
         }
+
     }
 }

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Drawing.Drawing2D;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+
 
 namespace ImageViewer.Helpers
 {
@@ -15,8 +17,10 @@ namespace ImageViewer.Helpers
         private float m { get; set; }
         private float y { get; set; }
         private float k { get; set; }
-        private ushort alpha { get; set; }
+        private byte alpha { get; set; }
+
         public static readonly CMYK Empty;
+
         public float C
         {
             get
@@ -113,7 +117,7 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public ushort Alpha
+        public byte Alpha
         {
             get
             {
@@ -121,7 +125,7 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                alpha = (ushort)ColorHelper.ValidColor(value);
+                alpha = ColorHelper.ValidColor(value);
             }
         }
 
@@ -152,7 +156,7 @@ namespace ImageViewer.Helpers
                 m = (1f - modifiedG - k) / (1f - k);
                 y = (1f - modifiedB - k) / (1f - k);
             }
-            alpha = a;
+            alpha = (byte)a;
         }
 
         public CMYK(int c, int m, int y, int k, int a = 255) : this()
@@ -161,7 +165,7 @@ namespace ImageViewer.Helpers
             M100 = m;
             Y100 = y;
             K100 = k;
-            Alpha = (ushort)a;
+            Alpha = (byte)a;
         }
 
         public CMYK(float c, float m, float y, float k, float a = 255) : this()
@@ -170,7 +174,7 @@ namespace ImageViewer.Helpers
             M100 = m;
             Y100 = y;
             K100 = k;
-            Alpha = (ushort)a;
+            Alpha = (byte)a;
         }
 
         public override string ToString()
@@ -247,8 +251,10 @@ namespace ImageViewer.Helpers
         private float hue { get; set; }
         private float saturation { get; set; }
         private float lightness { get; set; }
-        private ushort alpha { get; set; }
+        private byte alpha { get; set; }
+
         public static readonly HSL Empty;
+
         public float Hue
         {
             get
@@ -321,7 +327,7 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public ushort Alpha
+        public byte Alpha
         {
             get
             {
@@ -329,7 +335,7 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                alpha = (ushort)ColorHelper.ValidColor(value);
+                alpha = ColorHelper.ValidColor(value);
             }
         }
 
@@ -350,7 +356,7 @@ namespace ImageViewer.Helpers
             Hue360 = h;
             Saturation100 = s;
             Lightness100 = l;
-            alpha = (ushort)a;
+            alpha = (byte)a;
         }
 
         public HSL(float h, float s, float l, int a = 255) : this()
@@ -358,7 +364,7 @@ namespace ImageViewer.Helpers
             Hue360 = h;
             Saturation100 = s;
             Lightness100 = l;
-            Alpha = (ushort)a;
+            Alpha = (byte)a;
         }
 
         public override string ToString()
@@ -475,9 +481,10 @@ namespace ImageViewer.Helpers
         private float hue { get; set; }
         private float saturation { get; set; }
         private float brightness { get; set; }
-        private ushort alpha { get; set; }
+        private byte alpha { get; set; }
 
         public static readonly HSB Empty;
+
         public float Brightness
         {
             get
@@ -550,7 +557,7 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public ushort Alpha
+        public byte Alpha
         {
             get
             {
@@ -558,7 +565,7 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                alpha = (ushort)ColorHelper.ValidColor(value);
+                alpha = ColorHelper.ValidColor(value);
             }
         }
 
@@ -567,7 +574,7 @@ namespace ImageViewer.Helpers
             Hue360 = h;
             Saturation100 = s;
             Brightness100 = b;
-            Alpha = (ushort)a;
+            Alpha = (byte)a;
         }
 
         public HSB(int h, int s, int b, int a = 255) : this()
@@ -575,7 +582,7 @@ namespace ImageViewer.Helpers
             Hue360 = h;
             Saturation100 = s;
             Brightness100 = b;
-            Alpha = (ushort)a;
+            Alpha = (byte)a;
         }
 
         public HSB(Color color) : this(color.R, color.G, color.B)
@@ -626,7 +633,7 @@ namespace ImageViewer.Helpers
                     saturation = (newG - min) / newG;
                 brightness = newG;
             }
-            alpha = a;
+            alpha = (byte)a;
         }
 
         public override string ToString()
@@ -738,14 +745,28 @@ namespace ImageViewer.Helpers
             return base.Equals(obj);
         }
     }
+
+    [StructLayout(LayoutKind.Explicit)]
     public struct ARGB
     {
-        private ushort r { get; set; }
-        private ushort g { get; set; }
-        private ushort b { get; set; }
-        private ushort alpha { get; set; }
+        [FieldOffset(0)]
+        private readonly int _value;
+
+        [FieldOffset(0)]
+        private byte b;
+
+        [FieldOffset(1)]
+        private byte g;
+
+        [FieldOffset(2)]
+        private byte r;
+
+        [FieldOffset(3)]
+        private byte alpha;
+
         public static readonly ARGB Empty;
-        public int R
+
+        public byte R
         {
             get
             {
@@ -753,11 +774,11 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                r = (ushort)ColorHelper.ValidColor(value);
+                r = ColorHelper.ValidColor(value);
             }
         }
 
-        public int G
+        public byte G
         {
             get
             {
@@ -765,11 +786,11 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                g = (ushort)ColorHelper.ValidColor(value);
+                g = ColorHelper.ValidColor(value);
             }
         }
 
-        public int B
+        public byte B
         {
             get
             {
@@ -777,11 +798,11 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                b = (ushort)ColorHelper.ValidColor(value);
+                b = ColorHelper.ValidColor(value);
             }
         }
 
-        public int A
+        public byte A
         {
             get
             {
@@ -789,16 +810,21 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                alpha = (ushort)ColorHelper.ValidColor(value);
+                alpha = ColorHelper.ValidColor(value);
             }
         }
 
-        public ARGB(int al, int red, int green, int blue)
+        public ARGB(int red, int green, int blue) :this(255, red, green, blue)
         {
-            alpha = (ushort)al;
-            r = (ushort)red;
-            g = (ushort)green;
-            b = (ushort)blue;
+
+        }
+
+        public ARGB(int al, int red, int green, int blue) : this() 
+        {
+            A = (byte)al;
+            R = (byte)red;
+            G = (byte)green;
+            B = (byte)blue;
         }
 
         public ARGB(Color argb) : this(argb.A, argb.R, argb.G, argb.B)
@@ -855,6 +881,15 @@ namespace ImageViewer.Helpers
             }
             return string.Format("{0}, {1}, {2}", R, G, B);
         }
+        internal static ARGB FromArgb(byte a, byte r, byte g, byte b)
+        {
+            return new ARGB(a, r, g, b);
+        }
+
+        internal static ARGB FromArgb(byte r, byte g, byte b)
+        {
+            return new ARGB(r, g, b);
+        }
         public Color ToColor()
         {
             return Color.FromArgb(A, R, G, B);
@@ -871,6 +906,10 @@ namespace ImageViewer.Helpers
         {
             return new CMYK(r, g, b, alpha);
         }
+        public int ToArgb()
+        {
+            return _value;
+        }
         public override int GetHashCode()
         {
             return base.GetHashCode();
@@ -881,10 +920,11 @@ namespace ImageViewer.Helpers
             return base.Equals(obj);
         }
     }
+
     public struct _Color
     {
         public static readonly _Color Empty;
-        private ushort alpha { get; set; }
+        private byte alpha { get; set; }
         public ARGB argb;
         public HSB hsb;
         public HSL hsl;
@@ -897,7 +937,8 @@ namespace ImageViewer.Helpers
                 return Alpha < 255;
             }
         }
-        public ushort Alpha
+
+        public byte Alpha
         {
             get
             {
@@ -905,9 +946,10 @@ namespace ImageViewer.Helpers
             }
             set
             {
-                alpha = (ushort)ColorHelper.ValidColor(value);
+                alpha = ColorHelper.ValidColor(value);
             }
         }
+
         public _Color(Color color)
         {
             argb = color;

@@ -572,6 +572,7 @@
                     0,
                     0,
                     0})};
+            this.ccb_CMYK.ColorChanged += new ImageViewer.Events.ColorEventHandler(this.ColorComboBox_ColorChanged);
             // 
             // btn_CopyRGB
             // 

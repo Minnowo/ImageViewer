@@ -109,7 +109,7 @@ namespace ImageViewer.Controls
 
                 for (int y = 0; y < clientHeight; y++)
                 {
-                    start.G = end.G = (int)Math.Round(255 - ((double)y / (clientHeight)) * 255);
+                    start.G = end.G = (byte)Math.Round(255 - ((double)y / (clientHeight)) * 255);
 
                     using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, 1), start, end, LinearGradientMode.Horizontal))
                     {
@@ -131,7 +131,7 @@ namespace ImageViewer.Controls
 
                 for (int y = 0; y < clientHeight; y++)
                 {
-                    start.R = end.R = (int)Math.Round(255 - ((double)y / (clientHeight)) * 255);
+                    start.R = end.R = (byte)Math.Round(255 - ((double)y / (clientHeight)) * 255);
 
                     using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, 1), start, end, LinearGradientMode.Horizontal))
                     {
@@ -153,7 +153,7 @@ namespace ImageViewer.Controls
 
                 for (int y = 0; y < clientHeight; y++)
                 {
-                    start.G = end.G = (int)Math.Round(255 - ((double)y / (clientHeight)) * 255);
+                    start.G = end.G = (byte)Math.Round(255 - ((double)y / (clientHeight)) * 255);
 
                     using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, 1), start, end, LinearGradientMode.Horizontal))
                     {

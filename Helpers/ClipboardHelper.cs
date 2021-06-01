@@ -111,5 +111,61 @@ namespace ImageViewer.Helpers
 
             return CopyData(dataObject);
         }
+
+        public static Bitmap GetImage()
+        {
+            Bitmap result;
+
+            // http://csharphelper.com/blog/2014/09/paste-a-png-format-image-with-a-transparent-background-from-the-clipboard-in-c/
+
+            result = null;
+
+            try
+            {
+                if (Clipboard.ContainsData(FORMAT_PNG))
+                {
+                    object data;
+
+                    data = Clipboard.GetData(FORMAT_PNG);
+
+                    if (data != null)
+                    {
+                        Stream stream;
+
+                        stream = data as MemoryStream;
+
+                        if (stream == null)
+                        {
+                            byte[] buffer;
+
+                            buffer = data as byte[];
+
+                            if (buffer != null)
+                            {
+                                stream = new MemoryStream(buffer);
+                            }
+                        }
+
+                        if (stream != null)
+                        {
+                            result = Image.FromStream(stream).Copy();
+
+                            stream.Dispose();
+                        }
+                    }
+                }
+
+                if (result == null)
+                {
+                    result = (Bitmap)Clipboard.GetImage();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Failed to obtain image. {0}", ex.GetBaseException().Message), "Paste Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return result;
+        }
     }
 }
