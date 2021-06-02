@@ -57,9 +57,6 @@ namespace ImageViewer
                 IErrorDiffusion ditherer;
                 Bitmap image;
 
-                Cursor.Current = Cursors.WaitCursor;
-                this.UseWaitCursor = true;
-
                 transform = GetPixelTransform();
                 ditherer = GetDitheringInstance();
                 image = originalImage.CloneSafe();
@@ -70,8 +67,8 @@ namespace ImageViewer
                 if (transform == null)
                     return;
                 
-                if (ditherer == null)
-                    return;
+                Cursor.Current = Cursors.WaitCursor;
+                this.UseWaitCursor = true;
 
                 workerData = new WorkerData
                 {
