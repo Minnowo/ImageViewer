@@ -266,7 +266,6 @@ namespace ImageViewer.Controls
         private bool drawingSelectionBox = false;
         private bool initialDraw = false;
 
-        private bool drawBox = true;
         public DrawingBoard()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
@@ -274,12 +273,7 @@ namespace ImageViewer.Controls
             this.MouseDown += ImageViewer_MouseDown;
             this.MouseUp += ImageViewer_MouseUp;
             this.MouseWheel += ImageViewer_MouseWheel;
-            this.MouseMove += ImageViewer_MouseMove;
-
-            selectionBox = new Rectangle(100, 100, 100, 100);
-            rightClickStart = new Point(100, 100);
-            rightClickEnd = new Point(200, 200);
-            
+            this.MouseMove += ImageViewer_MouseMove;            
         }
 
         #region public methods
@@ -621,8 +615,8 @@ namespace ImageViewer.Controls
         private PointF PointToImage(Point p)
         {
             return new PointF(
-                    (p.X - origin.X) / (float)zoomFactor,
-                    (p.Y - origin.Y) / (float)zoomFactor);
+                    p.X / (float)zoomFactor + origin.X,
+                    p.Y / (float)zoomFactor + origin.Y);
         }
 
         #endregion
@@ -637,11 +631,9 @@ namespace ImageViewer.Controls
 
             DrawImage(g); 
 
-            if(isRightClicking || drawBox)
+            if(isRightClicking)
                 DrawDragBox(g);
 
-
-            //g.DrawLine(Pens.White, 100, 100, 400, 100);
         }
 
         protected override void OnSizeChanged(EventArgs e)
