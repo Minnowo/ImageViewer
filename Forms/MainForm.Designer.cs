@@ -71,13 +71,13 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.grayScaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.invertColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ditherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsViewBtn = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.fullScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.slideShowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actualSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFitToScreen = new System.Windows.Forms.ToolStripMenuItem();
             this.tcMain = new ImageViewer.Controls._TabControl();
-            this.ditherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -362,7 +362,7 @@
             this.ditherToolStripMenuItem});
             this.cmsEditBtn.Name = "cmsEditBtn";
             this.cmsEditBtn.ShowImageMargin = false;
-            this.cmsEditBtn.Size = new System.Drawing.Size(156, 264);
+            this.cmsEditBtn.Size = new System.Drawing.Size(136, 242);
             this.cmsEditBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsEditBtn_Opening);
             // 
             // fillTransparentToolStripMenuItem
@@ -476,6 +476,13 @@
             this.invertColorToolStripMenuItem.Text = "Invert Color";
             this.invertColorToolStripMenuItem.Click += new System.EventHandler(this.invertColorToolStripMenuItem_Click);
             // 
+            // ditherToolStripMenuItem
+            // 
+            this.ditherToolStripMenuItem.Name = "ditherToolStripMenuItem";
+            this.ditherToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.ditherToolStripMenuItem.Text = "Dither";
+            this.ditherToolStripMenuItem.Click += new System.EventHandler(this.ditherToolStripMenuItem_Click);
+            // 
             // cmsViewBtn
             // 
             this.cmsViewBtn.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -536,13 +543,6 @@
             this.tcMain.TabIndex = 2;
             this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);
             // 
-            // ditherToolStripMenuItem
-            // 
-            this.ditherToolStripMenuItem.Name = "ditherToolStripMenuItem";
-            this.ditherToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.ditherToolStripMenuItem.Text = "Dither";
-            this.ditherToolStripMenuItem.Click += new System.EventHandler(this.ditherToolStripMenuItem_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -552,6 +552,7 @@
             this.Controls.Add(this.tcMain);
             this.Controls.Add(this.pnlTopMain);
             this.Controls.Add(this.tsMain);
+            this.MinimumSize = new System.Drawing.Size(280, 220);
             this.Name = "MainForm";
             this.Text = "NULL";
             this.Resize += new System.EventHandler(this.MainWindow_Resize);

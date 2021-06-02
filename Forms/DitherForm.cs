@@ -349,10 +349,22 @@ namespace ImageViewer
             if (!fitToScreenLimiter.IsRunning)
                 fitToScreenLimiter.Start();
 
-            if (InternalSettings.Fit_Image_On_Resize && fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
+            switch (WindowState)
             {
-                imageDisplay.FitToScreen();
-                fitToScreenLimiter.Restart();
+                case FormWindowState.Maximized:
+                    imageDisplay.FitToScreen();
+                    break;
+
+                case FormWindowState.Minimized:
+                    break;
+
+                case FormWindowState.Normal:
+                    if (InternalSettings.Fit_Image_On_Resize && fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
+                    {
+                        imageDisplay.FitToScreen();
+                        fitToScreenLimiter.Restart();
+                    }
+                    break;
             }
 
             base.OnResize(e);

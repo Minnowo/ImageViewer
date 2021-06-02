@@ -331,7 +331,7 @@ namespace ImageViewer.Controls
 
             // avoid calling update but set the zoom factor for CenterImageOriginX to work
             zoomFactor = Math.Min((double)ClientSize.Width / originalImage.Width, (double)ClientSize.Height / originalImage.Height); 
-            Origin = new Point(CenterImageOriginX, 0);
+            Origin = new Point(CenterImageOriginX, CenterImageOriginY);
 
             // call invalidate and update apparent size
             ZoomFactor = zoomFactor; 

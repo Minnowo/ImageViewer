@@ -332,7 +332,9 @@ namespace ImageViewer
 
         private void fillTransparentToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using(ColorPickerForm f = new ColorPickerForm())
+            Point p = Location;
+
+            using (ColorPickerForm f = new ColorPickerForm())
             {
                 f.Owner = this;
                 f.TopMost = true;
@@ -351,6 +353,8 @@ namespace ImageViewer
 
             if (currentPage.idMain.FillTransparent)
                 currentPage.idMain.FillTransparent = true;
+
+            Location = p;
         }
 
 
@@ -366,6 +370,8 @@ namespace ImageViewer
 
         private void fillWhenAlphaIsLessThanToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Point p = Location;
+
             using (AskForNumericValueForm f = new AskForNumericValueForm())
             {
                 f.Text = "Insert Value Between 0 And 255";
@@ -390,12 +396,16 @@ namespace ImageViewer
 
                 currentPage.idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
             }
+
+            Location = p;
         }
 
         private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (currentPage == null)
                 return;
+
+            Point p = Location;
 
             using (DitherForm df = new DitherForm((Bitmap)currentPage.idMain.Image))
             {
@@ -408,6 +418,8 @@ namespace ImageViewer
 
                 currentPage.idMain.Update();
             }
+
+            Location = p;
         }
         #endregion
 
