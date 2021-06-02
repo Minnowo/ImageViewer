@@ -21,6 +21,7 @@ namespace ImageViewer
     public partial class DitherForm : Form
     {
         public string CustomColorPalette { get; private set; } = "";
+        public bool CanceledOnClosing = false;
 
         private ARGB[] customPalette;
         private Bitmap originalImage;
@@ -33,7 +34,7 @@ namespace ImageViewer
                 return;
 
             InitializeComponent();
-
+            backgroundWorker.WorkerSupportsCancellation = true;
             updateThresholdTimer.Interval = InternalSettings.Dither_Threshold_Update_Limit;
             updateThresholdTimer.Tick += UpdateThresholdTimer_Tick;
 
@@ -50,42 +51,42 @@ namespace ImageViewer
        
         private void RequestImageTransform()
         {
-            if (originalImage != null && !backgroundWorker.IsBusy)
-            {
-                WorkerData workerData;
-                IPixelTransform transform;
-                IErrorDiffusion ditherer;
-                Bitmap image;
+            if (originalImage == null || backgroundWorker.IsBusy)
+                return;
 
-                transform = GetPixelTransform();
-                ditherer = GetDitheringInstance();
-                image = originalImage.CloneSafe();
+            WorkerData workerData;
+            IPixelTransform transform;
+            IErrorDiffusion ditherer;
+            Bitmap image;
 
-                if (image == null)
-                    return;
+            transform = GetPixelTransform();
+            ditherer = GetDitheringInstance();
+            image = originalImage.CloneSafe();
 
-                if (transform == null)
-                    return;
+            if (image == null)
+                return;
+
+            if (transform == null)
+                return;
                 
-                Cursor.Current = Cursors.WaitCursor;
-                this.UseWaitCursor = true;
+            Cursor.Current = Cursors.WaitCursor;
+            this.UseWaitCursor = true;
 
-                workerData = new WorkerData
-                {
-                    Image = image,
-                    Transform = transform,
-                    Dither = ditherer
-                };
+            workerData = new WorkerData
+            {
+                Image = image,
+                Transform = transform,
+                Dither = ditherer
+            };
 
-                if (InternalSettings.Use_Async_Dither)
-                {
+            if (InternalSettings.Use_Async_Dither)
+            {
 
-                    backgroundWorker.RunWorkerAsync(workerData);
-                }
-                else
-                {
-                    backgroundWorker_RunWorkerCompleted(backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
-                }
+                backgroundWorker.RunWorkerAsync(workerData);
+            }
+            else
+            {
+                backgroundWorker_RunWorkerCompleted(backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
             }
         }
 
@@ -95,7 +96,7 @@ namespace ImageViewer
             {
                 MessageBox.Show("Failed to transform image. " + e.Error.GetBaseException().Message, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            else
+            else if(!e.Cancelled )
             {
                 imageDisplay.Image = e.Result as Bitmap;
                 imageDisplay.FitToScreen();
@@ -208,7 +209,20 @@ namespace ImageViewer
 
             data = (WorkerData)e.Argument;
 
-            e.Result = DitherHelper.GetTransformedImage(data);
+            // need to keep track of the worker and event args
+            // so that we can check for cancel in the function
+            data.Worker = sender as BackgroundWorker;
+            data.Args = e;
+
+            Bitmap btmp = DitherHelper.GetTransformedImage(data);
+
+            if (e.Cancel == true)
+            {
+                btmp?.Dispose();
+                return;
+            }
+
+            e.Result = btmp;
         }
 
         private void UpdateThresholdTimer_Tick(object sender, EventArgs e)
@@ -237,6 +251,12 @@ namespace ImageViewer
 
         private void btn_Save_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show(this, "cannot save while worker thread is running", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             ImageHelper.UpdateBitmap(originalImage, (Bitmap)imageDisplay.Image);
             Close();
         }
@@ -248,6 +268,9 @@ namespace ImageViewer
 
         private void btn_Refresh_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+                return;
+
             RequestImageTransform();
         }
 
@@ -322,6 +345,17 @@ namespace ImageViewer
 
             customPalette = palette;
             RequestImageTransform();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (backgroundWorker.IsBusy)
+            {
+                backgroundWorker.CancelAsync();
+                CanceledOnClosing = true;
+            }
+
+            base.OnFormClosing(e);
         }
 
         protected override void Dispose(bool disposing)

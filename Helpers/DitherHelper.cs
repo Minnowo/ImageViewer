@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Forms;
 using ImageViewer.Helpers.Dithering;
 using ImageViewer.Helpers.Transforms;
+using System.ComponentModel;
 
 namespace ImageViewer.Helpers
 {
@@ -20,7 +22,7 @@ namespace ImageViewer.Helpers
 
             transform = workerData.Transform;
             dither = workerData.Dither;
-
+            
             using (Bitmap image = workerData.Image)
             {
                 size = image.Size;
@@ -31,19 +33,19 @@ namespace ImageViewer.Helpers
             {
                 // perform the dithering on the source data before
                 // it is transformed
-                ProcessPixels(pixelData, size, null, dither);
+                ProcessPixels(pixelData, size, null, dither, workerData);
                 dither = null;
             }
 
             // scan each pixel, apply a transform the pixel
             // and then dither it
-            ProcessPixels(pixelData, size, transform, dither);
+            ProcessPixels(pixelData, size, transform, dither, workerData);
 
             // create the final bitmap
             return pixelData.ToBitmap(size);
         }
 
-        public static void ProcessPixels(ARGB[] pixelData, Size size, IPixelTransform pixelTransform, IErrorDiffusion dither)
+        public static void ProcessPixels(ARGB[] pixelData, Size size, IPixelTransform pixelTransform, IErrorDiffusion dither, WorkerData bw = null)
         {
             ARGB current;
             ARGB transformed;
@@ -52,6 +54,11 @@ namespace ImageViewer.Helpers
             for (int row = 0; row < size.Height; row++)
                 for (int col = 0; col < size.Width; col++)
                 {
+                    if (bw != null && bw.Worker.CancellationPending == true)
+                    {
+                        bw.Args.Cancel = true;
+                        return;
+                    }
 
                     index = row * size.Width + col;
                     current = pixelData[index];

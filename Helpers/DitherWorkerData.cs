@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using ImageViewer.Helpers.Dithering;
 using ImageViewer.Helpers.Transforms;
+using System.ComponentModel;
 
 namespace ImageViewer.Helpers
 {
@@ -17,5 +18,8 @@ namespace ImageViewer.Helpers
 
         public IPixelTransform Transform { get; set; }
 
+        public BackgroundWorker Worker { get; set; }
+
+        public DoWorkEventArgs Args { get; set; }
     }
 }

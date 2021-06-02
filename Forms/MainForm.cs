@@ -406,7 +406,7 @@ namespace ImageViewer
                 return;
 
             Point p = Location;
-
+            bool collectGarbage = false;
             using (DitherForm df = new DitherForm((Bitmap)currentPage.idMain.Image))
             {
                 df.Owner = this;
@@ -416,10 +416,19 @@ namespace ImageViewer
 
                 df.ShowDialog();
 
+                collectGarbage = df.CanceledOnClosing;
+
                 currentPage.idMain.Update();
             }
 
             Location = p;
+
+            // not sure why this doesn't help
+            // but if you cancel the close / cancel the dither form
+            // while its worker is running, it leaves a bunch of extra memory
+            // which gets cleared after the user does something to the image
+            if (collectGarbage)
+                GC.Collect();
         }
         #endregion
 
