@@ -91,11 +91,19 @@ namespace ImageViewer.Controls
                 if (isRightClicking)
                     return null;
 
-                //int originXOffset = (int)Math.Round(origin.X * zoomFactor);
-                //int originYOffset = (int)Math.Round(origin.Y * zoomFactor);
+                Console.WriteLine($"origin           : {origin}");
+                Console.WriteLine($"zoom             : {zoomFactor}");
+                Console.WriteLine($"top left of rect : {selectionBox.Location}");
+                Console.WriteLine($"top left to img  : {PointToImage(selectionBox.Location, true)}");
+
+                int originXOffset = (int)Math.Round(origin.X * zoomFactor);
+                int originYOffset = (int)Math.Round(origin.Y * zoomFactor);
+
                 Point topLeftPoint = PointToImage(selectionBox.Location, true);
-                //topLeftPoint.X -= originXOffset;
-                //topLeftPoint.Y -= originYOffset;
+
+                //topLeftPoint.X += originXOffset;
+                //topLeftPoint.Y += originYOffset;
+
                 Size scaledSize = new Size((int)Math.Round(selectionBox.Width / ZoomFactor), (int)Math.Round(selectionBox.Height / ZoomFactor));
 
                 Bitmap selectedRegionImage = new Bitmap(selectionBox.Width, selectionBox.Height);
@@ -258,6 +266,7 @@ namespace ImageViewer.Controls
         private bool drawingSelectionBox = false;
         private bool initialDraw = false;
 
+        private bool drawBox = true;
         public DrawingBoard()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
@@ -265,7 +274,12 @@ namespace ImageViewer.Controls
             this.MouseDown += ImageViewer_MouseDown;
             this.MouseUp += ImageViewer_MouseUp;
             this.MouseWheel += ImageViewer_MouseWheel;
-            this.MouseMove += ImageViewer_MouseMove; 
+            this.MouseMove += ImageViewer_MouseMove;
+
+            selectionBox = new Rectangle(100, 100, 100, 100);
+            rightClickStart = new Point(100, 100);
+            rightClickEnd = new Point(200, 200);
+            
         }
 
         #region public methods
@@ -600,8 +614,8 @@ namespace ImageViewer.Controls
         private Point PointToImage(Point p, bool asPoint = false)
         {
             return new Point(
-                (int)Math.Round((p.X - origin.X) / zoomFactor),
-                (int)Math.Round((p.Y - origin.Y) / zoomFactor));
+                (int)Math.Round((p.X) / zoomFactor) + (int)origin.X,
+                (int)Math.Round((p.Y) / zoomFactor) + (int)origin.Y);
         }
 
         private PointF PointToImage(Point p)
@@ -623,8 +637,11 @@ namespace ImageViewer.Controls
 
             DrawImage(g); 
 
-            if(isRightClicking)
+            if(isRightClicking || drawBox)
                 DrawDragBox(g);
+
+
+            //g.DrawLine(Pens.White, 100, 100, 400, 100);
         }
 
         protected override void OnSizeChanged(EventArgs e)

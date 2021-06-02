@@ -15,7 +15,7 @@ namespace ImageViewer.Settings
 
         public const string All_Files_File_Dialog = "All Files (*.*)|*.";
 
-        public static string Color_Palette_File_Dialog = "Color Palettes (*.aco, *.lbm, *bbm)|*.aco;*lbm;*bbm;| ACO (*.aco)|*.aco| LBM (*.lbm)|*.lbm| BBM (*.bmm)|*.bbm";
+        public static string Color_Palette_File_Dialog = "Color Palettes (*.aco, *.lbm, *bbm, *.txt)|*.aco;*lbm;*bbm;| ACO (*.aco)|*.aco| LBM (*.lbm)|*.lbm| BBM (*.bmm)|*.bbm| TXT (*.txt)|*.txt";
 
         public static string Save_File_Dialog_Default = "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
 

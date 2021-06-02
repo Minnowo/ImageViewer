@@ -1235,6 +1235,31 @@ namespace ImageViewer.Helpers
             return number.Clamp<byte>(0, 255);
         }
 
+        public static List<ARGB> ReadPlainTextColorPalette(string fileName)
+        {
+            List<ARGB> colorPalette;
+
+            colorPalette = new List<ARGB>();
+
+            const Int32 BufferSize = 128;
+            using (var fileStream = File.OpenRead(fileName))
+            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+            {
+                String line;
+                Color color;
+
+                while ((line = streamReader.ReadLine()) != null)
+                {
+                    if(ParseRGB(line, out color))
+                    {
+                        colorPalette.Add(color);
+                    }
+                }
+            }
+
+            return colorPalette;
+        }
+
         // https://www.cyotek.com/blog/loading-the-color-palette-from-a-bbm-lbm-image-file-using-csharp#files
         public static List<ARGB> ReadColorMap(string fileName)
         {

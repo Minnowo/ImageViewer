@@ -22,7 +22,7 @@ namespace ImageViewer
     {
         public string CustomColorPalette { get; private set; } = "";
 
-        private UserCustomColorPaletteTransform customPalette;
+        private ARGB[] customPalette;
         private Bitmap originalImage;
         private Stopwatch fitToScreenLimiter = new Stopwatch();
         private System.Windows.Forms.Timer updateThresholdTimer = new System.Windows.Forms.Timer();
@@ -64,6 +64,15 @@ namespace ImageViewer
                 ditherer = GetDitheringInstance();
                 image = originalImage.CloneSafe();
 
+                if (image == null)
+                    return;
+
+                if (transform == null)
+                    return;
+                
+                if (ditherer == null)
+                    return;
+
                 workerData = new WorkerData
                 {
                     Image = image,
@@ -103,7 +112,9 @@ namespace ImageViewer
         {
             if (rb_UseCustomPalette.Checked)
             {
-                return customPalette;
+                if (customPalette == null)
+                    return null;
+                return new UserCustomColorPaletteTransform(customPalette);
             }
             
             if (rb_MonochromeColor.Checked)
@@ -267,6 +278,18 @@ namespace ImageViewer
             ARGB[] palette = null;
             switch (ext)
             {
+                case "txt":
+                    try
+                    {
+                        palette = ColorHelper.ReadPlainTextColorPalette(CustomColorPalette).ToArray();
+                    }
+                    catch (Exception ex)
+                    {
+                        palette = null;
+                        ex.ShowError();
+                        CustomColorPalette = "Error Loading";
+                    }
+                    break;
                 case "bbm":
                 case "lbm":
                     try
@@ -295,11 +318,12 @@ namespace ImageViewer
                     break;
             }
 
+            lbl_CustomPaletteDisplay.Text = CustomColorPalette;
+
             if (palette == null)
                 return;
 
-            lbl_CustomPaletteDisplay.Text = CustomColorPalette;
-            customPalette = new UserCustomColorPaletteTransform(palette);
+            customPalette = palette;
             RequestImageTransform();
         }
 
