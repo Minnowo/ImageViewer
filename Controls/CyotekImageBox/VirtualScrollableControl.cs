@@ -341,22 +341,22 @@ namespace Cyotek.Windows.Forms
 
             if (x < -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width))
             {
-                x = -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width);
+                //x = -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width);
             }
 
             if (y < -(this.AutoScrollMinSize.Height - this.ClientRectangle.Height))
             {
-                y = -(this.AutoScrollMinSize.Height - base.ClientRectangle.Height);
+                //y = -(this.AutoScrollMinSize.Height - base.ClientRectangle.Height);
             }
 
             if (x > 0)
             {
-                x = 0;
+                //x = 0;
             }
 
             if (y > 0)
             {
-                y = 0;
+                //y = 0;
             }
 
             return new Point(x, y);

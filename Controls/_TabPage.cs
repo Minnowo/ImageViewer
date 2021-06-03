@@ -132,7 +132,7 @@ namespace ImageViewer.Controls
 
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
 
-
+            //ibMain.AutoScrollMinSize = new Size(5000, 5000);
             /*idMain = new ImageDisplay();
             idMain.Location = new Point(0, 0);
             idMain.Dock = DockStyle.Fill;
@@ -171,7 +171,7 @@ namespace ImageViewer.Controls
             }
             else
             {
-                ibMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
+                ibMain.Image = ImageHelper.LoadImage(imagePath.FullName);
                 //idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
             }
 
