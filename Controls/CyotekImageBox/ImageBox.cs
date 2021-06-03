@@ -1286,35 +1286,35 @@ namespace Cyotek.Windows.Forms
             get { return _isPanning; }
             protected set
             {
-                if (_isPanning != value)
+                if (_isPanning == value)
+                    return;
+                
+                CancelEventArgs args;
+
+                args = new CancelEventArgs();
+
+                if (value)
                 {
-                    CancelEventArgs args;
+                    this.OnPanStart(args);
+                }
+                else
+                {
+                    this.OnPanEnd(EventArgs.Empty);
+                }
 
-                    args = new CancelEventArgs();
+                if (args.Cancel)
+                    return;
+                
+                _isPanning = value;
 
-                    if (value)
-                    {
-                        this.OnPanStart(args);
-                    }
-                    else
-                    {
-                        this.OnPanEnd(EventArgs.Empty);
-                    }
-
-                    if (!args.Cancel)
-                    {
-                        _isPanning = value;
-
-                        if (value)
-                        {
-                            _startScrollPosition = this.AutoScrollPosition;
-                            this.Cursor = Cursors.SizeAll;
-                        }
-                        else
-                        {
-                            this.Cursor = Cursors.Default;
-                        }
-                    }
+                if (value)
+                {
+                    _startScrollPosition = this.AutoScrollPosition;
+                    this.Cursor = Cursors.SizeAll;
+                }
+                else
+                {
+                    this.Cursor = Cursors.Default;
                 }
             }
         }
@@ -1992,57 +1992,50 @@ namespace Cyotek.Windows.Forms
         /// <returns></returns>
         public virtual Rectangle GetImageViewPort()
         {
-            Rectangle viewPort;
+            if (this.ViewSize.IsEmpty)
+                return Rectangle.Empty;
+            
+            Rectangle innerRectangle;
+            Point offset;
+            int width;
+            int height;
 
-            if (!this.ViewSize.IsEmpty)
+            innerRectangle = this.GetInsideViewPort(true);
+
+            if (!this.HScroll && !this.VScroll) // if no scrolling is present, tinker the view port so that the image and any applicable borders all fit inside
             {
-                Rectangle innerRectangle;
-                Point offset;
-                int width;
-                int height;
+                innerRectangle.Inflate(-this.GetImageBorderOffset(), -this.GetImageBorderOffset());
+            }
 
-                innerRectangle = this.GetInsideViewPort(true);
-
-                if (!this.HScroll && !this.VScroll) // if no scrolling is present, tinker the view port so that the image and any applicable borders all fit inside
+            if (this.SizeMode != ImageBoxSizeMode.Stretch)
+            {
+                if (this.AutoCenter)
                 {
-                    innerRectangle.Inflate(-this.GetImageBorderOffset(), -this.GetImageBorderOffset());
-                }
+                    int x;
+                    int y;
 
-                if (this.SizeMode != ImageBoxSizeMode.Stretch)
-                {
-                    if (this.AutoCenter)
-                    {
-                        int x;
-                        int y;
+                    x = !this.HScroll ? (innerRectangle.Width - (this.ScaledImageWidth + this.Padding.Horizontal)) / 2 : 0;
+                    y = !this.VScroll ? (innerRectangle.Height - (this.ScaledImageHeight + this.Padding.Vertical)) / 2 : 0;
 
-                        x = !this.HScroll ? (innerRectangle.Width - (this.ScaledImageWidth + this.Padding.Horizontal)) / 2 : 0;
-                        y = !this.VScroll ? (innerRectangle.Height - (this.ScaledImageHeight + this.Padding.Vertical)) / 2 : 0;
-
-                        offset = new Point(x, y);
-                    }
-                    else
-                    {
-                        offset = Point.Empty;
-                    }
-
-                    width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
-                    height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
+                    offset = new Point(x, y);
                 }
                 else
                 {
                     offset = Point.Empty;
-                    width = innerRectangle.Width;
-                    height = innerRectangle.Height;
+                    //offset = new Point(-this.AutoScrollPosition.X, -this.AutoScrollPosition.Y);
                 }
 
-                viewPort = new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
+                width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
+                height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
             }
             else
             {
-                viewPort = Rectangle.Empty;
+                offset = Point.Empty;
+                width = innerRectangle.Width;
+                height = innerRectangle.Height;
             }
 
-            return viewPort;
+            return new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
         }
 
         /// <summary>
@@ -2432,37 +2425,25 @@ namespace Cyotek.Windows.Forms
         /// <returns></returns>
         public virtual RectangleF GetSourceImageRegion()
         {
-            RectangleF region;
+            if (this.ViewSize.IsEmpty)
+                return RectangleF.Empty;
+            
+            if (this.SizeMode == ImageBoxSizeMode.Stretch)
+                return new RectangleF(PointF.Empty, this.ViewSize);
+            
+            float sourceLeft;
+            float sourceTop;
+            float sourceWidth;
+            float sourceHeight;
+            Rectangle viewPort;
 
-            if (!this.ViewSize.IsEmpty)
-            {
-                if (this.SizeMode != ImageBoxSizeMode.Stretch)
-                {
-                    float sourceLeft;
-                    float sourceTop;
-                    float sourceWidth;
-                    float sourceHeight;
-                    Rectangle viewPort;
+            viewPort = this.GetImageViewPort();
+            sourceLeft = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
+            sourceTop = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
+            sourceWidth = (float)(viewPort.Width / this.ZoomFactor);
+            sourceHeight = (float)(viewPort.Height / this.ZoomFactor);
 
-                    viewPort = this.GetImageViewPort();
-                    sourceLeft = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
-                    sourceTop = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
-                    sourceWidth = (float)(viewPort.Width / this.ZoomFactor);
-                    sourceHeight = (float)(viewPort.Height / this.ZoomFactor);
-
-                    region = new RectangleF(sourceLeft, sourceTop, sourceWidth, sourceHeight);
-                }
-                else
-                {
-                    region = new RectangleF(PointF.Empty, this.ViewSize);
-                }
-            }
-            else
-            {
-                region = RectangleF.Empty;
-            }
-
-            return region;
+            return new RectangleF(sourceLeft, sourceTop, sourceWidth, sourceHeight);
         }
 
         /// <summary>
@@ -2938,21 +2919,21 @@ namespace Cyotek.Windows.Forms
                 e.Graphics.FillRectangle(brush, innerRectangle);
             }
 
-            if (_texture != null && this.GridDisplayMode != ImageBoxGridDisplayMode.None)
+            if (_texture == null || this.GridDisplayMode == ImageBoxGridDisplayMode.None)
+                return;
+            
+            switch (this.GridDisplayMode)
             {
-                switch (this.GridDisplayMode)
-                {
-                    case ImageBoxGridDisplayMode.Image:
-                        Rectangle fillRectangle;
+                case ImageBoxGridDisplayMode.Image:
+                    Rectangle fillRectangle;
 
-                        fillRectangle = this.GetImageViewPort();
-                        e.Graphics.FillRectangle(_texture, fillRectangle);
-                        break;
+                    fillRectangle = this.GetImageViewPort();
+                    e.Graphics.FillRectangle(_texture, fillRectangle);
+                    break;
 
-                    case ImageBoxGridDisplayMode.Client:
-                        e.Graphics.FillRectangle(_texture, innerRectangle);
-                        break;
-                }
+                case ImageBoxGridDisplayMode.Client:
+                    e.Graphics.FillRectangle(_texture, innerRectangle);
+                    break;
             }
         }
 
@@ -4532,35 +4513,35 @@ namespace Cyotek.Windows.Forms
         /// </param>
         protected virtual void ProcessPanning(MouseEventArgs e)
         {
-            if (this.AutoPan && !this.ViewSize.IsEmpty)
+            if (!this.AutoPan || this.ViewSize.IsEmpty)
+                return;
+
+            if (!this.IsPanning && this.HScroll | this.VScroll)
             {
-                if (!this.IsPanning && this.HScroll | this.VScroll)
+                _startMousePosition = e.Location;
+                this.IsPanning = true;
+            }
+            this.IsPanning = true;
+            if (this.IsPanning)
+            {
+                int x;
+                int y;
+                Point position;
+
+                if (!this.InvertMouse)
                 {
-                    _startMousePosition = e.Location;
-                    this.IsPanning = true;
+                    x = -_startScrollPosition.X + (_startMousePosition.X - e.Location.X);
+                    y = -_startScrollPosition.Y + (_startMousePosition.Y - e.Location.Y);
+                }
+                else
+                {
+                    x = -(_startScrollPosition.X + (_startMousePosition.X - e.Location.X));
+                    y = -(_startScrollPosition.Y + (_startMousePosition.Y - e.Location.Y));
                 }
 
-                if (this.IsPanning)
-                {
-                    int x;
-                    int y;
-                    Point position;
+                position = new Point(x, y);
 
-                    if (!this.InvertMouse)
-                    {
-                        x = -_startScrollPosition.X + (_startMousePosition.X - e.Location.X);
-                        y = -_startScrollPosition.Y + (_startMousePosition.Y - e.Location.Y);
-                    }
-                    else
-                    {
-                        x = -(_startScrollPosition.X + (_startMousePosition.X - e.Location.X));
-                        y = -(_startScrollPosition.Y + (_startMousePosition.Y - e.Location.Y));
-                    }
-
-                    position = new Point(x, y);
-
-                    this.UpdateScrollPosition(position);
-                }
+                this.UpdateScrollPosition(position);
             }
         }
 
