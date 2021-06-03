@@ -12,6 +12,7 @@ using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.structs;
 using ImageViewer.Settings;
+using Cyotek.Windows.Forms;
 
 namespace ImageViewer.Controls
 {
@@ -41,7 +42,7 @@ namespace ImageViewer.Controls
             {
                 if(!value)
                 {
-                    state = idMain.GetState();
+                    //state = idMain.GetState();
 
                     UnloadImage();
                     ImageLoaded = false;
@@ -78,21 +79,23 @@ namespace ImageViewer.Controls
             }
         }
         private bool preventLoadImage = false;
-        public ImageDisplayState state { get; private set; }
+        //public ImageDisplayState state { get; private set; }
 
         public ImageDisplay idMain { get; private set; }
+        public ImageBox ibMain { get; private set; }
         public Image ScaledImage
         {
             get
             {
-                return idMain.ScaledImage;
+                return null;//idMain.ScaledImage;
             }
         }
         public Image Image
         {
             get
             {
-                return idMain.Image;
+                //return idMain.Image;
+                return ibMain.Image;
             }
         }
        
@@ -106,19 +109,44 @@ namespace ImageViewer.Controls
 
             imagePath = new FileInfo(path);
 
-            idMain = new ImageDisplay();
+            ibMain = new ImageBox();
+
+            ibMain.AllowClickZoom = false;
+            ibMain.AllowDrop = false;
+
+            ibMain.LimitSelectionToImage = true;
+            ibMain.DisposeImageBeforeChange = true;
+            ibMain.AutoCenter = true;
+            ibMain.AutoPan = true;
+            ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
+
+            ibMain.BorderStyle = BorderStyle.None;
+            ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
+
+            ibMain.SelectionMode = ImageBoxSelectionMode.Rectangle;
+            ibMain.SelectionButton = MouseButtons.Right;
+            ibMain.PanButton =       MouseButtons.Left;
+
+            ibMain.Location = new Point(0, 0);
+            ibMain.Dock = DockStyle.Fill;
+
+            ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
+
+
+            /*idMain = new ImageDisplay();
             idMain.Location = new Point(0, 0);
             idMain.Dock = DockStyle.Fill;
-            idMain.CenterOnLoad = true;
+            idMain.CenterOnLoad = true;*/
 
-            state = ImageDisplayState.empty;
+            //state = ImageDisplayState.empty;
 
-            Controls.Add(idMain);
+            Controls.Add(ibMain);
         }
 
         private void LoadImage()
         {
-            idMain.Image = null;
+            // dispose of old image
+            ibMain.Image = null;
 
             if (PreventLoadImage)
                 return;
@@ -138,24 +166,33 @@ namespace ImageViewer.Controls
             
             if (InternalSettings.Use_Lite_Load_Image)
             {
-                idMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
+                ibMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
+                //idMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
             }
             else
             {
-                idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
+                ibMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
+                //idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
             }
 
             if (InternalSettings.Fill_Transparent)
             {
-                idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
-                idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
-                idMain.FillTransparent = true;
+                ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
+                ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
+                //idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
+                //idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
+                //idMain.FillTransparent = true;
+            }
+            else
+            {
+                ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
+                ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
             }
 
-            if (state != ImageDisplayState.empty)
-                idMain.LoadState(state);
+            /*if (state != ImageDisplayState.empty)
+                idMain.LoadState(state);*/
 
-            state = idMain.GetState();
+            //state = idMain.GetState();
             ImageLoaded = true;
 
             Invalidate();
@@ -163,8 +200,9 @@ namespace ImageViewer.Controls
 
         private void UnloadImage()
         {
-            state = idMain.GetState();
-            idMain.Image = null;
+            //state = idMain.GetState();
+            //idMain.Image = null;
+            ibMain.Image = null;
         }
     }
 }

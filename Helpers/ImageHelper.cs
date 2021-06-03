@@ -512,8 +512,6 @@ namespace ImageViewer.Helpers
             return null;
         }
 
-
-
         // https://stackoverflow.com/a/6336453
         public static string GetMimeType(Image i)
         {
@@ -525,6 +523,7 @@ namespace ImageViewer.Helpers
             }
             return "image/unknown";
         }
+
         public static Bitmap CreateSolidColorBitmap(Size bmpSize, Color fillColor)
         {
             Bitmap b = new Bitmap(bmpSize.Width, bmpSize.Height);
@@ -544,7 +543,7 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static Bitmap InvertColors(Bitmap source)
+        private static Bitmap InvertColors(Bitmap source)
         {
             Bitmap newBitmap = new Bitmap(source.Width, source.Height);
 
@@ -558,6 +557,23 @@ namespace ImageViewer.Helpers
 
             }
             return newBitmap;
+        }
+
+        public static void FastInvertColorsSafe(Bitmap image, bool collectGarbage = true)
+        {
+            if (image == null)
+                return;
+
+            try
+            {
+                ImageHelper.FastInvertColors(image);
+            }
+            catch { }
+            finally
+            {
+                if(collectGarbage)
+                    GC.Collect();
+            }
         }
 
         /// <summary>
@@ -609,6 +625,24 @@ namespace ImageViewer.Helpers
             }
             return newBitmap;
         }
+
+        public static void FastGreyScaleColorsSafe(Bitmap image, bool collectGarbage = true)
+        {
+            if (image == null)
+                return;
+
+            try
+            {
+                ImageHelper.FastGreyScale(image);
+            }
+            catch { }
+            finally
+            {
+                if (collectGarbage)
+                    GC.Collect();
+            }
+        }
+
 
         /// <summary>
         /// this is an edited version of FastInvertColors where i used the greyscale formula from 

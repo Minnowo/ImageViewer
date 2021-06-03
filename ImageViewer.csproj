@@ -57,6 +57,32 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\CyotekImageBox\Enums.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CyotekImageBox\ImageBoxActionSources.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxBorderStyle.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxCancelEventArgs.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxGridDisplayMode.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxGridScale.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxMouseWheelMessageFilter.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxNativeMethods.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxSelectionMode.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxSizeMode.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxZoomActions.cs" />
+    <Compile Include="Controls\CyotekImageBox\ImageBoxZoomEventArgs.cs" />
+    <Compile Include="Controls\CyotekImageBox\ScrollControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CyotekImageBox\ScrollProperties.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CyotekImageBox\VirtualScrollableControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CyotekImageBox\ZoomLevelCollection.cs" />
+    <Compile Include="Controls\CyotekImageBox\ZoomLevelCollectionConverter.cs" />
     <Compile Include="Forms\DitherForm.cs">
       <SubType>Form</SubType>
     </Compile>

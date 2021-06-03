@@ -68,10 +68,16 @@ namespace ImageViewer.Settings
         }
         private static int fill_Alpha_Less_Than = 128;
 
-        public static Color DrawingBoard_Clear_Background_Color = Color.Black;
+        public static Color Image_Box_Back_Color = Color.Black; // going to be removed
         public static Color Fill_Transparent_Color = Color.White;
 
+        public static Color Default_Transparent_Grid_Color = Color.Gainsboro;
+        public static Color Default_Transparent_Grid_Color_Alternate = Color.White;
+
+
         public static WebPQuality WebpQuality_Default = new WebPQuality(Format.EncodeLossy, 74, 6);
+
+        public static bool Remove_Selected_Area_On_Pan = false;
 
         public static bool Fit_Image_When_Maximized = true;
         public static bool Fit_Image_On_Resize = true;

@@ -361,10 +361,10 @@ namespace ImageViewer.Controls
                 }
                 else
                 {
-                    using(Bitmap tmp = originalImage)
-                    {
-                        originalImage = ImageHelper.InvertColors(tmp);
-                    }
+                    //using(Bitmap tmp = originalImage)
+                    //{
+                        //originalImage = ImageHelper.InvertColors(tmp);
+                    //}
                 }
 
                 Invalidate();
@@ -710,7 +710,7 @@ namespace ImageViewer.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.Clear(InternalSettings.DrawingBoard_Clear_Background_Color);
+            e.Graphics.Clear(InternalSettings.Image_Box_Back_Color);
             Graphics g = e.Graphics;
             drawingSelectionBox = false;
 

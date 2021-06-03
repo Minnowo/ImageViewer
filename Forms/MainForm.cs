@@ -9,6 +9,7 @@ using ImageViewer.Controls;
 using ImageViewer.Native;
 using ImageViewer.Settings;
 using ImageViewer.structs;
+using Cyotek.Windows.Forms;
 
 namespace ImageViewer
 {
@@ -121,9 +122,10 @@ namespace ImageViewer
 
                 tp.Text = Path.GetFileName(image).Truncate(25);
                 tp.ToolTipText = image;
-                tp.idMain.ScrollbarsVisible = false;
-                tp.idMain.FitToScreenOnLoad = true;
-                tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
+                //tp.idMain.ScrollbarsVisible = false;
+                //tp.idMain.FitToScreenOnLoad = true;
+                //tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
+                tp.ibMain.Zoomed += IdMain_ZoomChangedEvent;
                 tcMain.TabPages.Add(tp);
             }
 
@@ -163,7 +165,7 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            using (Image img = currentPage.ScaledImage)
+            using (Image img = currentPage.ibMain.VisibleImage)
             {
                 ImageHelper.SaveImageFileDialog(img);
             }
@@ -269,22 +271,42 @@ namespace ImageViewer
 
         private void rotateLeftToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            if (currentPage == null)
+                return;
+
+            //CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            currentPage.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            currentPage.ibMain.Invalidate();
         }
 
         private void rotateRightToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            if (currentPage == null)
+                return;
+
+            //CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            currentPage.ibMain.Invalidate();
         }
 
         private void flipHorizontallyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            if (currentPage == null)
+                return;
+
+            //CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            currentPage.ibMain.Invalidate();
         }
 
         private void flipVerticallyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            if (currentPage == null)
+                return;
+
+            //CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            currentPage.ibMain.Invalidate();
         }
 
         private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -292,7 +314,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            using(ResizeImageForm form = new ResizeImageForm(currentPage.idMain.Image.Size))
+            //using(ResizeImageForm form = new ResizeImageForm(currentPage.idMain.Image.Size))
+            using(ResizeImageForm form = new ResizeImageForm(currentPage.ibMain.Image.Size))
             {
                 form.ShowDialog();
 
@@ -303,7 +326,8 @@ namespace ImageViewer
                 
                 using(Image tmp = currentPage.Image)
                 {
-                    currentPage.idMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
+                    //currentPage.idMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
+                    currentPage.ibMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
                 }
                 UpdateBottomInfoLabel();
             }
@@ -319,7 +343,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            currentPage.idMain.GreyScale();
+            //currentPage.idMain.GreyScale();
+            ImageHelper.FastGreyScaleColorsSafe((Bitmap)currentPage.ibMain.Image, true);
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -327,7 +352,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            currentPage.idMain.InvertColor();
+            //currentPage.idMain.InvertColor();
+            ImageHelper.FastInvertColorsSafe((Bitmap)currentPage.ibMain.Image, true);
         }
 
         private void fillTransparentToolStripMenuItem_Click(object sender, EventArgs e)
@@ -343,18 +369,12 @@ namespace ImageViewer
                 f.ShowDialog();
 
                 InternalSettings.Fill_Transparent_Color = f.GetCurrentColor();
-                UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);
-
-                if (currentPage == null)
-                    return;
-
-                currentPage.idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
+                UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);                
             }
 
-            if (currentPage.idMain.FillTransparent)
-                currentPage.idMain.FillTransparent = true;
-
             Location = p;
+
+            UpdateFillTransparent();
         }
 
 
@@ -362,15 +382,12 @@ namespace ImageViewer
         {
             InternalSettings.Fill_Transparent = tsmi_FillTransparent.Checked;
 
-            if (currentPage == null)
-                return;
-            
-            currentPage.idMain.FillTransparent = tsmi_FillTransparent.Checked;
+            UpdateFillTransparent();
         }
 
         private void fillWhenAlphaIsLessThanToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Point p = Location;
+            /*Point p = Location;
 
             using (AskForNumericValueForm f = new AskForNumericValueForm())
             {
@@ -397,7 +414,7 @@ namespace ImageViewer
                 currentPage.idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
             }
 
-            Location = p;
+            Location = p;*/
         }
 
         private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
@@ -442,7 +459,7 @@ namespace ImageViewer
 
         private void fullScreenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            currentPage.idMain.ShowFullScreen();
+            currentPage.ibMain.ShowFullScreen();
         }
 
         private void slideShowToolStripMenuItem_Click(object sender, EventArgs e)
@@ -458,17 +475,21 @@ namespace ImageViewer
 
             preventOverflow = true;
 
-            currentPage.idMain.ExternZoomChange = true;
-            currentPage.idMain.ZoomFactor = 1;
+            currentPage.ibMain.Zoom = 100;
             nudTopMain_ZoomPercentage.Value = 100;
 
             preventOverflow = false;
 
+            currentPage.ibMain.Invalidate();
         }
 
         private void tsmiFitToScreen_Click(object sender, EventArgs e)
         {
-            FitCurrentToScreen();
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.ZoomToFit();
+            currentPage.ibMain.Invalidate();
         }
 
         #endregion
@@ -583,8 +604,9 @@ namespace ImageViewer
 
             preventOverflow = true;
 
-            currentPage.idMain.ExternZoomChange = true;
-            currentPage.idMain.ZoomFactor = (double)nudTopMain_ZoomPercentage.Value / 100d;
+            //currentPage.idMain.ExternZoomChange = true;
+            //currentPage.idMain.ZoomFactor = (double)nudTopMain_ZoomPercentage.Value / 100d;
+            currentPage.ibMain.Zoom = (int)nudTopMain_ZoomPercentage.Value;
 
             preventOverflow = false;
         }
@@ -608,13 +630,30 @@ namespace ImageViewer
 
         #endregion
 
+        public void UpdateFillTransparent()
+        {
+            if (currentPage == null)
+                return;
+
+            if (InternalSettings.Fill_Transparent)
+            {
+                currentPage.ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
+                currentPage.ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
+            }
+            else
+            {
+                currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
+                currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+            }
+            currentPage.ibMain.Invalidate();
+        }
 
         private void MainWindow_Resize(object sender, EventArgs e)
         {
+            //Console.WriteLine(currentPage.ibMain);
             switch (WindowState)
             {
                 case FormWindowState.Maximized:
-                    if(InternalSettings.Fit_Image_When_Maximized)
                         FitCurrentToScreen();
                     break;
 
@@ -622,7 +661,6 @@ namespace ImageViewer
                     break;
 
                 case FormWindowState.Normal:
-                    if(InternalSettings.Fit_Image_On_Resize)
                         FitCurrentToScreen();
                     break;
             }
@@ -664,12 +702,16 @@ namespace ImageViewer
             ResumeLayout();
         }
 
-        private void IdMain_ZoomChangedEvent(double zoomfactor)
+        private void IdMain_ZoomChangedEvent(object sender, ImageBoxZoomEventArgs e)
         {
             if (preventOverflow || currentPage == null)
                 return;
+
             preventOverflow = true;
-            nudTopMain_ZoomPercentage.Value = ((decimal)(zoomfactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
+            
+            nudTopMain_ZoomPercentage.Value = e.NewZoom;
+            //nudTopMain_ZoomPercentage.Value = ((decimal)(zoomfactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
+
             preventOverflow = false;
         }
 
@@ -734,24 +776,25 @@ namespace ImageViewer
 
         private void FitCurrentToScreen()
         {
-            if (CurrentPage == null)
-                return;
-
-            preventOverflow = true;
-
-            currentPage.idMain.FitToScreen();
-            nudTopMain_ZoomPercentage.Value = ((decimal)(currentPage.idMain.ZoomFactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
-
-            preventOverflow = false;
+            if (InternalSettings.Fit_Image_On_Resize)
+            {
+                //currentPage.ibMain.SizeMode = ImageBoxSizeMode.Fit;
+            }
+            else
+            {
+                //currentPage.ibMain.SizeMode = ImageBoxSizeMode.Normal;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             switch (e.KeyData)
             {
-                case (Keys.C | Keys.Control):
+                case (Keys.C | Keys.Control):                    
+                    if (currentPage == null)
+                        return;
 
-                    using (Image toCopy = currentPage.idMain.SelectedRegion)
+                    using (Image toCopy = currentPage.ibMain.GetSelectedImage())
                     {
                         ClipboardHelper.CopyImageDefault(toCopy);
                     }
