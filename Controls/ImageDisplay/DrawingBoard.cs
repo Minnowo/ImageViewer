@@ -457,59 +457,7 @@ namespace ImageViewer.Controls
             Invalidate();
         }
 
-        private void DrawImage(Graphics g)
-        {
-            if (originalImage == null)
-                return;
-
-            g.PixelOffsetMode = PixelOffsetMode.Half;
-            g.SmoothingMode = SmoothingMode.None;
-            g.InterpolationMode = InterpolationMode.NearestNeighbor;
-            g.CompositingMode = CompositingMode.SourceOver;
-            g.CompositingQuality = CompositingQuality.HighSpeed;
-
-            if (externZoomChange || initialDraw)
-            {
-                if (centerOnLoad || externZoomChange)
-                {
-                    origin.X = CenterImageOriginX;
-                    origin.Y = CenterImageOriginY;
-                    externZoomChange = false;
-                }
-                else if(FitToScreenOnLoad)
-                {
-                    initialDraw = false;
-                    FitToScreen();
-                    return;
-                }
-                
-                initialDraw = false;
-            }
-
-            srcRect = new Rectangle((int)Math.Round(origin.X), (int)Math.Round(origin.Y), drawWidth, drawHeight);
-            //srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
-
-            g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
-            OnScrollChanged();
-        }
-
-        private void DrawDragBox(Graphics g)
-        {
-            g.DrawLine(selectionBoxPen, rightClickStart, new Point(rightClickEnd.X, rightClickStart.Y));
-            g.DrawLine(selectionBoxPen, rightClickStart, new Point(rightClickStart.X, rightClickEnd.Y));
-            g.DrawLine(selectionBoxPen, new Point(rightClickEnd.X, rightClickStart.Y), rightClickEnd);
-            g.DrawLine(selectionBoxPen, new Point(rightClickStart.X, rightClickEnd.Y), rightClickEnd);
-
-            
-            selectionBox = new Rectangle(
-                // we want the point to be top left of the rectangle
-                Math.Min(rightClickStart.X, rightClickEnd.X),
-                Math.Min(rightClickStart.Y, rightClickEnd.Y), 
-                Math.Abs(rightClickStart.X - rightClickEnd.X), 
-                Math.Abs(rightClickStart.Y - rightClickEnd.Y));
-
-            drawingSelectionBox = true;
-        }
+        
 
         private void ImageViewer_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -619,6 +567,143 @@ namespace ImageViewer.Controls
                     p.Y / (float)zoomFactor + origin.Y);
         }
 
+        private void DrawImage(Graphics g)
+        {
+            if (originalImage == null)
+                return;
+
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            //g.SmoothingMode = SmoothingMode.None;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            //g.CompositingMode = CompositingMode.SourceOver;
+            //g.CompositingQuality = CompositingQuality.HighSpeed;
+
+            if (externZoomChange || initialDraw)
+            {
+                if (centerOnLoad || externZoomChange)
+                {
+                    origin.X = CenterImageOriginX;
+                    origin.Y = CenterImageOriginY;
+                    externZoomChange = false;
+                }
+                else if (FitToScreenOnLoad)
+                {
+                    initialDraw = false;
+                    FitToScreen();
+                    return;
+                }
+
+                initialDraw = false;
+            }
+
+            srcRect = new Rectangle((int)Math.Round(origin.X), (int)Math.Round(origin.Y), drawWidth, drawHeight);
+            //srcRect = new Rectangle(origin.X, origin.Y, drawWidth, drawHeight);
+
+            g.DrawImage(originalImage, destRect, srcRect, GraphicsUnit.Pixel);
+            OnScrollChanged();
+        }
+
+        private void DrawDragBox(Graphics g)
+        {
+            g.DrawLine(selectionBoxPen, rightClickStart, new Point(rightClickEnd.X, rightClickStart.Y));
+            g.DrawLine(selectionBoxPen, rightClickStart, new Point(rightClickStart.X, rightClickEnd.Y));
+            g.DrawLine(selectionBoxPen, new Point(rightClickEnd.X, rightClickStart.Y), rightClickEnd);
+            g.DrawLine(selectionBoxPen, new Point(rightClickStart.X, rightClickEnd.Y), rightClickEnd);
+
+
+            selectionBox = new Rectangle(
+                // we want the point to be top left of the rectangle
+                Math.Min(rightClickStart.X, rightClickEnd.X),
+                Math.Min(rightClickStart.Y, rightClickEnd.Y),
+                Math.Abs(rightClickStart.X - rightClickEnd.X),
+                Math.Abs(rightClickStart.Y - rightClickEnd.Y));
+
+            drawingSelectionBox = true;
+        }
+
+        private float PixelGridThreshold = 10;
+        private void DrawPixelGrid(Graphics g)
+        {
+            float pixelSize;
+
+            pixelSize = (float)ZoomFactor;
+
+            if (pixelSize > this.PixelGridThreshold)
+            {
+                
+                Rectangle viewport;
+                float offsetX;
+                float offsetY;
+
+                viewport = this.GetImageViewPort();
+                //pixelSize = Width / viewport.Width;
+
+                //offsetX = Math.Abs(this.AutoScrollPosition.X) % pixelSize;
+                //offsetY = Math.Abs(this.AutoScrollPosition.Y) % pixelSize;
+                Console.WriteLine($"clientSize: {ClientSize}\nviewport: {viewport}\nzoom: {zoomFactor}");
+                //Console.WriteLine(zoomFactor);
+                using (Pen pen = new Pen(Color.Black)
+                {
+                    DashStyle = DashStyle.Dot
+                })
+                {
+                    if(origin.X >= 0)
+                    {
+                        
+                    }
+                    float dx;
+                    for (float x = 1; x < viewport.Width; x ++)
+                    {
+                        dx = (float)Math.Floor(x * pixelSize);// (int)Math.Ceiling(x * pixelSize);
+                        g.DrawLine(pen, dx, 0, dx, Height);
+                    }
+
+                    float dy;
+                    for (float y = 1; y < viewport.Height; y ++)
+                    {
+                        dy = (float)Math.Floor(y * pixelSize);//(int)Math.Ceiling(y * pixelSize);
+                        g.DrawLine(pen, 0, dy, Width, dy);
+                    }
+                    //g.DrawLine(Pens.Red, new Point(0, 0), new Point(100, viewport.Bottom - 20));
+
+                    //g.DrawRectangle(pen, viewport);
+                }
+            } 
+        }
+        /// <summary>
+        ///   Gets the inside view port.
+        /// </summary>
+        /// <param name="includePadding">
+        ///   if set to <c>true</c> [include padding].
+        /// </param>
+        /// <returns></returns>
+        public virtual Rectangle GetInsideViewPort(bool includePadding)
+        {
+            int left;
+            int top;
+            int width;
+            int height;
+
+            left = 0;
+            top = 0;
+            width = this.ClientSize.Width;
+            height = this.ClientSize.Height;
+
+            if (includePadding)
+            {
+                left += this.Padding.Left;
+                top += this.Padding.Top;
+                width -= this.Padding.Horizontal;
+                height -= this.Padding.Vertical;
+            }
+
+            return new Rectangle(left, top, width, height);
+        }
+        public virtual Rectangle GetImageViewPort() 
+        {
+            ComputeDrawingArea();
+            return new Rectangle(new Point(0, 0), new Size((int)Math.Round(Width / zoomFactor), (int)Math.Round(Height/ zoomFactor)));
+        }
         #endregion
 
         #region Overrides
@@ -634,6 +719,7 @@ namespace ImageViewer.Controls
             if(isRightClicking)
                 DrawDragBox(g);
 
+            DrawPixelGrid(g);
         }
 
         protected override void OnSizeChanged(EventArgs e)
