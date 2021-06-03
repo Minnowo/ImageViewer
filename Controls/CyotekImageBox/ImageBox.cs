@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using ImageViewer.Helpers;
 
 namespace Cyotek.Windows.Forms
 {
@@ -1450,8 +1451,8 @@ namespace Cyotek.Windows.Forms
         ///   The color of selection regions.
         /// </value>
         [Category("Behavior")]
-        [DefaultValue(typeof(bool), "true")]
-        public bool RemoveSelectionOnPan = true;
+        [DefaultValue(true)]
+        public bool RemoveSelectionOnPan;
 
         /// <summary>
         ///   Gets or sets the button used to make a selection.
@@ -3823,7 +3824,7 @@ namespace Cyotek.Windows.Forms
 
             this.ProcessScrollingShortcuts(e);
 
-            if (this.ShortcutsEnabled && this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
+            if (this.ShortcutsEnabled)
             {
                 this.ProcessImageShortcuts(e);
             }
@@ -4553,22 +4554,36 @@ namespace Cyotek.Windows.Forms
         /// </param>
         protected virtual void ProcessScrollingShortcuts(KeyEventArgs e)
         {
-            switch (e.KeyCode)
+            switch (e.KeyData)
             {
                 case Keys.Left:
-                    this.AdjustScroll(-(e.Modifiers == Keys.None ? this.HorizontalScroll.SmallChange : this.HorizontalScroll.LargeChange), 0);
+                    if(this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
+                        this.AdjustScroll(-(e.Modifiers == Keys.None ? this.HorizontalScroll.SmallChange : this.HorizontalScroll.LargeChange), 0);
                     break;
 
                 case Keys.Right:
-                    this.AdjustScroll(e.Modifiers == Keys.None ? this.HorizontalScroll.SmallChange : this.HorizontalScroll.LargeChange, 0);
+                    if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
+                        this.AdjustScroll(e.Modifiers == Keys.None ? this.HorizontalScroll.SmallChange : this.HorizontalScroll.LargeChange, 0);
                     break;
 
                 case Keys.Up:
-                    this.AdjustScroll(0, -(e.Modifiers == Keys.None ? this.VerticalScroll.SmallChange : this.VerticalScroll.LargeChange));
+                    if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
+                        this.AdjustScroll(0, -(e.Modifiers == Keys.None ? this.VerticalScroll.SmallChange : this.VerticalScroll.LargeChange));
                     break;
 
                 case Keys.Down:
-                    this.AdjustScroll(0, e.Modifiers == Keys.None ? this.VerticalScroll.SmallChange : this.VerticalScroll.LargeChange);
+                    if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
+                        this.AdjustScroll(0, e.Modifiers == Keys.None ? this.VerticalScroll.SmallChange : this.VerticalScroll.LargeChange);
+                    break;
+
+                case (Keys.C | Keys.Control):
+                    if (_image == null || SelectionMode != ImageBoxSelectionMode.Rectangle)
+                        return;
+
+                    using (Image toCopy = GetSelectedImage())
+                    {
+                        ClipboardHelper.CopyImageDefault(toCopy);
+                    }
                     break;
             }
         }

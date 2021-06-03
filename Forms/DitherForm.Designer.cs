@@ -21,8 +21,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DitherForm));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.lbl_BlacknWhiteThreshold = new System.Windows.Forms.Label();
+            this.lbl_CustomPaletteDisplay = new System.Windows.Forms.Label();
+            this.rb_UseCustomPalette = new System.Windows.Forms.RadioButton();
+            this.btn_LoadCustomPalette = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
             this.cb_ColorPallete = new System.Windows.Forms.ComboBox();
             this.nud_ColorThreshhold = new System.Windows.Forms.NumericUpDown();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -51,12 +55,7 @@
             this.rb_NoColor = new System.Windows.Forms.RadioButton();
             this.rb_MonochromeColor = new System.Windows.Forms.RadioButton();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.label5 = new System.Windows.Forms.Label();
-            this.btn_LoadCustomPalette = new System.Windows.Forms.Button();
-            this.rb_UseCustomPalette = new System.Windows.Forms.RadioButton();
-            this.lbl_CustomPaletteDisplay = new System.Windows.Forms.Label();
-            this.lbl_BlacknWhiteThreshold = new System.Windows.Forms.Label();
-            this.imageDisplay = new ImageViewer.Controls.ImageDisplay();
+            this.ibMain = new Cyotek.Windows.Forms.ImageBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nud_ColorThreshhold)).BeginInit();
             this.panel2.SuspendLayout();
@@ -82,6 +81,56 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(255, 453);
             this.panel1.TabIndex = 0;
+            // 
+            // lbl_BlacknWhiteThreshold
+            // 
+            this.lbl_BlacknWhiteThreshold.AutoSize = true;
+            this.lbl_BlacknWhiteThreshold.Location = new System.Drawing.Point(123, 33);
+            this.lbl_BlacknWhiteThreshold.Name = "lbl_BlacknWhiteThreshold";
+            this.lbl_BlacknWhiteThreshold.Size = new System.Drawing.Size(115, 13);
+            this.lbl_BlacknWhiteThreshold.TabIndex = 10;
+            this.lbl_BlacknWhiteThreshold.Text = "Black White Threshold";
+            // 
+            // lbl_CustomPaletteDisplay
+            // 
+            this.lbl_CustomPaletteDisplay.AutoSize = true;
+            this.lbl_CustomPaletteDisplay.Location = new System.Drawing.Point(26, 128);
+            this.lbl_CustomPaletteDisplay.Name = "lbl_CustomPaletteDisplay";
+            this.lbl_CustomPaletteDisplay.Size = new System.Drawing.Size(33, 13);
+            this.lbl_CustomPaletteDisplay.TabIndex = 9;
+            this.lbl_CustomPaletteDisplay.Text = "None";
+            // 
+            // rb_UseCustomPalette
+            // 
+            this.rb_UseCustomPalette.AutoSize = true;
+            this.rb_UseCustomPalette.Location = new System.Drawing.Point(9, 108);
+            this.rb_UseCustomPalette.Name = "rb_UseCustomPalette";
+            this.rb_UseCustomPalette.Size = new System.Drawing.Size(82, 17);
+            this.rb_UseCustomPalette.TabIndex = 8;
+            this.rb_UseCustomPalette.TabStop = true;
+            this.rb_UseCustomPalette.Text = "Use Custom";
+            this.rb_UseCustomPalette.UseVisualStyleBackColor = true;
+            this.rb_UseCustomPalette.CheckedChanged += new System.EventHandler(this.ColorRadioButton_Changed);
+            // 
+            // btn_LoadCustomPalette
+            // 
+            this.btn_LoadCustomPalette.Location = new System.Drawing.Point(126, 105);
+            this.btn_LoadCustomPalette.Name = "btn_LoadCustomPalette";
+            this.btn_LoadCustomPalette.Size = new System.Drawing.Size(124, 23);
+            this.btn_LoadCustomPalette.TabIndex = 7;
+            this.btn_LoadCustomPalette.Text = "Load Custom Palette";
+            this.btn_LoadCustomPalette.UseVisualStyleBackColor = true;
+            this.btn_LoadCustomPalette.Click += new System.EventHandler(this.LoadColorPalette_Clicked);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label5.Location = new System.Drawing.Point(1, 8);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(87, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "Color Conversion";
             // 
             // cb_ColorPallete
             // 
@@ -433,80 +482,23 @@
             this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
-            // label5
+            // ibMain
             // 
-            this.label5.AutoSize = true;
-            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label5.Location = new System.Drawing.Point(1, 8);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(87, 13);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "Color Conversion";
-            // 
-            // btn_LoadCustomPalette
-            // 
-            this.btn_LoadCustomPalette.Location = new System.Drawing.Point(126, 105);
-            this.btn_LoadCustomPalette.Name = "btn_LoadCustomPalette";
-            this.btn_LoadCustomPalette.Size = new System.Drawing.Size(124, 23);
-            this.btn_LoadCustomPalette.TabIndex = 7;
-            this.btn_LoadCustomPalette.Text = "Load Custom Palette";
-            this.btn_LoadCustomPalette.UseVisualStyleBackColor = true;
-            this.btn_LoadCustomPalette.Click += new System.EventHandler(this.LoadColorPalette_Clicked);
-            // 
-            // rb_UseCustomPalette
-            // 
-            this.rb_UseCustomPalette.AutoSize = true;
-            this.rb_UseCustomPalette.Location = new System.Drawing.Point(9, 108);
-            this.rb_UseCustomPalette.Name = "rb_UseCustomPalette";
-            this.rb_UseCustomPalette.Size = new System.Drawing.Size(82, 17);
-            this.rb_UseCustomPalette.TabIndex = 8;
-            this.rb_UseCustomPalette.TabStop = true;
-            this.rb_UseCustomPalette.Text = "Use Custom";
-            this.rb_UseCustomPalette.UseVisualStyleBackColor = true;
-            this.rb_UseCustomPalette.CheckedChanged += new System.EventHandler(this.ColorRadioButton_Changed);
-            // 
-            // lbl_CustomPaletteDisplay
-            // 
-            this.lbl_CustomPaletteDisplay.AutoSize = true;
-            this.lbl_CustomPaletteDisplay.Location = new System.Drawing.Point(26, 128);
-            this.lbl_CustomPaletteDisplay.Name = "lbl_CustomPaletteDisplay";
-            this.lbl_CustomPaletteDisplay.Size = new System.Drawing.Size(33, 13);
-            this.lbl_CustomPaletteDisplay.TabIndex = 9;
-            this.lbl_CustomPaletteDisplay.Text = "None";
-            // 
-            // lbl_BlacknWhiteThreshold
-            // 
-            this.lbl_BlacknWhiteThreshold.AutoSize = true;
-            this.lbl_BlacknWhiteThreshold.Location = new System.Drawing.Point(123, 33);
-            this.lbl_BlacknWhiteThreshold.Name = "lbl_BlacknWhiteThreshold";
-            this.lbl_BlacknWhiteThreshold.Size = new System.Drawing.Size(115, 13);
-            this.lbl_BlacknWhiteThreshold.TabIndex = 10;
-            this.lbl_BlacknWhiteThreshold.Text = "Black White Threshold";
-            // 
-            // imageDisplay
-            // 
-            this.imageDisplay.CenterOnLoad = false;
-            this.imageDisplay.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.imageDisplay.ExternZoomChange = false;
-            this.imageDisplay.FillAlphaLessThan = 255;
-            this.imageDisplay.FillTransparent = false;
-            this.imageDisplay.FillTransparentColor = System.Drawing.Color.White;
-            this.imageDisplay.FitToScreenOnLoad = true;
-            this.imageDisplay.Image = null;
-            this.imageDisplay.Location = new System.Drawing.Point(0, 0);
-            this.imageDisplay.Name = "imageDisplay";
-            this.imageDisplay.Origin = ((System.Drawing.PointF)(resources.GetObject("imageDisplay.Origin")));
-            this.imageDisplay.ScrollbarsVisible = false;
-            this.imageDisplay.Size = new System.Drawing.Size(545, 453);
-            this.imageDisplay.TabIndex = 2;
-            this.imageDisplay.ZoomFactor = 1D;
+            this.ibMain.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ibMain.DisposeImageBeforeChange = false;
+            this.ibMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ibMain.Location = new System.Drawing.Point(0, 0);
+            this.ibMain.Name = "ibMain";
+            this.ibMain.SelectionMode = Cyotek.Windows.Forms.ImageBoxSelectionMode.Rectangle;
+            this.ibMain.Size = new System.Drawing.Size(545, 453);
+            this.ibMain.TabIndex = 1;
             // 
             // DitherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 453);
-            this.Controls.Add(this.imageDisplay);
+            this.Controls.Add(this.ibMain);
             this.Controls.Add(this.panel1);
             this.Name = "DitherForm";
             this.Text = "DitherForm";
@@ -550,11 +542,11 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker;
         private System.Windows.Forms.ComboBox cb_ColorPallete;
         private System.Windows.Forms.NumericUpDown nud_ColorThreshhold;
-        private Controls.ImageDisplay imageDisplay;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label lbl_CustomPaletteDisplay;
         private System.Windows.Forms.RadioButton rb_UseCustomPalette;
         private System.Windows.Forms.Button btn_LoadCustomPalette;
         private System.Windows.Forms.Label lbl_BlacknWhiteThreshold;
+        private Cyotek.Windows.Forms.ImageBox ibMain;
     }
 }

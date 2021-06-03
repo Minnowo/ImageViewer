@@ -424,7 +424,7 @@ namespace ImageViewer
 
             Point p = Location;
             bool collectGarbage = false;
-            using (DitherForm df = new DitherForm((Bitmap)currentPage.idMain.Image))
+            using (DitherForm df = new DitherForm((Bitmap)currentPage.ibMain.Image))
             {
                 df.Owner = this;
                 df.TopMost = true;
@@ -435,7 +435,7 @@ namespace ImageViewer
 
                 collectGarbage = df.CanceledOnClosing;
 
-                currentPage.idMain.Update();
+                currentPage.ibMain.Invalidate();
             }
 
             Location = p;
@@ -776,21 +776,26 @@ namespace ImageViewer
 
         private void FitCurrentToScreen()
         {
+            if (currentPage == null)
+                return;
+
             if (InternalSettings.Fit_Image_On_Resize)
             {
                 //currentPage.ibMain.SizeMode = ImageBoxSizeMode.Fit;
+                currentPage.ibMain.ZoomToFit();
+                currentPage.ibMain.Invalidate();
             }
-            else
+            /*else
             {
                 //currentPage.ibMain.SizeMode = ImageBoxSizeMode.Normal;
-            }
+            }*/
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             switch (e.KeyData)
             {
-                case (Keys.C | Keys.Control):                    
+                /*case (Keys.C | Keys.Control):                    
                     if (currentPage == null)
                         return;
 
@@ -799,7 +804,7 @@ namespace ImageViewer
                         ClipboardHelper.CopyImageDefault(toCopy);
                     }
 
-                    break;
+                    break;*/
             }
             base.OnKeyDown(e);
         }

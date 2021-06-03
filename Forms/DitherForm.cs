@@ -14,7 +14,7 @@ using ImageViewer.Helpers;
 using ImageViewer.Helpers.Dithering;
 using ImageViewer.Helpers.Transforms;
 using ImageViewer.Settings;
-
+using Cyotek.Windows.Forms;
 
 namespace ImageViewer
 {
@@ -34,6 +34,35 @@ namespace ImageViewer
                 return;
 
             InitializeComponent();
+
+            ibMain.AllowClickZoom = false;
+            ibMain.AllowDrop = false;
+
+            ibMain.LimitSelectionToImage = true;
+            ibMain.DisposeImageBeforeChange = true;
+            ibMain.AutoCenter = true;
+            ibMain.AutoPan = true;
+
+            ibMain.SelectionMode = ImageBoxSelectionMode.Rectangle;
+            ibMain.SelectionButton = MouseButtons.Right;
+            ibMain.PanButton = MouseButtons.Left;
+
+            ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
+
+            ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
+            ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
+
+            if (InternalSettings.Fill_Transparent)
+            {
+                ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
+                ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
+            }
+            else
+            {
+                ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
+                ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+            }
+
             backgroundWorker.WorkerSupportsCancellation = true;
             updateThresholdTimer.Interval = InternalSettings.Dither_Threshold_Update_Limit;
             updateThresholdTimer.Tick += UpdateThresholdTimer_Tick;
@@ -98,8 +127,7 @@ namespace ImageViewer
             }
             else if(!e.Cancelled )
             {
-                imageDisplay.Image = e.Result as Bitmap;
-                imageDisplay.FitToScreen();
+                ibMain.Image = e.Result as Bitmap;
             }
 
             Cursor.Current = Cursors.Default;
@@ -257,7 +285,7 @@ namespace ImageViewer
                 return;
             }
 
-            ImageHelper.UpdateBitmap(originalImage, (Bitmap)imageDisplay.Image);
+            ImageHelper.UpdateBitmap(originalImage, (Bitmap)ibMain.Image);
             Close();
         }
 
@@ -367,7 +395,7 @@ namespace ImageViewer
 
                 updateThresholdTimer.Dispose();
 
-                imageDisplay.Image = null;
+                ibMain.Image = null;
                 
                 if (components != null)
                 {
@@ -386,7 +414,11 @@ namespace ImageViewer
             switch (WindowState)
             {
                 case FormWindowState.Maximized:
-                    imageDisplay.FitToScreen();
+                    if (InternalSettings.Fit_Image_On_Resize)
+                    {
+                        ibMain.ZoomToFit();
+                        ibMain.Invalidate();
+                    }
                     break;
 
                 case FormWindowState.Minimized:
@@ -395,7 +427,8 @@ namespace ImageViewer
                 case FormWindowState.Normal:
                     if (InternalSettings.Fit_Image_On_Resize && fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
                     {
-                        imageDisplay.FitToScreen();
+                        ibMain.ZoomToFit();
+                        ibMain.Invalidate();
                         fitToScreenLimiter.Restart();
                     }
                     break;
@@ -408,8 +441,8 @@ namespace ImageViewer
         {
             if (InternalSettings.Fit_Image_On_Resize)
             {
-                imageDisplay.FitToScreen();
-                
+                ibMain.ZoomToFit();
+                ibMain.Invalidate();
             }
 
             fitToScreenLimiter.Reset();
