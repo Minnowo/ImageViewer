@@ -252,7 +252,7 @@ namespace Cyotek.Windows.Forms
                 Point translated;
 
                 translated = this.AdjustPositionToSize(new Point(-value.X, -value.Y));
-
+                //Console.WriteLine($"autoscroll: {_autoScrollPosition}, translated: {translated}");
                 if (this.AutoScrollPosition != translated)
                 {
                     this.ScrollByOffset(new Size(_autoScrollPosition.X - translated.X, _autoScrollPosition.Y - translated.Y));
@@ -486,21 +486,22 @@ namespace Cyotek.Windows.Forms
         /// <param name="offset">The offset.</param>
         private void ScrollByOffset(Size offset)
         {
-            if (!offset.IsEmpty)
+            if (offset.IsEmpty)
+                return;
+            
+            this.SuspendLayout();
+            foreach (Control child in Controls)
             {
-                this.SuspendLayout();
-                foreach (Control child in Controls)
-                {
-                    child.Location -= offset;
-                }
-
-                _autoScrollPosition = new Point(_autoScrollPosition.X - offset.Width, _autoScrollPosition.Y - offset.Height);
-                this.ScrollTo(-_autoScrollPosition.X, -_autoScrollPosition.Y);
-
-                this.ResumeLayout();
-
-                this.Invalidate();
+                child.Location -= offset;
             }
+
+            _autoScrollPosition = new Point(_autoScrollPosition.X - offset.Width, _autoScrollPosition.Y - offset.Height);
+
+            this.ScrollTo(-_autoScrollPosition.X, -_autoScrollPosition.Y);
+
+            this.ResumeLayout();
+
+            this.Invalidate();
         }
 
         #endregion

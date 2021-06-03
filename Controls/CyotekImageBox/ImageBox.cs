@@ -2010,7 +2010,7 @@ namespace Cyotek.Windows.Forms
 
             if (this.SizeMode != ImageBoxSizeMode.Stretch)
             {
-                if (!this.AutoCenter)
+                if (this.AutoCenter)
                 //if (this.AutoCenter)
                     {
                     int x;
@@ -2041,25 +2041,27 @@ namespace Cyotek.Windows.Forms
 
             //return new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
             //return new Rectangle( Math.Abs(this.AutoScrollPosition.X), Math.Abs(this.AutoScrollPosition.Y), ScaledImageWidth, ScaledImageHeight);
-            Rectangle outRect = new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, ScaledImageWidth, ScaledImageHeight);
+            Rectangle outRect = new Rectangle(offset.X + this.AutoScrollPosition.X, offset.Y + this.AutoScrollPosition.Y, ScaledImageWidth, ScaledImageHeight);
+            //outRect.X = offset.X + this.AutoScrollPosition.X;
+            //outRect.Y = offset.Y + this.AutoScrollPosition.Y;
 
-            if (ScaledImageWidth < ClientSize.Width)
+            /*if (!HScroll)
             {
-                outRect.X = offset.X + Math.Abs(this.AutoScrollPosition.X);
-            }
-            else
+                outRect.X = offset.X + this.AutoScrollPosition.X;
+            }*/
+            /*else
             {
                 outRect.Width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
-            }
+            }*/
 
-            if (ScaledImageHeight < ClientSize.Height)
+            /*if (!VScroll)
             {
-                outRect.Y = offset.Y + Math.Abs(this.AutoScrollPosition.Y);
-            }
-            else
+                outRect.Y = offset.Y + this.AutoScrollPosition.Y;
+            }*/
+            /*else
             {
                 outRect.Height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
-            }
+            }*/
             return outRect;
             //return new Rectangle(offset.X + Math.Abs(this.AutoScrollPosition.X), offset.Y + Math.Abs(this.AutoScrollPosition.Y), ScaledImageWidth, ScaledImageHeight);
             //return new Rectangle(0, 0, width, height);
@@ -2471,17 +2473,17 @@ namespace Cyotek.Windows.Forms
             sourceHeight = (float)(viewPort.Height / this.ZoomFactor);
 
             //return new RectangleF(sourceLeft, sourceTop, sourceWidth, sourceHeight);
-            RectangleF srcRect = new RectangleF(0, 0, sourceWidth, sourceHeight);
+            return new RectangleF(0, 0, sourceWidth, sourceHeight);
 
             //if (viewPort.Width > ClientSize.Width)
-            if(this.HScroll)
-                srcRect.X = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
+            //if(this.HScroll)
+                //srcRect.X = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
 
             //if (viewPort.Height > ClientSize.Height)
-            if(this.VScroll)
-                srcRect.Y = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
+            //if(this.VScroll)
+                //srcRect.Y = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
 
-            return srcRect;// new RectangleF(0, 0, sourceWidth, sourceHeight);
+            //return srcRect;// new RectangleF(0, 0, sourceWidth, sourceHeight);
         }
 
         /// <summary>
@@ -2967,7 +2969,7 @@ namespace Cyotek.Windows.Forms
                     Rectangle fillRectangle;
 
                     fillRectangle = this.GetImageViewPort();
-                    Console.WriteLine($" background: {fillRectangle}");
+                    //Console.WriteLine($" background: {fillRectangle}");
                     e.Graphics.FillRectangle(_texture, fillRectangle);
                     break;
 
@@ -3063,7 +3065,7 @@ namespace Cyotek.Windows.Forms
                     ImageAnimator.UpdateFrames(this.Image);
                 }
 
-                Console.WriteLine($" image: {GetImageViewPort()}");
+                //Console.WriteLine($" image: {GetImageViewPort()}");
 
                 g.DrawImage(this.Image, this.GetImageViewPort(), this.GetSourceImageRegion(), GraphicsUnit.Pixel);
             }
@@ -3868,14 +3870,6 @@ namespace Cyotek.Windows.Forms
             if (this.ShortcutsEnabled)
             {
                 this.ProcessImageShortcuts(e);
-            }
-
-            switch (e.KeyData)
-            {
-                case Keys.D0:
-                    Console.WriteLine("nyah");
-                    AutoScrollPosition = new Point(AutoScrollPosition.X-50, AutoScrollPosition.Y);
-                    break;
             }
         }
 
