@@ -34,6 +34,15 @@ namespace ImageViewer.Settings
         public static string Invalid_Size_Messagebox_Title = "Invalid image size";
         public static string Invalid_Size_Messagebox_Message = "The image size is not valid";
 
+        public static string Unable_To_Invert_Image_Title = "Unable to invert colors.";
+        public static string Unable_To_Invert_Image_Message = "There was an error when trying to invert the colors of this image, most likely the pixel format is not 32bppArgb.";
+
+        public static string Unable_To_Convert_To_Grey_Image_Title = "Unable to convert to grey.";
+        public static string Unable_To_Convert_To_Grey_Image_Message = "There was an error when trying to convert to grey, most likely the pixel format is not 32bppArgb.";
+
+        public static string Unable_To_Convert_To_Fill_Transparent_Title = "Unable to fill transparent pixels.";
+        public static string Unable_To_Convert_To_Fill_Transparent_Message = "There was an error when trying to fill transparent pixels, most likely the pixel format is not 32bppArgb.";
+
         #endregion
 
         #region plugin dll paths

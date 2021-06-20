@@ -164,25 +164,13 @@ namespace ImageViewer.Controls
 
                 return;
             }
-            
-            if (InternalSettings.Use_Lite_Load_Image)
-            {
-                ibMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
-                //idMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
-            }
-            else
-            {
-                ibMain.Image = ImageHelper.LoadImage(imagePath.FullName);
-                //idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
-            }
+
+            ibMain.Image = ImageHelper.LoadImage(imagePath.FullName);
 
             if (InternalSettings.Fill_Transparent)
             {
                 ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
                 ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
-                //idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
-                //idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
-                //idMain.FillTransparent = true;
             }
             else
             {
@@ -190,10 +178,6 @@ namespace ImageViewer.Controls
                 ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
             }
 
-            /*if (state != ImageDisplayState.empty)
-                idMain.LoadState(state);*/
-
-            //state = idMain.GetState();
             ImageLoaded = true;
 
             Invalidate();
@@ -201,8 +185,6 @@ namespace ImageViewer.Controls
 
         private void UnloadImage()
         {
-            //state = idMain.GetState();
-            //idMain.Image = null;
             ibMain.Image = null;
         }
     }

@@ -340,8 +340,11 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            ImageHelper.FastGreyScaleColorsSafe((Bitmap)currentPage.ibMain.Image, true);
-            currentPage.ibMain.Invalidate();
+            if (ImageHelper.GreyScaleBitmapSafe((Bitmap)currentPage.ibMain.Image, true))
+            {
+                currentPage.ibMain.Invalidate();
+                return;
+            }
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -349,7 +352,7 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            ImageHelper.FastInvertColorsSafe((Bitmap)currentPage.ibMain.Image, true);
+            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, true);
             currentPage.ibMain.Invalidate();
         }
 
@@ -372,7 +375,7 @@ namespace ImageViewer
 
                 if(f.result == SimpleDialogResult.Success)
                 {
-                    ImageHelper.FillTransparent((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
+                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
                     currentPage.ibMain.Invalidate();
                 }
             }

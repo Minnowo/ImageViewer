@@ -193,7 +193,7 @@ namespace ImageViewer.Controls
             {
                 if (value)
                 {
-                    ImageHelper.FillTransparent(originalImage, FillTransparentColor, FillAlphaLessThan);
+                    ImageHelper.FillTransparentPixelsSafe(originalImage, FillTransparentColor, FillAlphaLessThan, false);
                     Invalidate();
                 }
 
@@ -357,7 +357,7 @@ namespace ImageViewer.Controls
 
                 if (InternalSettings.Use_Fast_Invert_Color)
                 {
-                    ImageHelper.FastInvertColors(originalImage);
+                    ImageHelper.InvertBitmap(originalImage);
                 }
                 else
                 {
@@ -383,20 +383,10 @@ namespace ImageViewer.Controls
             {
                 Cursor = Cursors.WaitCursor;
 
-                if (InternalSettings.Use_Fast_Grey_Scale)
-                {
-                    ImageHelper.FastGreyScale(originalImage, 
-                        InternalSettings.Grey_Scale_Multipliers[0],
-                        InternalSettings.Grey_Scale_Multipliers[1],
-                        InternalSettings.Grey_Scale_Multipliers[2]);
-                }
-                else
-                {
-                    using (Bitmap tmp = originalImage)
-                    {
-                        Image = ImageHelper.MakeGrayscale(tmp);
-                    }
-                }
+                ImageHelper.GreyScaleBitmap(originalImage, 
+                    InternalSettings.Grey_Scale_Multipliers[0],
+                    InternalSettings.Grey_Scale_Multipliers[1],
+                    InternalSettings.Grey_Scale_Multipliers[2]);
 
                 Invalidate();
             }
