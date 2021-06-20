@@ -1037,6 +1037,24 @@ namespace ImageViewer.Helpers
     {
         public static int decimalPlaces { get; set; } = 2;
 
+        public static Color AskChooseColor()
+        {
+            return AskChooseColor(Color.Empty);
+        }
+
+        public static Color AskChooseColor(Color initColor)
+        {
+            Point p;
+
+            using (ColorPickerForm f = new ColorPickerForm())
+            {
+                f.UpdateColors(initColor);
+                f.ShowDialog();
+
+                return f.GetCurrentColor();
+            }
+        }
+
         public static string ColorToHex(Color color, ColorFormat format = ColorFormat.RGB)
         {
             return ColorToHex(color.R, color.G, color.B, color.A, format);

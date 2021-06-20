@@ -83,6 +83,12 @@
     </Compile>
     <Compile Include="Controls\CyotekImageBox\ZoomLevelCollection.cs" />
     <Compile Include="Controls\CyotekImageBox\ZoomLevelCollectionConverter.cs" />
+    <Compile Include="Forms\FillTransparentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FillTransparentForm.Designer.cs">
+      <DependentUpon>FillTransparentForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\DitherForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -230,6 +236,9 @@
     <EmbeddedResource Include="Forms\DitherForm.resx">
       <DependentUpon>DitherForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FillTransparentForm.resx">
+      <DependentUpon>FillTransparentForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ImagePropertiesForm.resx">
       <DependentUpon>ImagePropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -265,6 +274,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\color-picker-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

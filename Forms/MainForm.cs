@@ -15,18 +15,9 @@ namespace ImageViewer
 {
     public partial class MainForm : Form
     {
-        public string CurrentDirectory 
-        { 
-            get
-            {
-                return currentDirectory;
-            }
-            set 
-            {
-                currentDirectory = value;
-            }
-        }
-        private string currentDirectory = "";
+        public const string TSMI_IMAGE_BACK_COLOR_1_NAME = "tsmiImageBackColor1";
+        public const string TSMI_IMAGE_BACK_COLOR_2_NAME = "tsmiImageBackColor2";
+
 
         public _TabPage CurrentPage
         {
@@ -63,7 +54,11 @@ namespace ImageViewer
             KeyPreview = true;
             saveToolStripMenuItem.Enabled = false;
 
-            UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);
+            tsmiImageBackColor1.Name = TSMI_IMAGE_BACK_COLOR_1_NAME;
+            tsmiImageBackColor2.Name = TSMI_IMAGE_BACK_COLOR_2_NAME;
+
+            tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color);
+            tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color_Alternate);
         }
 
 
@@ -81,7 +76,7 @@ namespace ImageViewer
                 deleteToolStripMenuItem.Enabled = false;
                 imagePropertiesToolStripMenuItem.Enabled = false;
             }
-            else if (currentPage.ImagePath.Exists)
+            else if (File.Exists(currentPage.ImagePath.FullName))
             {
                 saveToolStripMenuItem.Enabled = true;
                 saveAsToolStripMenuItem.Enabled = true;
@@ -274,7 +269,6 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate270FlipNone);
             currentPage.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
             currentPage.ibMain.Invalidate();
         }
@@ -284,7 +278,6 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //CurrentPage.idMain.RotateFlip(RotateFlipType.Rotate90FlipNone);
             currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
             currentPage.ibMain.Invalidate();
         }
@@ -294,7 +287,6 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipX);
             currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
             currentPage.ibMain.Invalidate();
         }
@@ -304,7 +296,6 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //CurrentPage.idMain.RotateFlip(RotateFlipType.RotateNoneFlipY);
             currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
             currentPage.ibMain.Invalidate();
         }
@@ -314,19 +305,21 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //using(ResizeImageForm form = new ResizeImageForm(currentPage.idMain.Image.Size))
-            using(ResizeImageForm form = new ResizeImageForm(currentPage.ibMain.Image.Size))
+            using(ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
             {
-                form.ShowDialog();
+                f.Owner = this;
+                f.TopMost = true;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                f.LocationChanged += ParentFollowChild;
+                f.ShowDialog();
 
-                ResizeImageFormReturn r = form.GetReturnSize();
+                ResizeImageFormReturn r = f.GetReturnSize();
 
                 if (r.Result == ResizeImageResult.Cancel)
                     return;
                 
                 using(Image tmp = currentPage.Image)
                 {
-                    //currentPage.idMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
                     currentPage.ibMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
                 }
                 UpdateBottomInfoLabel();
@@ -343,8 +336,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //currentPage.idMain.GreyScale();
             ImageHelper.FastGreyScaleColorsSafe((Bitmap)currentPage.ibMain.Image, true);
+            currentPage.ibMain.Invalidate();
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -352,70 +345,37 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            //currentPage.idMain.InvertColor();
             ImageHelper.FastInvertColorsSafe((Bitmap)currentPage.ibMain.Image, true);
+            currentPage.ibMain.Invalidate();
         }
 
-        private void fillTransparentToolStripMenuItem_Click(object sender, EventArgs e)
+
+        private void FillTransparent_Click(object sender, EventArgs e)
         {
+            if (currentPage == null)
+                return;
+
             Point p = Location;
 
-            using (ColorPickerForm f = new ColorPickerForm())
+            using (FillTransparentForm f = new FillTransparentForm())
             {
                 f.Owner = this;
                 f.TopMost = true;
                 f.StartPosition = FormStartPosition.CenterScreen;
                 f.LocationChanged += ParentFollowChild;
+
                 f.ShowDialog();
 
-                InternalSettings.Fill_Transparent_Color = f.GetCurrentColor();
-                UpdateTransparentFillIcon(InternalSettings.Fill_Transparent_Color);                
+                if(f.result == SimpleDialogResult.Success)
+                {
+                    ImageHelper.FillTransparent((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
+                    currentPage.ibMain.Invalidate();
+                }
             }
 
             Location = p;
-
-            UpdateFillTransparent();
         }
 
-
-        private void ToggleFillTransparent_Click(object sender, EventArgs e)
-        {
-            InternalSettings.Fill_Transparent = tsmi_FillTransparent.Checked;
-
-            UpdateFillTransparent();
-        }
-
-        private void fillWhenAlphaIsLessThanToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            /*Point p = Location;
-
-            using (AskForNumericValueForm f = new AskForNumericValueForm())
-            {
-                f.Text = "Insert Value Between 0 And 255";
-                f.DisplayText = f.Text;
-                f.MinValue = 0;
-                f.MaxValue = 255;
-                f.Value = InternalSettings.Fill_Alpha_Less_Than;
-                f.Owner = this;
-                f.TopMost = true;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                f.LocationChanged += ParentFollowChild;
-
-                f.ShowDialog();
-
-                if (f.Canceled)
-                    return;
-
-                InternalSettings.Fill_Alpha_Less_Than = (int)Math.Round(f.Value);
-
-                if (currentPage == null)
-                    return;
-
-                currentPage.idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
-            }
-
-            Location = p;*/
-        }
 
         private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -451,24 +411,22 @@ namespace ImageViewer
 
         #region cmsViewBtn
 
-
-
         private void cmsViewBtn_Opening(object sender, CancelEventArgs e)
         {
         }
 
-        private void fullScreenToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ViewFullscreen_Click(object sender, EventArgs e)
         {
             currentPage.ibMain.ShowFullScreen();
         }
 
-        private void slideShowToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ViewSlideShow_Click(object sender, EventArgs e)
         {
             if (CurrentPage == null)
                 return;
         }
 
-        private void actualSizeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ViewActualImageSize_Click(object sender, EventArgs e)
         {
             if (CurrentPage == null)
                 return;
@@ -483,7 +441,7 @@ namespace ImageViewer
             currentPage.ibMain.Invalidate();
         }
 
-        private void tsmiFitToScreen_Click(object sender, EventArgs e)
+        private void FitImageToScreen_Click(object sender, EventArgs e)
         {
             if (currentPage == null)
                 return;
@@ -492,19 +450,52 @@ namespace ImageViewer
             currentPage.ibMain.Invalidate();
         }
 
-        #endregion
-
-        #region cmsCurrentDirectory
-
-        private void cmsCurrentDirectory_Opening(object sender, CancelEventArgs e)
+        private void ImageBackingColors_Click(object sender, EventArgs e)
         {
-            if(currentPage == null)
-            {
+            if (currentPage == null)
+                return;
 
+            ToolStripMenuItem btn = sender as ToolStripMenuItem;
+
+            if (btn == null)
+                return;
+
+            switch (btn.Name)
+            {
+                case TSMI_IMAGE_BACK_COLOR_1_NAME:
+                    currentPage.ibMain.GridColor = AskChooseColor(currentPage.ibMain.GridColor);
+                    break;
+                case TSMI_IMAGE_BACK_COLOR_2_NAME:
+                    currentPage.ibMain.GridColorAlternate = AskChooseColor(currentPage.ibMain.GridColorAlternate);
+                    break;
             }
-            else
-            {
 
+            btn.Image = ImageHelper.CreateSolidColorBitmap(InternalSettings.TSMI_Generated_Icon_Size, currentPage.ibMain.GridColor);
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void ResetImageBacking_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
+            currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void ViewPixelGrid_Clicked(object sender, EventArgs e)
+        {
+            ToolStripMenuItem btn = sender as ToolStripMenuItem;
+
+            if (btn == null)
+                return;
+
+            InternalSettings.Show_Pixel_Grid = btn.Checked;
+
+            if(currentPage != null)
+            {
+                currentPage.ibMain.ShowPixelGrid = btn.Checked;
             }
         }
 
@@ -517,52 +508,18 @@ namespace ImageViewer
 
         private void tsbMain_File_MouseUp(object sender, MouseEventArgs e)
         {
-            // Show context menu at button X position
-            Point p = new Point(
-                tsMain.Location.X,
-                tsMain.Location.Y + tsMain.Height);
-
-            cmsFileBtn.Show(PointToScreen(p));
+            cmsFileBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_File.Name)));
         }
 
         private void tsbMain_Edit_MouseUp(object sender, MouseEventArgs e)
         {
-            // Show context menu at button X position
-            Point p = new Point(
-                tsMain.Location.X,
-                tsMain.Location.Y + tsMain.Height);
 
-            // Since we can't grab the X position of the buttons
-            // Loop through all the buttons adding their width
-            foreach (ToolStripButton btn in tsMain.Items)
-            {
-                if (btn.Name == tsbMain_Edit.Name)
-                    break;
-
-                p.X += btn.Width;
-            }
-
-            cmsEditBtn.Show(PointToScreen(p));
+            cmsEditBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_Edit.Name)));
         }
 
         private void tsbMain_View_MouseUp(object sender, MouseEventArgs e)
         {
-            // Show context menu at button X position
-            Point p = new Point(
-                tsMain.Location.X,
-                tsMain.Location.Y + tsMain.Height);
-
-            // Since we can't grab the X position of the buttons
-            // Loop through all the buttons adding their width
-            foreach (ToolStripButton btn in tsMain.Items)
-            {
-                if (btn.Name == tsbMain_View.Name)
-                    break;
-
-                p.X += btn.Width;
-            }
-
-            cmsViewBtn.Show(PointToScreen(p));
+            cmsViewBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_View.Name)));
         }
 
         private void tsbMain_Settings_MouseUp(object sender, MouseEventArgs e)
@@ -572,14 +529,7 @@ namespace ImageViewer
 
         private void tsbMain_CurrentDirectory_MouseUp(object sender, MouseEventArgs e)
         {
-            // Show context menu at button X position
-            // Since we know the CurrentDirectory Button is always going to be 
-            // on the far right side, we can do some math to get its position
-            Point p = new Point(
-                tsMain.Location.X + tsMain.Width - tsbMain_CurrentDirectory.Width,
-                tsMain.Location.Y + tsMain.Height);
 
-            cmsCurrentDirectory.Show(PointToScreen(p));
         }
 
         #endregion
@@ -624,29 +574,16 @@ namespace ImageViewer
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentPage = (_TabPage)tcMain.SelectedTab;
-
             UpdateBottomInfoLabel();
+
+            if (currentPage == null)
+                return;
+
+            CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
         }
 
         #endregion
 
-        public void UpdateFillTransparent()
-        {
-            if (currentPage == null)
-                return;
-
-            if (InternalSettings.Fill_Transparent)
-            {
-                currentPage.ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
-                currentPage.ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
-            }
-            else
-            {
-                currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
-                currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
-            }
-            currentPage.ibMain.Invalidate();
-        }
 
         private void MainWindow_Resize(object sender, EventArgs e)
         {
@@ -664,6 +601,38 @@ namespace ImageViewer
                         FitCurrentToScreen();
                     break;
             }
+        }
+
+        private void IdMain_ZoomChangedEvent(object sender, ImageBoxZoomEventArgs e)
+        {
+            if (preventOverflow || currentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            nudTopMain_ZoomPercentage.Value = e.NewZoom;
+
+            preventOverflow = false;
+        }
+
+        private Point GetTsmiButtonPos(string name)
+        {
+            // Show context menu at button X position
+            Point p = new Point(
+                tsMain.Location.X,
+                tsMain.Location.Y + tsMain.Height);
+
+            // Since we can't grab the X position of the buttons
+            // Loop through all the buttons adding their width
+            foreach (ToolStripButton btn in tsMain.Items)
+            {
+                if (btn.Name == name)
+                    break;
+
+                p.X += btn.Width;
+            }
+
+            return p;
         }
 
         public void CloseCurrentTabPage()
@@ -702,41 +671,29 @@ namespace ImageViewer
             ResumeLayout();
         }
 
-        private void IdMain_ZoomChangedEvent(object sender, ImageBoxZoomEventArgs e)
-        {
-            if (preventOverflow || currentPage == null)
-                return;
-
-            preventOverflow = true;
-            
-            nudTopMain_ZoomPercentage.Value = e.NewZoom;
-            //nudTopMain_ZoomPercentage.Value = ((decimal)(zoomfactor * 100)).Clamp(1, nudTopMain_ZoomPercentage.Maximum);
-
-            preventOverflow = false;
-        }
 
         private void UpdateBottomInfoLabel()
         {
-            if (currentPage == null || !currentPage.PathExists)
+            if (currentPage == null || currentPage.Image == null)
             {
                 lblBottomMain_Info.Text = "NULL";
+                return;
             }
-            else if (currentPage.Image != null)
-            {
-                lblBottomMain_Info.Text = string.Join("     ",
-                    new string[]
-                    {
-                    string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height),
-                    string.Format("{0}", Helpers.Helper.SizeSuffix(currentPage.ImagePath.Length)),
-                    string.Format("{0}", currentPage.ImagePath.FullName)
-                    });
-            }
-        }
 
-        private void UpdateTransparentFillIcon(Color c)
-        {
-            tsb_ColorToFillTransparentWith.Image = ImageHelper.CreateSolidColorBitmap(new Size(32, 32), c);
-            tsb_ColorToFillTransparentWith.Invalidate();
+            long size = 0;
+
+            if (File.Exists(CurrentPage.ImagePath.FullName))
+            {
+                size = currentPage.ImagePath.Length;
+            }
+            
+            lblBottomMain_Info.Text = string.Join("     ",
+                new string[]
+                {
+                string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height),
+                string.Format("{0}", Helpers.Helper.SizeSuffix(size)),
+                string.Format("{0}", currentPage.ImagePath.FullName)
+                });
         }
 
         private void ParentFollowChild(object sender, EventArgs e)
@@ -781,33 +738,42 @@ namespace ImageViewer
 
             if (InternalSettings.Fit_Image_On_Resize)
             {
-                //currentPage.ibMain.SizeMode = ImageBoxSizeMode.Fit;
                 currentPage.ibMain.ZoomToFit();
                 currentPage.ibMain.Invalidate();
             }
-            /*else
-            {
-                //currentPage.ibMain.SizeMode = ImageBoxSizeMode.Normal;
-            }*/
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        private Color AskChooseColor()
         {
-            switch (e.KeyData)
-            {
-                /*case (Keys.C | Keys.Control):                    
-                    if (currentPage == null)
-                        return;
-
-                    using (Image toCopy = currentPage.ibMain.GetSelectedImage())
-                    {
-                        ClipboardHelper.CopyImageDefault(toCopy);
-                    }
-
-                    break;*/
-            }
-            base.OnKeyDown(e);
+            return AskChooseColor(Color.Empty);
         }
 
+        private Color AskChooseColor(Color initColor)
+        {
+            Color c;
+            Point p;
+
+            c = initColor;
+            p = Location;
+
+            using (ColorPickerForm f = new ColorPickerForm())
+            {
+                f.Owner = this;
+                f.TopMost = true;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                f.LocationChanged += ParentFollowChild;
+
+                f.UpdateColors(c);
+                f.ShowDialog();
+
+                c = f.GetCurrentColor();
+            }
+
+            Location = p;
+
+            return c;
+        }
+
+        
     }
 }

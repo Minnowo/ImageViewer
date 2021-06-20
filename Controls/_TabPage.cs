@@ -118,6 +118,7 @@ namespace ImageViewer.Controls
             ibMain.DisposeImageBeforeChange = true;
             ibMain.AutoCenter = true;
             ibMain.AutoPan = true;
+            //ibMain.LockImage = false;
             ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
 
             ibMain.BorderStyle = BorderStyle.None;

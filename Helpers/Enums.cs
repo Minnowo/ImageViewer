@@ -21,6 +21,12 @@ namespace ImageViewer.Helpers
         Resized
     }
 
+    public enum SimpleDialogResult
+    {
+        Cancel,
+        Success
+    }
+
     public enum ToolTipLocation
     {
         Mouse,

@@ -206,6 +206,10 @@ namespace Cyotek.Windows.Forms
         private ZoomLevelCollection _zoomLevels;
         private bool _isSelecting;
 
+        private bool allowDrawPixelGrid = false;
+        private System.Windows.Forms.Timer pixelGridRateLimitTimer;
+        //private System.Diagnostics.Stopwatch pixelGridRateLimitStopWatch = new System.Diagnostics.Stopwatch();
+
         #endregion
 
         #region Constructors
@@ -247,7 +251,18 @@ namespace Cyotek.Windows.Forms
             this.TextBackColor = Color.Transparent;
             this.TextDisplayMode = ImageBoxGridDisplayMode.Client;
             this.EndUpdate();
+
+            this.pixelGridRateLimitTimer = new Timer() { Interval = 1000 };
+            this.pixelGridRateLimitTimer.Tick += PixelGridRateLimitTimer_Tick;
+
             // ReSharper restore DoNotCallOverridableMethodsInConstructor
+        }
+
+        private void PixelGridRateLimitTimer_Tick(object sender, EventArgs e)
+        {
+            this.allowDrawPixelGrid = true;
+            this.Invalidate();
+            this.pixelGridRateLimitTimer.Stop();
         }
 
         #endregion
@@ -727,6 +742,15 @@ namespace Cyotek.Windows.Forms
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Prevent the pixel grid from being redrawn every paint update and instead only every 1 second
+        /// </summary>
+        public bool RateLimitPixelGrid = true;
+
+        /// <summary>
+        /// When fetching the image from the selected region should it be scaled based on the zoom level to be the size visible on screen
+        /// </summary>
+        public bool ScaleSelectedImage = true;
 
         /// <summary>
         ///   Gets or sets a value indicating whether clicking the control with the mouse will automatically zoom in or out.
@@ -1109,8 +1133,8 @@ namespace Cyotek.Windows.Forms
                     return null;
 
                 Size visibleSize = GetImageViewPort().Size;
-
                 Bitmap scaledIm = new Bitmap(visibleSize.Width, visibleSize.Height);
+
                 using (Graphics g = Graphics.FromImage(scaledIm))
                 {
                     g.PixelOffsetMode = PixelOffsetMode.HighQuality;
@@ -2008,63 +2032,30 @@ namespace Cyotek.Windows.Forms
                 innerRectangle.Inflate(-this.GetImageBorderOffset(), -this.GetImageBorderOffset());
             }
 
-            if (this.SizeMode != ImageBoxSizeMode.Stretch)
-            {
-                if (this.AutoCenter)
-                //if (this.AutoCenter)
-                    {
-                    int x;
-                    int y;
-
-                    x = !this.HScroll ? (innerRectangle.Width - (this.ScaledImageWidth + this.Padding.Horizontal)) / 2 : 0;
-                    y = !this.VScroll ? (innerRectangle.Height - (this.ScaledImageHeight + this.Padding.Vertical)) / 2 : 0;
-
-                    offset = new Point(x, y);
-                }
-                else
+            if (this.AutoCenter)
                 {
-                    offset = Point.Empty;
-                    //offset = new Point(-this.AutoScrollPosition.X, -this.AutoScrollPosition.Y);
-                }
+                int x;
+                int y;
 
-                //width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
-                width = Math.Min(this.ScaledImageWidth, innerRectangle.Width);
-                //height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
-                height = Math.Min(this.ScaledImageHeight, innerRectangle.Height);
+                x = !this.HScroll ? (innerRectangle.Width - (this.ScaledImageWidth + this.Padding.Horizontal)) / 2 : 0;
+                y = !this.VScroll ? (innerRectangle.Height - (this.ScaledImageHeight + this.Padding.Vertical)) / 2 : 0;
+
+                offset = new Point(x, y);
             }
             else
             {
                 offset = Point.Empty;
-                width = innerRectangle.Width;
-                height = innerRectangle.Height;
             }
 
-            //return new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
-            //return new Rectangle( Math.Abs(this.AutoScrollPosition.X), Math.Abs(this.AutoScrollPosition.Y), ScaledImageWidth, ScaledImageHeight);
-            Rectangle outRect = new Rectangle(offset.X + this.AutoScrollPosition.X, offset.Y + this.AutoScrollPosition.Y, ScaledImageWidth, ScaledImageHeight);
-            //outRect.X = offset.X + this.AutoScrollPosition.X;
-            //outRect.Y = offset.Y + this.AutoScrollPosition.Y;
+            if (this.LockImage)
+            {
+                width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
+                height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
+                return new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
 
-            /*if (!HScroll)
-            {
-                outRect.X = offset.X + this.AutoScrollPosition.X;
-            }*/
-            /*else
-            {
-                outRect.Width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
-            }*/
+            }
 
-            /*if (!VScroll)
-            {
-                outRect.Y = offset.Y + this.AutoScrollPosition.Y;
-            }*/
-            /*else
-            {
-                outRect.Height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
-            }*/
-            return outRect;
-            //return new Rectangle(offset.X + Math.Abs(this.AutoScrollPosition.X), offset.Y + Math.Abs(this.AutoScrollPosition.Y), ScaledImageWidth, ScaledImageHeight);
-            //return new Rectangle(0, 0, width, height);
+            return new Rectangle(offset.X + this.AutoScrollPosition.X, offset.Y + this.AutoScrollPosition.Y, ScaledImageWidth, ScaledImageHeight);
         }
 
         /// <summary>
@@ -2421,6 +2412,7 @@ namespace Cyotek.Windows.Forms
         /// <summary>
         ///   Creates an image based on the current selection region
         /// </summary>
+        /// <param name="visibleSelectedImage">Should the image be scaled by the zoom factor to be the size visible on screen <see cref="bool"/> true or false.</param>
         /// <returns>An image containing the selection contents if a selection if present, otherwise null</returns>
         /// <remarks>The caller is responsible for disposing of the returned image</remarks>
         public Image GetSelectedImage()
@@ -2428,21 +2420,38 @@ namespace Cyotek.Windows.Forms
             if (_image == null || this.SelectionRegion.IsEmpty)
                 return null;
             
-            Rectangle rect;
+            Rectangle srcRect;
+            Rectangle destRect;
 
-            rect = this.FitRectangle(new Rectangle((int)this.SelectionRegion.X, (int)this.SelectionRegion.Y, (int)this.SelectionRegion.Width, (int)this.SelectionRegion.Height));
+            srcRect = this.FitRectangle(
+                new Rectangle(
+                    (int)this.SelectionRegion.X, 
+                    (int)this.SelectionRegion.Y, 
+                    (int)this.SelectionRegion.Width, 
+                    (int)this.SelectionRegion.Height
+                    )
+                );
 
-            if (rect.Width < 0 || rect.Height < 0)
+            if (srcRect.Width < 0 || srcRect.Height < 0)
                 return null;
 
-            Image result = new Bitmap(rect.Width, rect.Height);
+            if (this.ScaleSelectedImage)
+            {
+                destRect = new Rectangle(0, 0, Convert.ToInt32(srcRect.Width * this.ZoomFactor), Convert.ToInt32(srcRect.Height * this.ZoomFactor));
+            }
+            else
+            {
+                destRect = new Rectangle(Point.Empty, srcRect.Size);
+            }
+
+            Image result = new Bitmap(destRect.Width, destRect.Height);
 
             using (Graphics g = Graphics.FromImage(result))
             {
                 g.InterpolationMode = GetInterpolationMode();
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                g.DrawImage(_image, new Rectangle(Point.Empty, rect.Size), rect, GraphicsUnit.Pixel);
+                g.DrawImage(_image, destRect, srcRect, GraphicsUnit.Pixel);
             }
 
             return result;
@@ -2456,10 +2465,7 @@ namespace Cyotek.Windows.Forms
         {
             if (this.ViewSize.IsEmpty)
                 return RectangleF.Empty;
-            
-            if (this.SizeMode == ImageBoxSizeMode.Stretch)
-                return new RectangleF(PointF.Empty, this.ViewSize);
-            
+
             float sourceLeft;
             float sourceTop;
             float sourceWidth;
@@ -2467,23 +2473,18 @@ namespace Cyotek.Windows.Forms
             Rectangle viewPort;
 
             viewPort = this.GetImageViewPort();
-            //sourceLeft = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
-            //sourceTop = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
             sourceWidth = (float)(viewPort.Width / this.ZoomFactor);
             sourceHeight = (float)(viewPort.Height / this.ZoomFactor);
 
-            //return new RectangleF(sourceLeft, sourceTop, sourceWidth, sourceHeight);
+            if (LockImage)
+            {
+                sourceLeft = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
+                sourceTop = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
+                
+                return new RectangleF(sourceLeft, sourceTop, sourceWidth, sourceHeight);
+            }
+
             return new RectangleF(0, 0, sourceWidth, sourceHeight);
-
-            //if (viewPort.Width > ClientSize.Width)
-            //if(this.HScroll)
-                //srcRect.X = (float)(-this.AutoScrollPosition.X / this.ZoomFactor);
-
-            //if (viewPort.Height > ClientSize.Height)
-            //if(this.VScroll)
-                //srcRect.Y = (float)(-this.AutoScrollPosition.Y / this.ZoomFactor);
-
-            //return srcRect;// new RectangleF(0, 0, sourceWidth, sourceHeight);
         }
 
         /// <summary>
@@ -2736,41 +2737,41 @@ namespace Cyotek.Windows.Forms
         /// </summary>
         public virtual void ZoomToFit()
         {
-            if (!this.ViewSize.IsEmpty)
+            if (this.ViewSize.IsEmpty)
+                return;
+            
+            Rectangle innerRectangle;
+            double zoom;
+            double aspectRatio;
+
+            this.AutoScrollMinSize = Size.Empty;
+
+            innerRectangle = this.GetInsideViewPort(true);
+
+            if (this.ViewSize.Width > this.ViewSize.Height)
             {
-                Rectangle innerRectangle;
-                double zoom;
-                double aspectRatio;
+                aspectRatio = (double)innerRectangle.Width / this.ViewSize.Width;
+                zoom = aspectRatio * 100.0;
 
-                this.AutoScrollMinSize = Size.Empty;
-
-                innerRectangle = this.GetInsideViewPort(true);
-
-                if (this.ViewSize.Width > this.ViewSize.Height)
-                {
-                    aspectRatio = (double)innerRectangle.Width / this.ViewSize.Width;
-                    zoom = aspectRatio * 100.0;
-
-                    if (innerRectangle.Height < this.ViewSize.Height * zoom / 100.0)
-                    {
-                        aspectRatio = (double)innerRectangle.Height / this.ViewSize.Height;
-                        zoom = aspectRatio * 100.0;
-                    }
-                }
-                else
+                if (innerRectangle.Height < this.ViewSize.Height * zoom / 100.0)
                 {
                     aspectRatio = (double)innerRectangle.Height / this.ViewSize.Height;
                     zoom = aspectRatio * 100.0;
-
-                    if (innerRectangle.Width < this.ViewSize.Width * zoom / 100.0)
-                    {
-                        aspectRatio = (double)innerRectangle.Width / this.ViewSize.Width;
-                        zoom = aspectRatio * 100.0;
-                    }
                 }
-
-                this.Zoom = (int)Math.Round(Math.Floor(zoom));
             }
+            else
+            {
+                aspectRatio = (double)innerRectangle.Height / this.ViewSize.Height;
+                zoom = aspectRatio * 100.0;
+
+                if (innerRectangle.Width < this.ViewSize.Width * zoom / 100.0)
+                {
+                    aspectRatio = (double)innerRectangle.Width / this.ViewSize.Width;
+                    zoom = aspectRatio * 100.0;
+                }
+            }
+
+            this.Zoom = (int)Math.Round(Math.Floor(zoom));
         }
 
         /// <summary>
@@ -2939,6 +2940,8 @@ namespace Cyotek.Windows.Forms
                     _gridTile.Dispose();
                     _gridTile = null;
                 }
+
+                this.pixelGridRateLimitTimer?.Dispose();
             }
 
             base.Dispose(disposing);
@@ -4042,7 +4045,22 @@ namespace Cyotek.Windows.Forms
                 // draw the grid
                 if (this.ShowPixelGrid && !this.VirtualMode)
                 {
-                    this.DrawPixelGrid(e.Graphics);
+                    if (RateLimitPixelGrid)
+                    {
+                        if(!pixelGridRateLimitTimer.Enabled) 
+                            pixelGridRateLimitTimer.Start();
+
+                        if (allowDrawPixelGrid)
+                        {
+                            this.DrawPixelGrid(e.Graphics);
+                            this.pixelGridRateLimitTimer.Stop();
+                            this.allowDrawPixelGrid = false;
+                        }
+                    }
+                    else
+                    {
+                        this.DrawPixelGrid(e.Graphics);
+                    }
                 }
 
                 // draw the selection

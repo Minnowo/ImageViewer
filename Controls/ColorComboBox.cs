@@ -18,6 +18,14 @@ namespace ImageViewer.Controls
     {
         public event ColorEventHandler ColorChanged;
 
+        public _Color CurrentColor 
+        {
+            get
+            {
+                return GetColor();
+            } 
+        }
+
         public decimal[] Values
         {
             get
@@ -110,7 +118,8 @@ namespace ImageViewer.Controls
             UpdateMax();
             UpdateValues();
         }
-        public void OnColorChanged()
+
+        private _Color GetColor()
         {
             _Color mycolor = Color.White;
             switch (this.colorFormat)
@@ -124,7 +133,7 @@ namespace ImageViewer.Controls
                     break;
 
                 case ColorFormat.CMYK:
-                    CMYK c = new CMYK(0,0,0,0);
+                    CMYK c = new CMYK(0, 0, 0, 0);
                     c.C100 = (float)values[0];
                     c.M100 = (float)values[1];
                     c.Y100 = (float)values[2];
@@ -135,7 +144,7 @@ namespace ImageViewer.Controls
 
                 case ColorFormat.HSB:
                 case ColorFormat.HSV:
-                    HSB hsb = new HSB(0,0,0);
+                    HSB hsb = new HSB(0, 0, 0);
 
                     hsb.Hue360 = (float)values[0];
                     hsb.Saturation100 = (float)values[1];
@@ -154,7 +163,13 @@ namespace ImageViewer.Controls
                     mycolor = hsl.ToColor();
                     break;
             }
-            OnColorChanged(mycolor);
+
+            return mycolor;
+        }
+
+        public void OnColorChanged()
+        {
+            OnColorChanged(GetColor());
         }
         public void OnColorChanged(_Color color)
         {
