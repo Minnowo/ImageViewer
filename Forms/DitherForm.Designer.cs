@@ -500,7 +500,9 @@
             this.ClientSize = new System.Drawing.Size(800, 453);
             this.Controls.Add(this.ibMain);
             this.Controls.Add(this.panel1);
+            this.MinimumSize = new System.Drawing.Size(280, 220);
             this.Name = "DitherForm";
+            this.ShowIcon = false;
             this.Text = "DitherForm";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();

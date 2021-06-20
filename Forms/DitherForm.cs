@@ -35,6 +35,8 @@ namespace ImageViewer
 
             InitializeComponent();
 
+            this.Resize += new System.EventHandler(this.MainWindow_Resize);
+
             ibMain.AllowClickZoom = false;
             ibMain.AllowDrop = false;
 
@@ -74,6 +76,8 @@ namespace ImageViewer
             originalImage = img;
 
             RequestImageTransform();
+            ibMain.ZoomToFit();
+            ibMain.Invalidate();
         }
 
         
@@ -375,6 +379,43 @@ namespace ImageViewer
             RequestImageTransform();
         }
 
+        private void FitImageToScreen()
+        {
+            if (ibMain.Image == null)
+                return;
+
+            if (InternalSettings.Fit_Image_On_Resize)
+            {
+                ibMain.ZoomToFit();
+                ibMain.Invalidate();
+            }
+        }
+
+        private void MainWindow_Resize(object sender, EventArgs e)
+        {
+            if (!fitToScreenLimiter.IsRunning)
+                fitToScreenLimiter.Start();
+
+            switch (WindowState)
+            {
+                case FormWindowState.Maximized:
+                    FitImageToScreen();
+                    break;
+
+                case FormWindowState.Minimized:
+                    break;
+
+
+                case FormWindowState.Normal:
+                    if (fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
+                    {
+                        FitImageToScreen();
+                        fitToScreenLimiter.Restart();
+                    }
+                    break;
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (backgroundWorker.IsBusy)
@@ -405,37 +446,6 @@ namespace ImageViewer
             base.Dispose(disposing);
         }
 
-
-        protected override void OnResize(EventArgs e)
-        {
-            if (!fitToScreenLimiter.IsRunning)
-                fitToScreenLimiter.Start();
-
-            switch (WindowState)
-            {
-                case FormWindowState.Maximized:
-                    if (InternalSettings.Fit_Image_On_Resize)
-                    {
-                        ibMain.ZoomToFit();
-                        ibMain.Invalidate();
-                    }
-                    break;
-
-                case FormWindowState.Minimized:
-                    break;
-
-                case FormWindowState.Normal:
-                    if (InternalSettings.Fit_Image_On_Resize && fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
-                    {
-                        ibMain.ZoomToFit();
-                        ibMain.Invalidate();
-                        fitToScreenLimiter.Restart();
-                    }
-                    break;
-            }
-
-            base.OnResize(e);
-        }
 
         protected override void OnResizeEnd(EventArgs e)
         {

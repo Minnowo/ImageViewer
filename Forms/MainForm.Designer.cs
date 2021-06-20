@@ -39,8 +39,6 @@
             this.nudTopMain_ZoomPercentage = new System.Windows.Forms.NumericUpDown();
             this.btnTopMain_Save = new System.Windows.Forms.Button();
             this.btnTopMain_Open = new System.Windows.Forms.Button();
-            this.pnlBottomMain = new System.Windows.Forms.Panel();
-            this.lblBottomMain_Info = new System.Windows.Forms.Label();
             this.cmsFileBtn = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -75,15 +73,19 @@
             this.tsmiImageBackColor1 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiImageBackColor2 = new System.Windows.Forms.ToolStripMenuItem();
             this.defaultToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsmiViewPixelGrid = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tsslPathToImage = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
-            this.pnlBottomMain.SuspendLayout();
             this.cmsFileBtn.SuspendLayout();
             this.cmsEditBtn.SuspendLayout();
             this.cmsViewBtn.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tsMain
@@ -169,7 +171,7 @@
             0,
             0,
             0});
-            this.nudTopMain_ZoomPercentage.Location = new System.Drawing.Point(119, 4);
+            this.nudTopMain_ZoomPercentage.Location = new System.Drawing.Point(71, 3);
             this.nudTopMain_ZoomPercentage.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -192,41 +194,23 @@
             // 
             // btnTopMain_Save
             // 
-            this.btnTopMain_Save.Location = new System.Drawing.Point(56, 2);
+            this.btnTopMain_Save.Image = global::ImageViewer.Properties.Resources.Save;
+            this.btnTopMain_Save.Location = new System.Drawing.Point(37, 2);
             this.btnTopMain_Save.Name = "btnTopMain_Save";
-            this.btnTopMain_Save.Size = new System.Drawing.Size(57, 23);
+            this.btnTopMain_Save.Size = new System.Drawing.Size(28, 23);
             this.btnTopMain_Save.TabIndex = 2;
-            this.btnTopMain_Save.Text = "Save";
             this.btnTopMain_Save.UseVisualStyleBackColor = true;
             this.btnTopMain_Save.Click += new System.EventHandler(this.btnTopMain_Save_Click);
             // 
             // btnTopMain_Open
             // 
+            this.btnTopMain_Open.Image = global::ImageViewer.Properties.Resources.Open;
             this.btnTopMain_Open.Location = new System.Drawing.Point(3, 2);
             this.btnTopMain_Open.Name = "btnTopMain_Open";
-            this.btnTopMain_Open.Size = new System.Drawing.Size(47, 23);
+            this.btnTopMain_Open.Size = new System.Drawing.Size(28, 23);
             this.btnTopMain_Open.TabIndex = 1;
-            this.btnTopMain_Open.Text = "Open";
             this.btnTopMain_Open.UseVisualStyleBackColor = true;
             this.btnTopMain_Open.Click += new System.EventHandler(this.btnTopMain_Open_Click);
-            // 
-            // pnlBottomMain
-            // 
-            this.pnlBottomMain.Controls.Add(this.lblBottomMain_Info);
-            this.pnlBottomMain.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlBottomMain.Location = new System.Drawing.Point(0, 429);
-            this.pnlBottomMain.Name = "pnlBottomMain";
-            this.pnlBottomMain.Size = new System.Drawing.Size(800, 21);
-            this.pnlBottomMain.TabIndex = 3;
-            // 
-            // lblBottomMain_Info
-            // 
-            this.lblBottomMain_Info.AutoSize = true;
-            this.lblBottomMain_Info.Location = new System.Drawing.Point(4, 4);
-            this.lblBottomMain_Info.Name = "lblBottomMain_Info";
-            this.lblBottomMain_Info.Size = new System.Drawing.Size(35, 13);
-            this.lblBottomMain_Info.TabIndex = 0;
-            this.lblBottomMain_Info.Text = "NULL";
             // 
             // cmsFileBtn
             // 
@@ -450,15 +434,14 @@
             this.imageBackingToolStripMenuItem,
             this.tsmiViewPixelGrid});
             this.cmsViewBtn.Name = "cmsViewBtn";
-            this.cmsViewBtn.ShowImageMargin = false;
-            this.cmsViewBtn.Size = new System.Drawing.Size(156, 136);
+            this.cmsViewBtn.Size = new System.Drawing.Size(153, 114);
             this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
             this.fullScreenToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.fullScreenToolStripMenuItem.Name = "fullScreenToolStripMenuItem";
-            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fullScreenToolStripMenuItem.Text = "Full Screen";
             this.fullScreenToolStripMenuItem.Click += new System.EventHandler(this.ViewFullscreen_Click);
             // 
@@ -466,14 +449,14 @@
             // 
             this.actualSizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.actualSizeToolStripMenuItem.Name = "actualSizeToolStripMenuItem";
-            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.ViewActualImageSize_Click);
             // 
             // tsmiFitToScreen
             // 
             this.tsmiFitToScreen.Name = "tsmiFitToScreen";
-            this.tsmiFitToScreen.Size = new System.Drawing.Size(155, 22);
+            this.tsmiFitToScreen.Size = new System.Drawing.Size(152, 22);
             this.tsmiFitToScreen.Text = "Fit To Screen";
             this.tsmiFitToScreen.Click += new System.EventHandler(this.FitImageToScreen_Click);
             // 
@@ -484,7 +467,7 @@
             this.tsmiImageBackColor2,
             this.defaultToolStripMenuItem});
             this.imageBackingToolStripMenuItem.Name = "imageBackingToolStripMenuItem";
-            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.imageBackingToolStripMenuItem.Text = "Image Backing";
             // 
             // tsmiImageBackColor1
@@ -508,6 +491,53 @@
             this.defaultToolStripMenuItem.Text = "Default";
             this.defaultToolStripMenuItem.Click += new System.EventHandler(this.ResetImageBacking_Click);
             // 
+            // tsmiViewPixelGrid
+            // 
+            this.tsmiViewPixelGrid.CheckOnClick = true;
+            this.tsmiViewPixelGrid.Name = "tsmiViewPixelGrid";
+            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(152, 22);
+            this.tsmiViewPixelGrid.Text = "Pixel Grid";
+            this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsslImageSize,
+            this.tsslImageFileSize,
+            this.tsslPathToImage});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 427);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(800, 23);
+            this.statusStrip1.TabIndex = 4;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // tsslImageSize
+            // 
+            this.tsslImageSize.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.tsslImageSize.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+            this.tsslImageSize.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsslImageSize.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tsslImageSize.Name = "tsslImageSize";
+            this.tsslImageSize.Size = new System.Drawing.Size(32, 18);
+            this.tsslImageSize.Text = "Nil";
+            // 
+            // tsslImageFileSize
+            // 
+            this.tsslImageFileSize.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.tsslImageFileSize.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+            this.tsslImageFileSize.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tsslImageFileSize.Name = "tsslImageFileSize";
+            this.tsslImageFileSize.Size = new System.Drawing.Size(4, 18);
+            // 
+            // tsslPathToImage
+            // 
+            this.tsslPathToImage.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+            this.tsslPathToImage.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsslPathToImage.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tsslPathToImage.MergeAction = System.Windows.Forms.MergeAction.Insert;
+            this.tsslPathToImage.Name = "tsslPathToImage";
+            this.tsslPathToImage.Size = new System.Drawing.Size(0, 18);
+            // 
             // tcMain
             // 
             this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -525,20 +555,12 @@
             this.tcMain.TabIndex = 2;
             this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);
             // 
-            // tsmiViewPixelGrid
-            // 
-            this.tsmiViewPixelGrid.CheckOnClick = true;
-            this.tsmiViewPixelGrid.Name = "tsmiViewPixelGrid";
-            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(155, 22);
-            this.tsmiViewPixelGrid.Text = "Pixel Grid";
-            this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.pnlBottomMain);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.tcMain);
             this.Controls.Add(this.pnlTopMain);
             this.Controls.Add(this.tsMain);
@@ -550,11 +572,11 @@
             this.tsMain.PerformLayout();
             this.pnlTopMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).EndInit();
-            this.pnlBottomMain.ResumeLayout(false);
-            this.pnlBottomMain.PerformLayout();
             this.cmsFileBtn.ResumeLayout(false);
             this.cmsEditBtn.ResumeLayout(false);
             this.cmsViewBtn.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -572,8 +594,6 @@
         private System.Windows.Forms.Button btnTopMain_Save;
         private System.Windows.Forms.Button btnTopMain_Open;
         private ImageViewer.Controls._TabControl tcMain;
-        private System.Windows.Forms.Panel pnlBottomMain;
-        private System.Windows.Forms.Label lblBottomMain_Info;
         private System.Windows.Forms.ToolStripButton tsbMain_CurrentDirectory;
         private System.Windows.Forms.ContextMenuStrip cmsFileBtn;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
@@ -610,6 +630,10 @@
         private System.Windows.Forms.ToolStripMenuItem defaultToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tsmiImageBackColor2;
         private System.Windows.Forms.ToolStripMenuItem tsmiViewPixelGrid;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel tsslImageSize;
+        private System.Windows.Forms.ToolStripStatusLabel tsslImageFileSize;
+        private System.Windows.Forms.ToolStripStatusLabel tsslPathToImage;
     }
 }
 

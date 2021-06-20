@@ -242,6 +242,7 @@ namespace ImageViewer
         {
             if (currentPage == null)
             {
+                fillTransparentToolStripMenuItem.Enabled = false;
                 rotateLeftToolStripMenuItem.Enabled = false;
                 rotateRightToolStripMenuItem.Enabled = false;
                 flipHorizontallyToolStripMenuItem.Enabled = false;
@@ -250,9 +251,11 @@ namespace ImageViewer
                 cropToolStripMenuItem.Enabled = false;
                 grayScaleToolStripMenuItem.Enabled = false;
                 invertColorToolStripMenuItem.Enabled = false;
+                ditherToolStripMenuItem.Enabled = false;
             }
             else 
             {
+                fillTransparentToolStripMenuItem.Enabled = true;
                 rotateLeftToolStripMenuItem.Enabled = true;
                 rotateRightToolStripMenuItem.Enabled = true;
                 flipHorizontallyToolStripMenuItem.Enabled = true;
@@ -261,6 +264,7 @@ namespace ImageViewer
                 cropToolStripMenuItem.Enabled = true;
                 grayScaleToolStripMenuItem.Enabled = true;
                 invertColorToolStripMenuItem.Enabled = true;
+                ditherToolStripMenuItem.Enabled = true;
             }
         }
 
@@ -676,7 +680,10 @@ namespace ImageViewer
         {
             if (currentPage == null || currentPage.Image == null)
             {
-                lblBottomMain_Info.Text = "NULL";
+                //lblBottomMain_Info.Text = "NULL";
+                tsslImageSize.Text = "Nil";
+                tsslImageFileSize.Text = "0 bytes";
+                tsslPathToImage.Text = "Nil";
                 return;
             }
 
@@ -686,14 +693,12 @@ namespace ImageViewer
             {
                 size = currentPage.ImagePath.Length;
             }
-            
-            lblBottomMain_Info.Text = string.Join("     ",
-                new string[]
-                {
-                string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height),
-                string.Format("{0}", Helpers.Helper.SizeSuffix(size)),
-                string.Format("{0}", currentPage.ImagePath.FullName)
-                });
+
+            tsslImageSize.Text = string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height);
+            tsslImageFileSize.Text = string.Format("{0}", Helpers.Helper.SizeSuffix(size));
+            tsslPathToImage.Text = string.Format("{0}", currentPage.ImagePath.FullName);
+
+            Text = tsslPathToImage.Text;
         }
 
         private void ParentFollowChild(object sender, EventArgs e)
