@@ -96,11 +96,6 @@ namespace ImageViewer.Settings
         public static bool CenterChild_When_Parent_Following_Child = true;
         public static bool Fill_Transparent = false;
 
-        public static bool Remember_Images_On_Close = true;
-
-        public static bool Use_Lite_Load_Image = false;
-        public static bool Use_Fast_Invert_Color = true;
-        public static bool Use_Fast_Grey_Scale = true;
         public static bool Use_Async_Dither = true;
 
         public static bool WebP_Plugin_Exists = false;

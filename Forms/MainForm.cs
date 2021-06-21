@@ -57,10 +57,14 @@ namespace ImageViewer
             tsmiImageBackColor1.Name = TSMI_IMAGE_BACK_COLOR_1_NAME;
             tsmiImageBackColor2.Name = TSMI_IMAGE_BACK_COLOR_2_NAME;
 
-            tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color);
-            tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color_Alternate);
-        }
+            tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(
+                InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color);
+            tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(
+                InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color_Alternate);
 
+            _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
+            _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
+        }
 
         #region ContextMenuStrip
 
@@ -340,7 +344,7 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            if (ImageHelper.GreyScaleBitmapSafe((Bitmap)currentPage.ibMain.Image, true))
+            if (ImageHelper.GreyScaleBitmapSafe((Bitmap)currentPage.ibMain.Image, false))
             {
                 currentPage.ibMain.Invalidate();
                 return;
@@ -352,7 +356,7 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, true);
+            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, false);
             currentPage.ibMain.Invalidate();
         }
 
@@ -375,7 +379,7 @@ namespace ImageViewer
 
                 if(f.result == SimpleDialogResult.Success)
                 {
-                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
+                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha, false);
                     currentPage.ibMain.Invalidate();
                 }
             }
@@ -581,12 +585,18 @@ namespace ImageViewer
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentPage = (_TabPage)tcMain.SelectedTab;
-            UpdateBottomInfoLabel();
 
             if (currentPage == null)
+            {
                 return;
+            }
 
             CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
+        }
+
+        private void _TabPage_ImageLoadChanged()
+        {
+            UpdateBottomInfoLabel();
         }
 
         #endregion
@@ -717,20 +727,20 @@ namespace ImageViewer
 
                 if(f.Width < Width)
                 {
-                    p.X -= Math.Abs(Width - f.Width) / 2;
+                    p.X -= Math.Abs(Width - f.Width)>> 1;
                 }
                 else
                 {
-                    p.X += Math.Abs(Width - f.Width) / 2;
+                    p.X += Math.Abs(Width - f.Width) >> 1;
                 }
 
                 if (f.Height < Height)
                 {
-                    p.Y -= Math.Abs(Height - f.Height) / 2;
+                    p.Y -= Math.Abs(Height - f.Height) >> 1;
                 }
                 else
                 {
-                    p.Y += Math.Abs(Height - f.Height) / 2;
+                    p.Y += Math.Abs(Height - f.Height) >> 1;
                 }
 
                 this.Location = p;

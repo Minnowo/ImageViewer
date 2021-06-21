@@ -1044,10 +1044,9 @@ namespace ImageViewer.Helpers
 
         public static Color AskChooseColor(Color initColor)
         {
-            Point p;
-
             using (ColorPickerForm f = new ColorPickerForm())
             {
+                f.TopMost = true;
                 f.UpdateColors(initColor);
                 f.ShowDialog();
 

@@ -18,6 +18,23 @@ namespace ImageViewer.Helpers
     {
         public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
 
+
+        public static Bitmap CopyTo32bppArgb(this Image image)
+        {
+            Bitmap copy;
+
+            copy = new Bitmap(image.Size.Width, image.Size.Height, PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(copy))
+            {
+                g.Clear(Color.Transparent);
+                g.DrawImage(image, new Rectangle(Point.Empty, image.Size), new Rectangle(Point.Empty, image.Size), GraphicsUnit.Pixel);
+            }
+
+            return copy;
+        }
+
+
         public static Bitmap ToBitmap(this ARGB[] data, Size size)
         {
             int height;

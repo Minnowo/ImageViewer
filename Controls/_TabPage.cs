@@ -18,6 +18,12 @@ namespace ImageViewer.Controls
 {
     public partial class _TabPage : TabPage
     {
+        public delegate void ImageLoadedEvent();
+        public static event ImageLoadedEvent ImageLoaded;
+
+        public delegate void ImageUnloadedEvent();
+        public static event ImageUnloadedEvent ImageUnloaded;
+
         public FileInfo ImagePath
         {
             get
@@ -31,7 +37,7 @@ namespace ImageViewer.Controls
         }
         private FileInfo imagePath;
 
-        public bool ImageLoaded { get; private set; } = false;
+        public bool ImageShown { get; private set; } = false;
         public bool IsCurrentPage
         {
             get
@@ -45,7 +51,7 @@ namespace ImageViewer.Controls
                     //state = idMain.GetState();
 
                     UnloadImage();
-                    ImageLoaded = false;
+                    ImageShown = false;
                 }
                 isCurrentPage = value;
             }
@@ -72,16 +78,15 @@ namespace ImageViewer.Controls
                 // the image on the OnMouseDown event 
                 // rather than OnTabChanged event so that we can close the
                 // tab quickly if they are hitting the close button instead of just selecting the tab
-                if (!value && isCurrentPage && !ImageLoaded)
+                if (!value && isCurrentPage && !ImageShown)
                 {
                     LoadImage();
                 }                
             }
         }
         private bool preventLoadImage = false;
-        //public ImageDisplayState state { get; private set; }
 
-        public ImageDisplay idMain { get; private set; }
+
         public ImageBox ibMain { get; private set; }
         public Image ScaledImage
         {
@@ -178,14 +183,32 @@ namespace ImageViewer.Controls
                 ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
             }
 
-            ImageLoaded = true;
+            ImageShown = true;
 
+            OnImageLoad();
             Invalidate();
         }
 
         private void UnloadImage()
         {
             ibMain.Image = null;
+            OnImageUnload();
+        }
+
+        private void OnImageLoad()
+        {
+            if (ImageLoaded != null) 
+            { 
+                ImageLoaded();
+            }
+        }
+
+        private void OnImageUnload()
+        {
+            if(ImageUnloaded != null)
+            {
+                ImageUnloaded();
+            }
         }
     }
 }

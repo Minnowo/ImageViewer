@@ -142,18 +142,6 @@
     <Compile Include="Controls\ColorPicker\ColorPickerSlider.Designer.cs">
       <DependentUpon>ColorPickerSlider.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ImageDisplay\DrawingBoard.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ImageDisplay\DrawingBoard.Designer.cs">
-      <DependentUpon>DrawingBoard.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ImageDisplay\ImageDisplay.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ImageDisplay\ImageDisplay.Designer.cs">
-      <DependentUpon>ImageDisplay.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\_TabControl.cs">
       <SubType>Component</SubType>
     </Compile>

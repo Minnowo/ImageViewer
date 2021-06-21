@@ -74,12 +74,9 @@ namespace ImageViewer
             rb_NoDither.Checked = true;
 
             originalImage = img;
-
+            
             RequestImageTransform();
-            ibMain.ZoomToFit();
-            ibMain.Invalidate();
         }
-
         
        
         private void RequestImageTransform()
@@ -94,7 +91,7 @@ namespace ImageViewer
 
             transform = GetPixelTransform();
             ditherer = GetDitheringInstance();
-            image = originalImage.CloneSafe();
+            image = originalImage.CopyTo32bppArgb();
 
             if (image == null)
                 return;
