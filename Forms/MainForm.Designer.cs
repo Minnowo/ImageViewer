@@ -78,6 +78,7 @@
             this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslPathToImage = new System.Windows.Forms.ToolStripStatusLabel();
+            this.gridColor1OnlyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
@@ -434,14 +435,14 @@
             this.imageBackingToolStripMenuItem,
             this.tsmiViewPixelGrid});
             this.cmsViewBtn.Name = "cmsViewBtn";
-            this.cmsViewBtn.Size = new System.Drawing.Size(153, 114);
+            this.cmsViewBtn.Size = new System.Drawing.Size(181, 136);
             this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
             this.fullScreenToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.fullScreenToolStripMenuItem.Name = "fullScreenToolStripMenuItem";
-            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.fullScreenToolStripMenuItem.Text = "Full Screen";
             this.fullScreenToolStripMenuItem.Click += new System.EventHandler(this.ViewFullscreen_Click);
             // 
@@ -449,14 +450,14 @@
             // 
             this.actualSizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.actualSizeToolStripMenuItem.Name = "actualSizeToolStripMenuItem";
-            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.ViewActualImageSize_Click);
             // 
             // tsmiFitToScreen
             // 
             this.tsmiFitToScreen.Name = "tsmiFitToScreen";
-            this.tsmiFitToScreen.Size = new System.Drawing.Size(152, 22);
+            this.tsmiFitToScreen.Size = new System.Drawing.Size(180, 22);
             this.tsmiFitToScreen.Text = "Fit To Screen";
             this.tsmiFitToScreen.Click += new System.EventHandler(this.FitImageToScreen_Click);
             // 
@@ -465,29 +466,31 @@
             this.imageBackingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiImageBackColor1,
             this.tsmiImageBackColor2,
-            this.defaultToolStripMenuItem});
+            this.defaultToolStripMenuItem,
+            this.gridColor1OnlyToolStripMenuItem});
             this.imageBackingToolStripMenuItem.Name = "imageBackingToolStripMenuItem";
-            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.imageBackingToolStripMenuItem.Text = "Image Backing";
             // 
             // tsmiImageBackColor1
             // 
             this.tsmiImageBackColor1.Name = "tsmiImageBackColor1";
-            this.tsmiImageBackColor1.Size = new System.Drawing.Size(137, 22);
+            this.tsmiImageBackColor1.Size = new System.Drawing.Size(180, 22);
             this.tsmiImageBackColor1.Text = "Grid Color 1";
             this.tsmiImageBackColor1.Click += new System.EventHandler(this.ImageBackingColors_Click);
             // 
             // tsmiImageBackColor2
             // 
             this.tsmiImageBackColor2.Name = "tsmiImageBackColor2";
-            this.tsmiImageBackColor2.Size = new System.Drawing.Size(137, 22);
+            this.tsmiImageBackColor2.Size = new System.Drawing.Size(180, 22);
             this.tsmiImageBackColor2.Text = "Grid Color 2";
             this.tsmiImageBackColor2.Click += new System.EventHandler(this.ImageBackingColors_Click);
             // 
             // defaultToolStripMenuItem
             // 
+            this.defaultToolStripMenuItem.CheckOnClick = true;
             this.defaultToolStripMenuItem.Name = "defaultToolStripMenuItem";
-            this.defaultToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.defaultToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.defaultToolStripMenuItem.Text = "Default";
             this.defaultToolStripMenuItem.Click += new System.EventHandler(this.ResetImageBacking_Click);
             // 
@@ -495,7 +498,7 @@
             // 
             this.tsmiViewPixelGrid.CheckOnClick = true;
             this.tsmiViewPixelGrid.Name = "tsmiViewPixelGrid";
-            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(152, 22);
+            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(180, 22);
             this.tsmiViewPixelGrid.Text = "Pixel Grid";
             this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
             // 
@@ -537,6 +540,14 @@
             this.tsslPathToImage.MergeAction = System.Windows.Forms.MergeAction.Insert;
             this.tsslPathToImage.Name = "tsslPathToImage";
             this.tsslPathToImage.Size = new System.Drawing.Size(0, 18);
+            // 
+            // gridColor1OnlyToolStripMenuItem
+            // 
+            this.gridColor1OnlyToolStripMenuItem.CheckOnClick = true;
+            this.gridColor1OnlyToolStripMenuItem.Name = "gridColor1OnlyToolStripMenuItem";
+            this.gridColor1OnlyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.gridColor1OnlyToolStripMenuItem.Text = "Grid Color 1 Only";
+            this.gridColor1OnlyToolStripMenuItem.Click += new System.EventHandler(this.GirdColor1Only_Click);
             // 
             // tcMain
             // 
@@ -634,6 +645,7 @@
         private System.Windows.Forms.ToolStripStatusLabel tsslImageSize;
         private System.Windows.Forms.ToolStripStatusLabel tsslImageFileSize;
         private System.Windows.Forms.ToolStripStatusLabel tsslPathToImage;
+        private System.Windows.Forms.ToolStripMenuItem gridColor1OnlyToolStripMenuItem;
     }
 }
 

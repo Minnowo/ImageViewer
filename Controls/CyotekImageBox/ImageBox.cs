@@ -206,9 +206,9 @@ namespace Cyotek.Windows.Forms
         private ZoomLevelCollection _zoomLevels;
         private bool _isSelecting;
 
-        private bool allowDrawPixelGrid = false;
-        private System.Windows.Forms.Timer pixelGridRateLimitTimer;
-        //private System.Diagnostics.Stopwatch pixelGridRateLimitStopWatch = new System.Diagnostics.Stopwatch();
+        private TextureBrush gridBrush;
+
+        private float gridBrushZoom = 0f;
 
         #endregion
 
@@ -251,18 +251,7 @@ namespace Cyotek.Windows.Forms
             this.TextBackColor = Color.Transparent;
             this.TextDisplayMode = ImageBoxGridDisplayMode.Client;
             this.EndUpdate();
-
-            this.pixelGridRateLimitTimer = new Timer() { Interval = 1000 };
-            this.pixelGridRateLimitTimer.Tick += PixelGridRateLimitTimer_Tick;
-
             // ReSharper restore DoNotCallOverridableMethodsInConstructor
-        }
-
-        private void PixelGridRateLimitTimer_Tick(object sender, EventArgs e)
-        {
-            this.allowDrawPixelGrid = true;
-            this.Invalidate();
-            this.pixelGridRateLimitTimer.Stop();
         }
 
         #endregion
@@ -742,14 +731,12 @@ namespace Cyotek.Windows.Forms
         #endregion
 
         #region Properties
-        /// <summary>
-        /// Prevent the pixel grid from being redrawn every paint update and instead only every 1 second
-        /// </summary>
-        public bool RateLimitPixelGrid = true;
 
         /// <summary>
         /// When fetching the image from the selected region should it be scaled based on the zoom level to be the size visible on screen
         /// </summary>
+        [DefaultValue(true)]
+        [Category("Behavior")]
         public bool ScaleSelectedImage = true;
 
         /// <summary>
@@ -2941,7 +2928,7 @@ namespace Cyotek.Windows.Forms
                     _gridTile = null;
                 }
 
-                this.pixelGridRateLimitTimer?.Dispose();
+                this.gridBrush?.Dispose();
             }
 
             base.Dispose(disposing);
@@ -3328,6 +3315,7 @@ namespace Cyotek.Windows.Forms
             }
         }
 
+
         /// <summary>
         ///   Draws a pixel grid.
         /// </summary>
@@ -3335,36 +3323,68 @@ namespace Cyotek.Windows.Forms
         protected virtual void DrawPixelGrid(Graphics g)
         {
             float pixelSize;
+            bool makeNewGridTexture;
 
             pixelSize = (float)this.ZoomFactor;
+            makeNewGridTexture = gridBrushZoom != pixelSize;
 
-            if (pixelSize > this.PixelGridThreshold)
+            if (pixelSize <= this.PixelGridThreshold)
             {
-                Rectangle viewport;
-                float offsetX;
-                float offsetY;
-
-                viewport = this.GetImageViewPort();
-                offsetX = Math.Abs(this.AutoScrollPosition.X) % pixelSize;
-                offsetY = Math.Abs(this.AutoScrollPosition.Y) % pixelSize;
-
-                using (Pen pen = new Pen(this.PixelGridColor)
+                if (gridBrush != null)
                 {
-                    DashStyle = DashStyle.Dot
-                })
-                {
-                    for (float x = viewport.Left + pixelSize - offsetX; x < viewport.Right; x += pixelSize)
-                    {
-                        g.DrawLine(pen, x, viewport.Top, x, viewport.Bottom);
-                    }
-
-                    for (float y = viewport.Top + pixelSize - offsetY; y < viewport.Bottom; y += pixelSize)
-                    {
-                        g.DrawLine(pen, viewport.Left, y, viewport.Right, y);
-                    }
-
-                    g.DrawRectangle(pen, viewport);
+                    this.gridBrush.Dispose();
+                    this.gridBrush = null;
                 }
+                return;
+            }
+            
+            Rectangle viewport;
+            float offsetX;
+            float offsetY;
+
+            viewport = this.GetImageViewPort();
+            offsetX = Math.Abs(this.AutoScrollPosition.X) % pixelSize;
+            offsetY = Math.Abs(this.AutoScrollPosition.Y) % pixelSize;
+
+            using (Pen pen = new Pen(this.PixelGridColor)
+            {
+                DashStyle = DashStyle.Dot
+            })
+            {
+                if (makeNewGridTexture || this.gridBrush == null)
+                {
+                    this.gridBrushZoom = pixelSize;
+                    this.gridBrush?.Dispose();
+                    this.gridBrush = null;
+
+                    using (Bitmap bmp = new Bitmap(viewport.Width, viewport.Height))
+                    using (Graphics gr = Graphics.FromImage(bmp))
+                    { 
+                        for (float x = viewport.Left + pixelSize; x < viewport.Right; x += pixelSize)
+                        {
+                            gr.DrawLine(pen, x, viewport.Top, x, viewport.Bottom);
+                        }
+
+                        for (float y = viewport.Top + pixelSize; y < viewport.Bottom; y += pixelSize)
+                        {
+                            gr.DrawLine(pen, viewport.Left, y, viewport.Right, y);
+                        }
+
+                        gr.DrawRectangle(pen, viewport);
+
+                        this.gridBrush = new TextureBrush(bmp) { WrapMode = WrapMode.Clamp};
+                    }
+                }
+                float drawOffsetX = viewport.Left + pixelSize - offsetX;
+                float drawOffsetY = viewport.Top + pixelSize - offsetY;
+                    
+                gridBrush.ResetTransform();
+                gridBrush.TranslateTransform(drawOffsetX, drawOffsetY);
+                g.FillRectangle(gridBrush,
+                        0,
+                        0,
+                        viewport.Width,
+                        viewport.Height);
             }
         }
 
@@ -4015,6 +4035,8 @@ namespace Cyotek.Windows.Forms
             this.AdjustLayout();
         }
 
+        
+
         /// <summary>
         ///   Raises the <see cref="System.Windows.Forms.Control.Paint" /> event.
         /// </summary>
@@ -4042,25 +4064,9 @@ namespace Cyotek.Windows.Forms
                     this.DrawImage(e.Graphics);
                 }
 
-                // draw the grid
                 if (this.ShowPixelGrid && !this.VirtualMode)
                 {
-                    if (RateLimitPixelGrid)
-                    {
-                        if(!pixelGridRateLimitTimer.Enabled) 
-                            pixelGridRateLimitTimer.Start();
-
-                        if (allowDrawPixelGrid)
-                        {
-                            this.DrawPixelGrid(e.Graphics);
-                            this.pixelGridRateLimitTimer.Stop();
-                            this.allowDrawPixelGrid = false;
-                        }
-                    }
-                    else
-                    {
-                        this.DrawPixelGrid(e.Graphics);
-                    }
+                    this.DrawPixelGrid(e.Graphics);
                 }
 
                 // draw the selection

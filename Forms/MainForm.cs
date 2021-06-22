@@ -474,25 +474,28 @@ namespace ImageViewer
             switch (btn.Name)
             {
                 case TSMI_IMAGE_BACK_COLOR_1_NAME:
-                    currentPage.ibMain.GridColor = AskChooseColor(currentPage.ibMain.GridColor);
+                    InternalSettings.Current_Transparent_Grid_Color = AskChooseColor(currentPage.ibMain.GridColor);
                     break;
+
                 case TSMI_IMAGE_BACK_COLOR_2_NAME:
-                    currentPage.ibMain.GridColorAlternate = AskChooseColor(currentPage.ibMain.GridColorAlternate);
+                    InternalSettings.Current_Transparent_Grid_Color_Alternate = AskChooseColor(currentPage.ibMain.GridColorAlternate);
                     break;
             }
 
-            btn.Image = ImageHelper.CreateSolidColorBitmap(InternalSettings.TSMI_Generated_Icon_Size, currentPage.ibMain.GridColor);
-            currentPage.ibMain.Invalidate();
+            UpdateCurrentPageTransparentBackColor();
         }
 
         private void ResetImageBacking_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
+            if (defaultToolStripMenuItem.Checked)
+            {
+                gridColor1OnlyToolStripMenuItem.Checked = false; 
+                InternalSettings.Only_Show_Transparent_Color_1 = false;
+            }
 
-            currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
-            currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
-            currentPage.ibMain.Invalidate();
+            InternalSettings.Show_Default_Transparent_Colors = defaultToolStripMenuItem.Checked;
+
+            UpdateCurrentPageTransparentBackColor();
         }
 
         private void ViewPixelGrid_Clicked(object sender, EventArgs e)
@@ -508,6 +511,18 @@ namespace ImageViewer
             {
                 currentPage.ibMain.ShowPixelGrid = btn.Checked;
             }
+        }
+
+        private void GirdColor1Only_Click(object sender, EventArgs e)
+        {
+            if (gridColor1OnlyToolStripMenuItem.Checked)
+            {
+                defaultToolStripMenuItem.Checked = false;
+                InternalSettings.Show_Default_Transparent_Colors = false;
+            }
+
+            InternalSettings.Only_Show_Transparent_Color_1 = gridColor1OnlyToolStripMenuItem.Checked;
+            UpdateCurrentPageTransparentBackColor();
         }
 
         #endregion
@@ -591,11 +606,11 @@ namespace ImageViewer
                 return;
             }
 
-            CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
         }
 
         private void _TabPage_ImageLoadChanged()
         {
+            UpdateCurrentPageTransparentBackColor();
             UpdateBottomInfoLabel();
         }
 
@@ -604,7 +619,6 @@ namespace ImageViewer
 
         private void MainWindow_Resize(object sender, EventArgs e)
         {
-            //Console.WriteLine(currentPage.ibMain);
             switch (WindowState)
             {
                 case FormWindowState.Maximized:
@@ -693,9 +707,8 @@ namespace ImageViewer
         {
             if (currentPage == null || currentPage.Image == null)
             {
-                //lblBottomMain_Info.Text = "NULL";
                 tsslImageSize.Text = "Nil";
-                tsslImageFileSize.Text = "0 bytes";
+                tsslImageFileSize.Text = "Nil";
                 tsslPathToImage.Text = "Nil";
                 return;
             }
@@ -792,6 +805,45 @@ namespace ImageViewer
             return c;
         }
 
-        
+        private void UpdateCurrentPageTransparentBackColor()
+        {
+            if (currentPage == null)
+                return;
+
+
+            tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(
+                    InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color);
+            tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(
+                InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color_Alternate);
+
+            if (InternalSettings.Show_Default_Transparent_Colors)
+            {
+                currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
+                currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+                currentPage.ibMain.Invalidate();
+                return;
+            }
+
+            if (InternalSettings.Only_Show_Transparent_Color_1)
+            {
+                currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+                currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color;
+                currentPage.ibMain.Invalidate();
+                return;
+
+            }
+
+            currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+            currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void UpdatePixelGrid()
+        {
+            if (currentPage == null)
+                return;
+
+            CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
+        }
     }
 }

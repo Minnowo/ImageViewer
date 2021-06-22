@@ -83,10 +83,15 @@ namespace ImageViewer.Settings
         public static Color Default_Transparent_Grid_Color = Color.Gainsboro;
         public static Color Default_Transparent_Grid_Color_Alternate = Color.White;
 
+        public static Color Current_Transparent_Grid_Color = Color.Gainsboro;
+        public static Color Current_Transparent_Grid_Color_Alternate = Color.White;
+
         public static Size TSMI_Generated_Icon_Size = new Size(16, 16);
 
         public static WebPQuality WebpQuality_Default = new WebPQuality(Format.EncodeLossy, 74, 6);
 
+        public static bool Show_Default_Transparent_Colors = false;
+        public static bool Only_Show_Transparent_Color_1 = false;
         public static bool Show_Pixel_Grid = true;
         public static bool Remove_Selected_Area_On_Pan = false;
 

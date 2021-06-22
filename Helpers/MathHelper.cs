@@ -21,6 +21,18 @@ namespace ImageViewer.Helpers
             return num;
         }
 
+        public static T ClampMin<T>(T num, T min) where T : IComparable<T>
+        {
+            if (num.CompareTo(min) <= 0) return min;
+            return num;
+        }
+
+        public static T ClampMax<T>(T num, T max) where T : IComparable<T>
+        {
+            if (num.CompareTo(max) >= 0) return max;
+            return num;
+        }
+
         public static Size ResizeWidthKeepAspectRatio(Size newWidth, Size startSize)
         {
             newWidth.Height = (int)(newWidth.Width * (startSize.Height / (float)startSize.Width));
