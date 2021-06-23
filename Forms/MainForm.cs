@@ -344,7 +344,7 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            if (ImageHelper.GreyScaleBitmapSafe((Bitmap)currentPage.ibMain.Image, false))
+            if (ImageHelper.GreyScaleBitmapSafe((Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation))
             {
                 currentPage.ibMain.Invalidate();
                 return;
@@ -356,7 +356,7 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, false);
+            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
             currentPage.ibMain.Invalidate();
         }
 
@@ -379,7 +379,8 @@ namespace ImageViewer
 
                 if(f.result == SimpleDialogResult.Success)
                 {
-                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha, false);
+                    ImageHelper.FillTransparentPixelsSafe(
+                        (Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
                     currentPage.ibMain.Invalidate();
                 }
             }
@@ -415,8 +416,8 @@ namespace ImageViewer
             // but if you cancel the close / cancel the dither form
             // while its worker is running, it leaves a bunch of extra memory
             // which gets cleared after the user does something to the image
-            if (collectGarbage)
-                GC.Collect();
+            if (collectGarbage && InternalSettings.Garbage_Collect_On_Dither_Form_Cancel)
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         }
         #endregion
 
@@ -605,11 +606,11 @@ namespace ImageViewer
             {
                 return;
             }
-
         }
 
         private void _TabPage_ImageLoadChanged()
         {
+            UpdatePixelGrid();
             UpdateCurrentPageTransparentBackColor();
             UpdateBottomInfoLabel();
         }
@@ -844,6 +845,43 @@ namespace ImageViewer
                 return;
 
             CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
+        }
+
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            switch (e.KeyData)
+            {
+                case (Keys.Right | Keys.LShiftKey):
+                case (Keys.Right | Keys.Shift):
+                    if (currentPage == null)
+                        return;
+                    
+                    if(tcMain.TabPages.Count - 1 > tcMain.SelectedIndex)
+                    {
+                        CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex + 1]; 
+                        currentPage.PreventLoadImage = false;
+                    }
+                    break;
+
+                case (Keys.Left | Keys.LShiftKey):
+                case (Keys.Left | Keys.Shift):
+                    if (currentPage == null)
+                        return;
+
+                    if (tcMain.SelectedIndex - 1 >= 0)
+                    {
+                        CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex - 1];
+                        currentPage.PreventLoadImage = false;
+                    }
+                    break;
+
+                case (Keys.S | Keys.Control):
+                    
+                    break;
+            }
         }
     }
 }

@@ -103,6 +103,14 @@ namespace ImageViewer.Settings
 
         public static bool Use_Async_Dither = true;
 
+        // because of how we load the image there is extra memory that doesn't get disposed
+        // and calling GC.Collect removes that, but since garbage collection can cause problems
+        // gonna allow the user to disable it as the please 
+        // i also just hate when stuff doesn't get cleared from meory so i like to GC a lot
+        public static bool Garbage_Collect_On_Image_Unload = true;
+        public static bool Garbage_Collect_On_Dither_Form_Cancel = true;
+        public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation = true;
+
         public static bool WebP_Plugin_Exists = false;
 
         public static bool CPU_Type_x64 = IntPtr.Size == 8;

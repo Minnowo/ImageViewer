@@ -19,6 +19,11 @@
             {
                 components.Dispose();
             }
+
+            if (ImageViewer.Settings.InternalSettings.Garbage_Collect_On_Image_Unload)
+            {
+                System.GC.Collect();
+            }
             base.Dispose(disposing);
         }
 

@@ -4644,8 +4644,17 @@ namespace Cyotek.Windows.Forms
                     break;
 
                 case (Keys.C | Keys.Control):
-                    if (_image == null || SelectionMode != ImageBoxSelectionMode.Rectangle)
+                    if (_image == null)
                         return;
+
+                    if (SelectionRegion == RectangleF.Empty || SelectionMode != ImageBoxSelectionMode.Rectangle)
+                    {
+                        using(Image toCopy = VisibleImage)
+                        {
+                            ClipboardHelper.CopyImageDefault(toCopy);
+                        }
+                        return;
+                    }
 
                     using (Image toCopy = GetSelectedImage())
                     {

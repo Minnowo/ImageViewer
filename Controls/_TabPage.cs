@@ -48,8 +48,6 @@ namespace ImageViewer.Controls
             {
                 if(!value)
                 {
-                    //state = idMain.GetState();
-
                     UnloadImage();
                     ImageShown = false;
                 }
@@ -189,10 +187,15 @@ namespace ImageViewer.Controls
             Invalidate();
         }
 
-        private void UnloadImage()
+        public void UnloadImage()
         {
             ibMain.Image = null;
             OnImageUnload();
+
+            if (InternalSettings.Garbage_Collect_On_Image_Unload)
+            {
+                GC.Collect();
+            }
         }
 
         private void OnImageLoad()
