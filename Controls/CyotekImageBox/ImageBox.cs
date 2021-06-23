@@ -2959,7 +2959,7 @@ namespace Cyotek.Windows.Forms
                     Rectangle fillRectangle;
 
                     fillRectangle = this.GetImageViewPort();
-                    //Console.WriteLine($" background: {fillRectangle}");
+
                     e.Graphics.FillRectangle(_texture, fillRectangle);
                     break;
 
@@ -3054,8 +3054,6 @@ namespace Cyotek.Windows.Forms
                 {
                     ImageAnimator.UpdateFrames(this.Image);
                 }
-
-                //Console.WriteLine($" image: {GetImageViewPort()}");
 
                 g.DrawImage(this.Image, this.GetImageViewPort(), this.GetSourceImageRegion(), GraphicsUnit.Pixel);
             }
@@ -3357,34 +3355,34 @@ namespace Cyotek.Windows.Forms
                     this.gridBrush?.Dispose();
                     this.gridBrush = null;
 
-                    using (Bitmap bmp = new Bitmap(viewport.Width, viewport.Height))
+                    using (Bitmap bmp = new Bitmap(Convert.ToInt32(viewport.Width + pixelSize), Convert.ToInt32(viewport.Height + pixelSize)))
                     using (Graphics gr = Graphics.FromImage(bmp))
                     { 
-                        for (float x = viewport.Left + pixelSize; x < viewport.Right; x += pixelSize)
+                        for (float x = 0; x < bmp.Width; x += pixelSize)
                         {
-                            gr.DrawLine(pen, x, viewport.Top, x, viewport.Bottom);
+                            gr.DrawLine(pen, x, viewport.Top, x, bmp.Height);
                         }
 
-                        for (float y = viewport.Top + pixelSize; y < viewport.Bottom; y += pixelSize)
+                        for (float y = 0; y < bmp.Height; y += pixelSize)
                         {
-                            gr.DrawLine(pen, viewport.Left, y, viewport.Right, y);
+                            gr.DrawLine(pen, viewport.Left, y, bmp.Width, y);
                         }
 
-                        gr.DrawRectangle(pen, viewport);
+                        gr.DrawRectangle(pen, new Rectangle(0, 0, bmp.Width, bmp.Height));
 
                         this.gridBrush = new TextureBrush(bmp) { WrapMode = WrapMode.Clamp};
                     }
                 }
-                float drawOffsetX = viewport.Left + pixelSize - offsetX;
-                float drawOffsetY = viewport.Top + pixelSize - offsetY;
+                float drawOffsetX = viewport.Left - offsetX;
+                float drawOffsetY = viewport.Top - offsetY;
                     
                 gridBrush.ResetTransform();
                 gridBrush.TranslateTransform(drawOffsetX, drawOffsetY);
                 g.FillRectangle(gridBrush,
-                        0,
-                        0,
-                        viewport.Width,
-                        viewport.Height);
+                        -pixelSize,
+                        -pixelSize,
+                        viewport.Width + pixelSize,
+                        viewport.Height + pixelSize);
             }
         }
 
