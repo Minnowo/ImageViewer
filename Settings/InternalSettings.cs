@@ -57,8 +57,12 @@ namespace ImageViewer.Settings
         public static short Fit_To_Screen_On_Resize_Limit = 250;
 
         public static short Dither_Threshold_Update_Limit = 1000;
-        
+
+        public static short Folder_Watcher_Resort_Timer_Limit = 5000;
+
         #endregion
+
+        public static List<string> Readable_File_Formats = new List<string>() { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff" };
 
         public static Font CloseButtonFont = new Font(new Font("Consolas", 10), FontStyle.Bold);
 
@@ -101,13 +105,15 @@ namespace ImageViewer.Settings
         public static bool CenterChild_When_Parent_Following_Child = true;
         public static bool Fill_Transparent = false;
 
+        public static bool Watch_Directory = true;
+
         public static bool Use_Async_Dither = true;
 
         // because of how we load the image there is extra memory that doesn't get disposed
         // and calling GC.Collect removes that, but since garbage collection can cause problems
         // gonna allow the user to disable it as the please 
         // i also just hate when stuff doesn't get cleared from meory so i like to GC a lot
-        public static bool Garbage_Collect_On_Image_Unload = true;
+        public static bool Garbage_Collect_On_Image_Unload = false;
         public static bool Garbage_Collect_On_Dither_Form_Cancel = true;
         public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation = true;
 
@@ -120,6 +126,7 @@ namespace ImageViewer.Settings
         {
             WebP_Plugin_Exists = true;
             Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
+            Readable_File_Formats.Add("webp");
         }
     }
 }

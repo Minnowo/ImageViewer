@@ -72,13 +72,13 @@
             this.imageBackingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiImageBackColor1 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiImageBackColor2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.defaultToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowDefaultTransparentGridColors = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiViewPixelGrid = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslPathToImage = new System.Windows.Forms.ToolStripStatusLabel();
-            this.gridColor1OnlyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowTransparentColor1Only = new System.Windows.Forms.ToolStripMenuItem();
             this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
@@ -466,8 +466,8 @@
             this.imageBackingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiImageBackColor1,
             this.tsmiImageBackColor2,
-            this.defaultToolStripMenuItem,
-            this.gridColor1OnlyToolStripMenuItem});
+            this.tsmiShowDefaultTransparentGridColors,
+            this.tsmiShowTransparentColor1Only});
             this.imageBackingToolStripMenuItem.Name = "imageBackingToolStripMenuItem";
             this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.imageBackingToolStripMenuItem.Text = "Image Backing";
@@ -488,11 +488,11 @@
             // 
             // defaultToolStripMenuItem
             // 
-            this.defaultToolStripMenuItem.CheckOnClick = true;
-            this.defaultToolStripMenuItem.Name = "defaultToolStripMenuItem";
-            this.defaultToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.defaultToolStripMenuItem.Text = "Default";
-            this.defaultToolStripMenuItem.Click += new System.EventHandler(this.ResetImageBacking_Click);
+            this.tsmiShowDefaultTransparentGridColors.CheckOnClick = true;
+            this.tsmiShowDefaultTransparentGridColors.Name = "defaultToolStripMenuItem";
+            this.tsmiShowDefaultTransparentGridColors.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowDefaultTransparentGridColors.Text = "Default";
+            this.tsmiShowDefaultTransparentGridColors.Click += new System.EventHandler(this.ResetImageBacking_Click);
             // 
             // tsmiViewPixelGrid
             // 
@@ -543,11 +543,11 @@
             // 
             // gridColor1OnlyToolStripMenuItem
             // 
-            this.gridColor1OnlyToolStripMenuItem.CheckOnClick = true;
-            this.gridColor1OnlyToolStripMenuItem.Name = "gridColor1OnlyToolStripMenuItem";
-            this.gridColor1OnlyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.gridColor1OnlyToolStripMenuItem.Text = "Grid Color 1 Only";
-            this.gridColor1OnlyToolStripMenuItem.Click += new System.EventHandler(this.GirdColor1Only_Click);
+            this.tsmiShowTransparentColor1Only.CheckOnClick = true;
+            this.tsmiShowTransparentColor1Only.Name = "gridColor1OnlyToolStripMenuItem";
+            this.tsmiShowTransparentColor1Only.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowTransparentColor1Only.Text = "Grid Color 1 Only";
+            this.tsmiShowTransparentColor1Only.Click += new System.EventHandler(this.GirdColor1Only_Click);
             // 
             // tcMain
             // 
@@ -638,14 +638,14 @@
         private System.Windows.Forms.ToolStripMenuItem ditherToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem imageBackingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tsmiImageBackColor1;
-        private System.Windows.Forms.ToolStripMenuItem defaultToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowDefaultTransparentGridColors;
         private System.Windows.Forms.ToolStripMenuItem tsmiImageBackColor2;
         private System.Windows.Forms.ToolStripMenuItem tsmiViewPixelGrid;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel tsslImageSize;
         private System.Windows.Forms.ToolStripStatusLabel tsslImageFileSize;
         private System.Windows.Forms.ToolStripStatusLabel tsslPathToImage;
-        private System.Windows.Forms.ToolStripMenuItem gridColor1OnlyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowTransparentColor1Only;
     }
 }
 

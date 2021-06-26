@@ -18,10 +18,10 @@ namespace ImageViewer.Controls
 {
     public partial class _TabPage : TabPage
     {
-        public delegate void ImageLoadedEvent();
+        public delegate void ImageLoadedEvent(bool imloaded);
         public static event ImageLoadedEvent ImageLoaded;
 
-        public delegate void ImageUnloadedEvent();
+        public delegate void ImageUnloadedEvent(bool imloaded);
         public static event ImageUnloadedEvent ImageUnloaded;
 
         public FileInfo ImagePath
@@ -33,6 +33,11 @@ namespace ImageViewer.Controls
             set
             {
                 imagePath = value;
+
+                if (isCurrentPage)
+                {
+                    LoadImage();
+                }
             }
         }
         private FileInfo imagePath;
@@ -190,6 +195,7 @@ namespace ImageViewer.Controls
         public void UnloadImage()
         {
             ibMain.Image = null;
+            ImageShown = false;
             OnImageUnload();
 
             if (InternalSettings.Garbage_Collect_On_Image_Unload)
@@ -202,7 +208,7 @@ namespace ImageViewer.Controls
         {
             if (ImageLoaded != null) 
             { 
-                ImageLoaded();
+                ImageLoaded(ImageShown);
             }
         }
 
@@ -210,7 +216,7 @@ namespace ImageViewer.Controls
         {
             if(ImageUnloaded != null)
             {
-                ImageUnloaded();
+                ImageUnloaded(ImageShown);
             }
         }
     }

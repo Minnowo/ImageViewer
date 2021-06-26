@@ -146,7 +146,7 @@ namespace ImageViewer.Helpers
                 }
             }
 
-            return extension;
+            return extension.ToLower();
         }
 
         public static string[] BytesToHexadecimal(byte[] bytes)

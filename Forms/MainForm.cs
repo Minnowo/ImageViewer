@@ -3,12 +3,14 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
+using System.Collections.Generic;
 
 using ImageViewer.Helpers;
 using ImageViewer.Controls;
 using ImageViewer.Native;
 using ImageViewer.Settings;
 using ImageViewer.structs;
+using ImageViewer.Misc;
 using Cyotek.Windows.Forms;
 
 namespace ImageViewer
@@ -18,7 +20,7 @@ namespace ImageViewer
         public const string TSMI_IMAGE_BACK_COLOR_1_NAME = "tsmiImageBackColor1";
         public const string TSMI_IMAGE_BACK_COLOR_2_NAME = "tsmiImageBackColor2";
 
-
+        public FolderWatcher CurrentFolder;
         public _TabPage CurrentPage
         {
             get
@@ -61,6 +63,13 @@ namespace ImageViewer
                 InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color);
             tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(
                 InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Default_Transparent_Grid_Color_Alternate);
+
+            tsmiViewPixelGrid.Checked = InternalSettings.Show_Pixel_Grid;
+            tsmiShowDefaultTransparentGridColors.Checked = InternalSettings.Show_Default_Transparent_Colors;
+            tsmiShowTransparentColor1Only.Checked = InternalSettings.Only_Show_Transparent_Color_1;
+
+            if (InternalSettings.Watch_Directory)
+                CurrentFolder = new FolderWatcher("");
 
             _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
@@ -109,6 +118,7 @@ namespace ImageViewer
             if (openImages == null)
                 return;
 
+            string dir = Path.GetDirectoryName(openImages[0]);
             int preCount = tcMain.TabPages.Count;
 
             foreach (string image in openImages)
@@ -120,10 +130,7 @@ namespace ImageViewer
                 };
 
                 tp.Text = Path.GetFileName(image).Truncate(25);
-                tp.ToolTipText = image;
-                //tp.idMain.ScrollbarsVisible = false;
-                //tp.idMain.FitToScreenOnLoad = true;
-                //tp.idMain.ZoomChangedEvent += IdMain_ZoomChangedEvent;
+                tp.ToolTipText = tp.ImagePath.Name;
                 tp.ibMain.Zoomed += IdMain_ZoomChangedEvent;
                 tcMain.TabPages.Add(tp);
             }
@@ -142,6 +149,12 @@ namespace ImageViewer
                 // need to set this here in order for the LoadImage function to be called
                 CurrentPage.PreventLoadImage = false;
             }
+
+            if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
+            {
+                CurrentFolder.UpdateDirectory(dir);
+            }
+
             UpdateBottomInfoLabel();
         }
 
@@ -488,13 +501,13 @@ namespace ImageViewer
 
         private void ResetImageBacking_Click(object sender, EventArgs e)
         {
-            if (defaultToolStripMenuItem.Checked)
+            if (tsmiShowDefaultTransparentGridColors.Checked)
             {
-                gridColor1OnlyToolStripMenuItem.Checked = false; 
+                tsmiShowTransparentColor1Only.Checked = false; 
                 InternalSettings.Only_Show_Transparent_Color_1 = false;
             }
 
-            InternalSettings.Show_Default_Transparent_Colors = defaultToolStripMenuItem.Checked;
+            InternalSettings.Show_Default_Transparent_Colors = tsmiShowDefaultTransparentGridColors.Checked;
 
             UpdateCurrentPageTransparentBackColor();
         }
@@ -516,13 +529,13 @@ namespace ImageViewer
 
         private void GirdColor1Only_Click(object sender, EventArgs e)
         {
-            if (gridColor1OnlyToolStripMenuItem.Checked)
+            if (tsmiShowTransparentColor1Only.Checked)
             {
-                defaultToolStripMenuItem.Checked = false;
+                tsmiShowDefaultTransparentGridColors.Checked = false;
                 InternalSettings.Show_Default_Transparent_Colors = false;
             }
 
-            InternalSettings.Only_Show_Transparent_Color_1 = gridColor1OnlyToolStripMenuItem.Checked;
+            InternalSettings.Only_Show_Transparent_Color_1 = tsmiShowTransparentColor1Only.Checked;
             UpdateCurrentPageTransparentBackColor();
         }
 
@@ -601,18 +614,18 @@ namespace ImageViewer
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentPage = (_TabPage)tcMain.SelectedTab;
-
-            if (currentPage == null)
-            {
-                return;
-            }
         }
 
-        private void _TabPage_ImageLoadChanged()
+        private void _TabPage_ImageLoadChanged(bool imageLoaded)
         {
             UpdatePixelGrid();
             UpdateCurrentPageTransparentBackColor();
             UpdateBottomInfoLabel();
+
+            if (imageLoaded)
+            {
+                UpdateWatcherIndex();
+            }
         }
 
         #endregion
@@ -847,6 +860,59 @@ namespace ImageViewer
             CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
         }
 
+        private void UpdateWatcherIndex()
+        {
+            if (InternalSettings.Watch_Directory)
+            {
+                if (currentPage == null)
+                {
+                    CurrentFolder.UpdateIndex("<>");
+                    return;
+                }
+                CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
+                CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
+            }
+        }
+
+        public void NextImage()
+        {
+            if (currentPage == null || !InternalSettings.Watch_Directory)
+                return;
+
+            string newPath;
+
+            if (!CurrentFolder.GetNextValidFile(out newPath))
+                return;
+
+            currentPage.ImagePath = new FileInfo(newPath);
+        }
+
+        public void PreviousImage()
+        {
+            if (currentPage == null || !InternalSettings.Watch_Directory)
+                return;
+
+            string newPath;
+
+            if (!CurrentFolder.GetPreviousValidFile(out newPath))
+                return;
+
+            currentPage.ImagePath = new FileInfo(newPath);
+        }
+
+        public void FullscreenKeyUpCallback(KeyEventArgs e)
+        {
+            switch (e.KeyData)
+            {
+                case (Keys.Right | Keys.Control):
+                    NextImage();
+                    break;
+
+                case (Keys.Left | Keys.Control):
+                    PreviousImage();
+                    break;
+            }
+        }
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
@@ -858,10 +924,10 @@ namespace ImageViewer
                 case (Keys.Right | Keys.Shift):
                     if (currentPage == null)
                         return;
-                    
-                    if(tcMain.TabPages.Count - 1 > tcMain.SelectedIndex)
+
+                    if (tcMain.TabPages.Count - 1 > tcMain.SelectedIndex)
                     {
-                        CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex + 1]; 
+                        CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex + 1];
                         currentPage.PreventLoadImage = false;
                     }
                     break;
@@ -878,8 +944,16 @@ namespace ImageViewer
                     }
                     break;
 
+                case (Keys.Right | Keys.Control):
+                    NextImage();
+                    break;
+
+                case (Keys.Left | Keys.Control):
+                    PreviousImage();
+                    break;
+
                 case (Keys.S | Keys.Control):
-                    
+
                     break;
             }
         }

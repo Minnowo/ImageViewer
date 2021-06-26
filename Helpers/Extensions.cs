@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -77,6 +78,17 @@ namespace ImageViewer.Helpers
 
         #endregion
 
+        public static IEnumerable<T> OrderByNatural<T>(this IEnumerable<T> items, Func<T, string> selector, StringComparer stringComparer = null)
+        {
+            Regex regex = new Regex(@"\d+", RegexOptions.Compiled);
+
+            int maxDigits = items
+                          .SelectMany(i => regex.Matches(selector(i)).Cast<Match>().Select(digitChunk => (int?)digitChunk.Value.Length))
+                          .Max() ?? 0;
+
+            return items.OrderBy(i => regex.Replace(selector(i), match => match.Value.PadLeft(maxDigits, '0')), stringComparer ?? StringComparer.CurrentCulture);
+        }
+
         public static byte ToByte(this int input)
         {
             return (byte)input.Clamp(0, 255);
@@ -118,8 +130,14 @@ namespace ImageViewer.Helpers
                 form.Show();
             };
 
-            // Exit full screen with escape key
             host.KeyPreview = true;
+
+            // this line feels like cheating lmao bouta intercept some key up events
+            host.KeyUp += (KeyEventHandler)((s, e) => {
+                Program.mainForm.FullscreenKeyUpCallback(e);
+            });
+
+            // Exit full screen with escape key
             host.KeyDown += (KeyEventHandler)((s, e) => {
                 if (e.KeyCode == Keys.Escape) host.Close();
             });
