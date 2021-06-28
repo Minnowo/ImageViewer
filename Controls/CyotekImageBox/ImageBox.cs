@@ -732,6 +732,14 @@ namespace Cyotek.Windows.Forms
 
         #region Properties
 
+        public bool HasAnimationFrames
+        {
+            get
+            {
+                return ImageAnimator.CanAnimate(this.Image);
+            }
+        }
+
         /// <summary>
         /// When fetching the image from the selected region should it be scaled based on the zoom level to be the size visible on screen
         /// </summary>

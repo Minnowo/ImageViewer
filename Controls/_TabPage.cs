@@ -95,14 +95,13 @@ namespace ImageViewer.Controls
         {
             get
             {
-                return null;//idMain.ScaledImage;
+                return ibMain.VisibleImage;
             }
         }
         public Image Image
         {
             get
             {
-                //return idMain.Image;
                 return ibMain.Image;
             }
         }

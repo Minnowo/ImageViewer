@@ -188,6 +188,7 @@
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform8.cs" />
     <Compile Include="Helpers\Transforms\UserCustomColorPaletteTransform.cs" />
     <Compile Include="Misc\FolderWatcher.cs" />
+    <Compile Include="Helpers\Gif.cs" />
     <Compile Include="Structs\Structs.cs" />
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>

@@ -299,6 +299,71 @@ namespace ImageViewer.Helpers
             }
         }
 
+        /// <summary>
+        /// Convert the colors of every frame of a Gif object to greyscale.
+        /// </summary>
+        /// <param name="g"> The gif object to convert. </param>
+        public static void GreyScaleGif(Gif g)
+        {
+            for (int i = 0; i < g.Count; i++)
+            {
+                GreyScaleBitmapSafe((Bitmap)g[i]);
+            }
+        }
+
+        /// <summary>
+        /// Convert the colors of every frame of a Gif object  with animated frames to greyscale.
+        /// </summary>
+        /// <param name="bmp"> The bitmap to convert. </param>
+        /// <returns></returns>
+        public static Bitmap GreyScaleGif(Bitmap bmp)
+        {
+            try
+            {
+                using (Gif g = new Gif(bmp))
+                {
+                    GreyScaleGif(g);
+                    return g.ToBitmap();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Invert the colors of every frame of a Gif object.
+        /// </summary>
+        /// <param name="g"> The gif object to invert. </param>
+        public static void InvertGif(Gif g)
+        {
+            for (int i = 0; i < g.Count; i++)
+            {
+                InvertBitmapSafe((Bitmap)g[i]);
+            }
+        }
+
+        /// <summary>
+        /// Invert the colors of every frame of a bitmap with animated frames.
+        /// </summary>
+        /// <param name="bmp"> The bitmap to invert. </param>
+        /// <returns></returns>
+        public static Bitmap InvertGif(Bitmap bmp)
+        {
+            try
+            {
+                using (Gif g = new Gif(bmp))
+                {
+                    InvertGif(g);
+                    return g.ToBitmap();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// Get image format.

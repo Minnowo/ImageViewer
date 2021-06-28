@@ -357,11 +357,28 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            if (ImageHelper.GreyScaleBitmapSafe((Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation))
+            if (currentPage.ibMain.HasAnimationFrames)
             {
+                Bitmap newBmp = ImageHelper.GreyScaleGif((Bitmap)currentPage.Image);
+
+                if (newBmp == null)
+                {
+                    MessageBox.Show(this,
+                        InternalSettings.Unable_To_Convert_To_Grey_Image_Message,
+                        InternalSettings.Unable_To_Convert_To_Grey_Image_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                currentPage.ibMain.Image = newBmp;
                 currentPage.ibMain.Invalidate();
                 return;
             }
+
+            ImageHelper.GreyScaleBitmapSafe(
+                (Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
+            currentPage.ibMain.Invalidate();
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -369,6 +386,25 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
+            if (currentPage.ibMain.HasAnimationFrames)
+            {
+                Bitmap newBmp = ImageHelper.InvertGif((Bitmap)currentPage.Image);
+
+                if (newBmp == null)
+                {
+                    MessageBox.Show(this,
+                        InternalSettings.Unable_To_Invert_Image_Message,
+                        InternalSettings.Unable_To_Invert_Image_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                currentPage.ibMain.Image = newBmp;
+                currentPage.ibMain.Invalidate();
+                return;
+            }
+            
             ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
             currentPage.ibMain.Invalidate();
         }
