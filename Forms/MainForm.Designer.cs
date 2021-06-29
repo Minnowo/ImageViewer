@@ -73,12 +73,13 @@
             this.tsmiImageBackColor1 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiImageBackColor2 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiShowDefaultTransparentGridColors = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowTransparentColor1Only = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiViewPixelGrid = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslPathToImage = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tsmiShowTransparentColor1Only = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportGifFrames = new System.Windows.Forms.ToolStripMenuItem();
             this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
@@ -227,14 +228,14 @@
             this.imagePropertiesToolStripMenuItem});
             this.cmsFileBtn.Name = "cmsFileBtn";
             this.cmsFileBtn.ShowImageMargin = false;
-            this.cmsFileBtn.Size = new System.Drawing.Size(139, 170);
+            this.cmsFileBtn.Size = new System.Drawing.Size(144, 170);
             this.cmsFileBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsFileBtn_Opening);
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -242,7 +243,7 @@
             // 
             this.saveToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
@@ -251,10 +252,11 @@
             this.saveAsToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.saveAsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveUnscaledImageToolStripMenuItem,
-            this.saveScaledImageToolStripMenuItem});
+            this.saveScaledImageToolStripMenuItem,
+            this.tsmiExportGifFrames});
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
-            this.saveAsToolStripMenuItem.Text = "Save As...";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
+            this.saveAsToolStripMenuItem.Text = "Export / Save As...";
             // 
             // saveUnscaledImageToolStripMenuItem
             // 
@@ -273,13 +275,13 @@
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(135, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(140, 6);
             // 
             // moveToToolStripMenuItem
             // 
             this.moveToToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.moveToToolStripMenuItem.Name = "moveToToolStripMenuItem";
-            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.moveToToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.moveToToolStripMenuItem.Text = "Move To";
             this.moveToToolStripMenuItem.Click += new System.EventHandler(this.moveToToolStripMenuItem_Click);
             // 
@@ -287,7 +289,7 @@
             // 
             this.renameToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-            this.renameToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.renameToolStripMenuItem.Text = "Rename";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
@@ -295,20 +297,20 @@
             // 
             this.deleteToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(135, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(140, 6);
             // 
             // imagePropertiesToolStripMenuItem
             // 
             this.imagePropertiesToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.imagePropertiesToolStripMenuItem.Name = "imagePropertiesToolStripMenuItem";
-            this.imagePropertiesToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.imagePropertiesToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.imagePropertiesToolStripMenuItem.Text = "Image Properties";
             this.imagePropertiesToolStripMenuItem.Click += new System.EventHandler(this.imagePropertiesToolStripMenuItem_Click);
             // 
@@ -435,14 +437,14 @@
             this.imageBackingToolStripMenuItem,
             this.tsmiViewPixelGrid});
             this.cmsViewBtn.Name = "cmsViewBtn";
-            this.cmsViewBtn.Size = new System.Drawing.Size(181, 136);
+            this.cmsViewBtn.Size = new System.Drawing.Size(153, 114);
             this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
             this.fullScreenToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.fullScreenToolStripMenuItem.Name = "fullScreenToolStripMenuItem";
-            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fullScreenToolStripMenuItem.Text = "Full Screen";
             this.fullScreenToolStripMenuItem.Click += new System.EventHandler(this.ViewFullscreen_Click);
             // 
@@ -450,14 +452,14 @@
             // 
             this.actualSizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.actualSizeToolStripMenuItem.Name = "actualSizeToolStripMenuItem";
-            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.ViewActualImageSize_Click);
             // 
             // tsmiFitToScreen
             // 
             this.tsmiFitToScreen.Name = "tsmiFitToScreen";
-            this.tsmiFitToScreen.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFitToScreen.Size = new System.Drawing.Size(152, 22);
             this.tsmiFitToScreen.Text = "Fit To Screen";
             this.tsmiFitToScreen.Click += new System.EventHandler(this.FitImageToScreen_Click);
             // 
@@ -469,36 +471,44 @@
             this.tsmiShowDefaultTransparentGridColors,
             this.tsmiShowTransparentColor1Only});
             this.imageBackingToolStripMenuItem.Name = "imageBackingToolStripMenuItem";
-            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.imageBackingToolStripMenuItem.Text = "Image Backing";
             // 
             // tsmiImageBackColor1
             // 
             this.tsmiImageBackColor1.Name = "tsmiImageBackColor1";
-            this.tsmiImageBackColor1.Size = new System.Drawing.Size(180, 22);
+            this.tsmiImageBackColor1.Size = new System.Drawing.Size(165, 22);
             this.tsmiImageBackColor1.Text = "Grid Color 1";
             this.tsmiImageBackColor1.Click += new System.EventHandler(this.ImageBackingColors_Click);
             // 
             // tsmiImageBackColor2
             // 
             this.tsmiImageBackColor2.Name = "tsmiImageBackColor2";
-            this.tsmiImageBackColor2.Size = new System.Drawing.Size(180, 22);
+            this.tsmiImageBackColor2.Size = new System.Drawing.Size(165, 22);
             this.tsmiImageBackColor2.Text = "Grid Color 2";
             this.tsmiImageBackColor2.Click += new System.EventHandler(this.ImageBackingColors_Click);
             // 
-            // defaultToolStripMenuItem
+            // tsmiShowDefaultTransparentGridColors
             // 
             this.tsmiShowDefaultTransparentGridColors.CheckOnClick = true;
-            this.tsmiShowDefaultTransparentGridColors.Name = "defaultToolStripMenuItem";
-            this.tsmiShowDefaultTransparentGridColors.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowDefaultTransparentGridColors.Name = "tsmiShowDefaultTransparentGridColors";
+            this.tsmiShowDefaultTransparentGridColors.Size = new System.Drawing.Size(165, 22);
             this.tsmiShowDefaultTransparentGridColors.Text = "Default";
             this.tsmiShowDefaultTransparentGridColors.Click += new System.EventHandler(this.ResetImageBacking_Click);
+            // 
+            // tsmiShowTransparentColor1Only
+            // 
+            this.tsmiShowTransparentColor1Only.CheckOnClick = true;
+            this.tsmiShowTransparentColor1Only.Name = "tsmiShowTransparentColor1Only";
+            this.tsmiShowTransparentColor1Only.Size = new System.Drawing.Size(165, 22);
+            this.tsmiShowTransparentColor1Only.Text = "Grid Color 1 Only";
+            this.tsmiShowTransparentColor1Only.Click += new System.EventHandler(this.GirdColor1Only_Click);
             // 
             // tsmiViewPixelGrid
             // 
             this.tsmiViewPixelGrid.CheckOnClick = true;
             this.tsmiViewPixelGrid.Name = "tsmiViewPixelGrid";
-            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(180, 22);
+            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(152, 22);
             this.tsmiViewPixelGrid.Text = "Pixel Grid";
             this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
             // 
@@ -541,13 +551,12 @@
             this.tsslPathToImage.Name = "tsslPathToImage";
             this.tsslPathToImage.Size = new System.Drawing.Size(0, 18);
             // 
-            // gridColor1OnlyToolStripMenuItem
+            // tsmiExportGifFrames
             // 
-            this.tsmiShowTransparentColor1Only.CheckOnClick = true;
-            this.tsmiShowTransparentColor1Only.Name = "gridColor1OnlyToolStripMenuItem";
-            this.tsmiShowTransparentColor1Only.Size = new System.Drawing.Size(180, 22);
-            this.tsmiShowTransparentColor1Only.Text = "Grid Color 1 Only";
-            this.tsmiShowTransparentColor1Only.Click += new System.EventHandler(this.GirdColor1Only_Click);
+            this.tsmiExportGifFrames.Name = "tsmiExportGifFrames";
+            this.tsmiExportGifFrames.Size = new System.Drawing.Size(185, 22);
+            this.tsmiExportGifFrames.Text = "Export Gif Frames";
+            this.tsmiExportGifFrames.Click += new System.EventHandler(this.ExportGifFrames_Click);
             // 
             // tcMain
             // 
@@ -646,6 +655,7 @@
         private System.Windows.Forms.ToolStripStatusLabel tsslImageFileSize;
         private System.Windows.Forms.ToolStripStatusLabel tsslPathToImage;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowTransparentColor1Only;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExportGifFrames;
     }
 }
 

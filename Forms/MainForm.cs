@@ -169,7 +169,11 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            ImageHelper.SaveImageFileDialog(currentPage.Image);
+            string path = ImageHelper.SaveImageFileDialog(currentPage.Image);
+            if (InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
+            {
+                Helper.OpenExplorerAtLocation(path);
+            }
         }
 
         private void saveScaledImageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -179,7 +183,12 @@ namespace ImageViewer
 
             using (Image img = currentPage.ibMain.VisibleImage)
             {
-                ImageHelper.SaveImageFileDialog(img);
+                string path = ImageHelper.SaveImageFileDialog(img);
+                
+                if(InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
+                {
+                    Helper.OpenExplorerAtLocation(path);
+                }
             }
         }
 
@@ -249,6 +258,56 @@ namespace ImageViewer
             f.Show();
  
             f.UpdateImageInfo(currentPage.ImagePath.FullName);
+        }
+
+
+        private void ExportGifFrames_Click(object sender, EventArgs e)
+        {
+            if (CurrentPage == null)
+                return;
+
+            if (!currentPage.ibMain.HasAnimationFrames)
+            {
+                MessageBox.Show(this,
+                        InternalSettings.No_Animation_Frames_Found_Message,
+                        InternalSettings.No_Animation_Frames_Found_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                return;
+            }
+
+            using(FolderSelectDialog dialog = new FolderSelectDialog())
+            {
+                dialog.Title = "Select a folder to export frames";
+                
+                if(dialog.ShowDialog() && !string.IsNullOrEmpty(dialog.FileName))
+                {
+                    string dir = dialog.FileName;
+                    int totalFrames = 0;
+                    int framesSaved = 0;
+
+                    using(Gif g = new Gif((Bitmap)currentPage.Image))
+                    {
+                        totalFrames = g.Count;
+                        for (int i = 0; i < g.Count; i++)
+                        {
+                            if (ImageHelper.SaveImage(g[i], string.Format("{0}\\{1}.{2}", dir, i, ImageHelper.DEFAULT_IMAGE_FORMAT), false))
+                                framesSaved++;
+                        }
+                    }
+
+                    if (InternalSettings.Open_Explorer_After_Export)
+                    {
+                        Helper.OpenExplorerAtLocation(dir);
+                    }
+
+                    if (InternalSettings.Garbage_Collect_After_Gif_Export)
+                    {
+                        GC.Collect();
+                    }
+                }
+            }
+
         }
 
         #endregion
@@ -993,5 +1052,6 @@ namespace ImageViewer
                     break;
             }
         }
+
     }
 }

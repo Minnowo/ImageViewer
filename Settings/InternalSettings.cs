@@ -43,6 +43,9 @@ namespace ImageViewer.Settings
         public static string Unable_To_Convert_To_Fill_Transparent_Title = "Unable to fill transparent pixels.";
         public static string Unable_To_Convert_To_Fill_Transparent_Message = "There was an error when trying to fill transparent pixels, most likely the pixel format is not 32bppArgb.";
 
+        public static string No_Animation_Frames_Found_Title = "No animation frames found.";
+        public static string No_Animation_Frames_Found_Message = "Unable to detect any animation frames to export.";
+
         #endregion
 
         #region plugin dll paths
@@ -106,6 +109,8 @@ namespace ImageViewer.Settings
         public static bool Fill_Transparent = false;
 
         public static bool Watch_Directory = true;
+        public static bool Open_Explorer_After_Export = true;
+        public static bool Open_Explorer_After_SaveAs = true;
 
         public static bool Use_Async_Dither = true;
 
@@ -116,6 +121,7 @@ namespace ImageViewer.Settings
         public static bool Garbage_Collect_On_Image_Unload = false;
         public static bool Garbage_Collect_On_Dither_Form_Cancel = true;
         public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation = true;
+        public static bool Garbage_Collect_After_Gif_Export = true;
 
         public static bool WebP_Plugin_Exists = false;
 

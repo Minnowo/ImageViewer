@@ -286,7 +286,7 @@ namespace ImageViewer
                 return;
             }
 
-            ImageHelper.UpdateBitmap(originalImage, (Bitmap)ibMain.Image);
+            ImageHelper.UpdateBitmapSafe(originalImage, (Bitmap)ibMain.Image);
             Close();
         }
 

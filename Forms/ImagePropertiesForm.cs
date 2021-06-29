@@ -10,10 +10,13 @@ namespace ImageViewer
 {
     public partial class ImagePropertiesForm : Form
     {
-
+        public FileInfo CurrentFile;
         public ImagePropertiesForm()
         {
             InitializeComponent();
+
+            if (!Helper.IsElevated)
+                cbSystem.Enabled = false;
         }
 
         public void UpdateImageInfo(string path)
@@ -21,9 +24,33 @@ namespace ImageViewer
             if (!File.Exists(path))
                 return;
 
+            CurrentFile = new FileInfo(path);
             using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (Image image = Image.FromStream(fileStream, false, false))
             {
+                tbLocationDisplay.Text = path;
+                tbSizeDisplay.Text = Helper.SizeSuffix(CurrentFile.Length);
+                tbDateCreatedDisplay.Text = CurrentFile.CreationTime.ToString();
+                tbDateModifiedDisplay.Text = CurrentFile.LastWriteTime.ToString();
+                tbDateAccessedDisplay.Text = CurrentFile.LastAccessTime.ToString();
+
+                if (CurrentFile.Attributes.HasFlag(FileAttributes.ReadOnly))
+                {
+                    cbReadOnly.Checked = true;
+                }
+                if (CurrentFile.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    cbHidden.Checked = true;
+                }
+                if (CurrentFile.Attributes.HasFlag(FileAttributes.System))
+                {
+                    cbSystem.Checked = true;
+                }
+                if (CurrentFile.Attributes.HasFlag(FileAttributes.Archive))
+                {
+                    cbArchive.Checked = true;
+                }
+
                 lbl_ImageFormatDisplay_1.Text = ImageHelper.GetMimeType(image);
                 lbl_ImageFormatDisplay_2.Text = "";
 
@@ -60,8 +87,80 @@ namespace ImageViewer
 
                 lbl_PropertyItemDisplay.Text = sb.ToString();
             }
+        }
 
-            GC.Collect();
+        private void ReadOnly_CheckChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if(cbReadOnly.Checked)
+                {
+                    File.SetAttributes(CurrentFile.FullName, CurrentFile.Attributes | FileAttributes.ReadOnly);
+                    return;
+                }
+                FileAttributes attributes = Helper.RemoveAttribute(CurrentFile.Attributes, FileAttributes.ReadOnly);
+                File.SetAttributes(CurrentFile.FullName, attributes);
+            }
+            catch(Exception ex)
+            {
+                ex.ShowError();
+            }
+        }
+
+        private void System_CheckChanged(object sender, EventArgs e)
+        {
+            if (!Helper.IsElevated)
+                return;
+            try
+            {
+                if (cbSystem.Checked)
+                {
+                    File.SetAttributes(CurrentFile.FullName, CurrentFile.Attributes | FileAttributes.System);
+                    return;
+                }
+                FileAttributes attributes = Helper.RemoveAttribute(CurrentFile.Attributes, FileAttributes.System);
+                File.SetAttributes(CurrentFile.FullName, attributes);
+            }
+            catch (Exception ex)
+            {
+                ex.ShowError();
+            }
+        }
+
+        private void Hidden_CheckChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cbHidden.Checked)
+                {
+                    File.SetAttributes(CurrentFile.FullName, CurrentFile.Attributes | FileAttributes.Hidden);
+                    return;
+                }
+                FileAttributes attributes = Helper.RemoveAttribute(CurrentFile.Attributes, FileAttributes.Hidden);
+                File.SetAttributes(CurrentFile.FullName, attributes);
+            }
+            catch (Exception ex)
+            {
+                ex.ShowError();
+            }
+        }
+
+        private void Archive_CheckChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cbArchive.Checked)
+                {
+                    File.SetAttributes(CurrentFile.FullName, CurrentFile.Attributes | FileAttributes.Archive);
+                    return;
+                }
+                FileAttributes attributes = Helper.RemoveAttribute(CurrentFile.Attributes, FileAttributes.Archive);
+                File.SetAttributes(CurrentFile.FullName, attributes);
+            }
+            catch (Exception ex)
+            {
+                ex.ShowError();
+            }
         }
     }
 }

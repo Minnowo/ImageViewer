@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Security.Principal;
 using System.Windows.Forms;
 using ImageViewer.Settings;
 
@@ -21,6 +22,14 @@ namespace ImageViewer.Helpers
         public static readonly Version OSVersion = Environment.OSVersion.Version;
         public static readonly string[] SizeSuffixes =
                    { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+
+        public static bool IsElevated
+        {
+            get
+            {
+                return WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid);
+            }
+        }
 
         public static string[] AskOpenFile(string initialDir="", Form form =null, string DialogFilter = InternalSettings.All_Files_File_Dialog, bool multiSelect = false)
         {
@@ -147,6 +156,32 @@ namespace ImageViewer.Helpers
             }
 
             return extension.ToLower();
+        }
+
+        public static bool OpenExplorerAtLocation(string path)
+        {
+            if (File.Exists(path))
+            {
+                Process fileopener = new Process();
+                fileopener.StartInfo.FileName = "explorer";
+                fileopener.StartInfo.Arguments = string.Format("/select,\"{0}\"", path);
+                fileopener.Start();
+                return true;
+            }
+            else if (Directory.Exists(path))
+            {
+                Process fileopener = new Process();
+                fileopener.StartInfo.FileName = "explorer";
+                fileopener.StartInfo.Arguments = path;
+                fileopener.Start();
+                return true;
+            }
+            return false;
+        }
+
+        public static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
+        {
+            return attributes & ~attributesToRemove;
         }
 
         public static string[] BytesToHexadecimal(byte[] bytes)

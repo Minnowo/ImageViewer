@@ -31,6 +31,9 @@
             this.tc_Main = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.lbl_PropertyItemDisplay = new System.Windows.Forms.Label();
+            this.lbl_PropertyItem = new System.Windows.Forms.Label();
             this.lbl_BitFormatDisplay_2 = new System.Windows.Forms.Label();
             this.lbl_BitFormatDisplay_1 = new System.Windows.Forms.Label();
             this.lbl_BitFormat = new System.Windows.Forms.Label();
@@ -52,12 +55,27 @@
             this.lbl_Height = new System.Windows.Forms.Label();
             this.lbl_Width = new System.Windows.Forms.Label();
             this.lbl_ImageFormat = new System.Windows.Forms.Label();
-            this.lbl_PropertyItem = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.lbl_PropertyItemDisplay = new System.Windows.Forms.Label();
+            this.lblLocation = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.tbLocationDisplay = new System.Windows.Forms.TextBox();
+            this.tbSizeDisplay = new System.Windows.Forms.TextBox();
+            this.tbDateCreatedDisplay = new System.Windows.Forms.TextBox();
+            this.tbDateModifiedDisplay = new System.Windows.Forms.TextBox();
+            this.tbDateAccessedDisplay = new System.Windows.Forms.TextBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.cbReadOnly = new System.Windows.Forms.CheckBox();
+            this.cbSystem = new System.Windows.Forms.CheckBox();
+            this.cbHidden = new System.Windows.Forms.CheckBox();
+            this.cbArchive = new System.Windows.Forms.CheckBox();
             this.tc_Main.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tc_Main
@@ -73,10 +91,22 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.panel2);
+            this.tabPage1.Controls.Add(this.tbDateAccessedDisplay);
+            this.tabPage1.Controls.Add(this.tbDateModifiedDisplay);
+            this.tabPage1.Controls.Add(this.tbDateCreatedDisplay);
+            this.tabPage1.Controls.Add(this.tbSizeDisplay);
+            this.tabPage1.Controls.Add(this.tbLocationDisplay);
+            this.tabPage1.Controls.Add(this.label5);
+            this.tabPage1.Controls.Add(this.label4);
+            this.tabPage1.Controls.Add(this.label3);
+            this.tabPage1.Controls.Add(this.label2);
+            this.tabPage1.Controls.Add(this.label1);
+            this.tabPage1.Controls.Add(this.lblLocation);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(411, 424);
+            this.tabPage1.Size = new System.Drawing.Size(411, 331);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "File";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -113,6 +143,36 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Image";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // panel1
+            // 
+            this.panel1.AutoScroll = true;
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.lbl_PropertyItemDisplay);
+            this.panel1.Location = new System.Drawing.Point(11, 156);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(392, 168);
+            this.panel1.TabIndex = 23;
+            // 
+            // lbl_PropertyItemDisplay
+            // 
+            this.lbl_PropertyItemDisplay.AutoSize = true;
+            this.lbl_PropertyItemDisplay.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbl_PropertyItemDisplay.Location = new System.Drawing.Point(0, 0);
+            this.lbl_PropertyItemDisplay.Name = "lbl_PropertyItemDisplay";
+            this.lbl_PropertyItemDisplay.Size = new System.Drawing.Size(35, 13);
+            this.lbl_PropertyItemDisplay.TabIndex = 0;
+            this.lbl_PropertyItemDisplay.Text = "label1";
+            this.lbl_PropertyItemDisplay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lbl_PropertyItem
+            // 
+            this.lbl_PropertyItem.AutoSize = true;
+            this.lbl_PropertyItem.Location = new System.Drawing.Point(8, 140);
+            this.lbl_PropertyItem.Name = "lbl_PropertyItem";
+            this.lbl_PropertyItem.Size = new System.Drawing.Size(77, 13);
+            this.lbl_PropertyItem.TabIndex = 21;
+            this.lbl_PropertyItem.Text = "Property Items:";
             // 
             // lbl_BitFormatDisplay_2
             // 
@@ -289,35 +349,180 @@
             this.lbl_ImageFormat.TabIndex = 0;
             this.lbl_ImageFormat.Text = "Format:";
             // 
-            // lbl_PropertyItem
+            // lblLocation
             // 
-            this.lbl_PropertyItem.AutoSize = true;
-            this.lbl_PropertyItem.Location = new System.Drawing.Point(8, 140);
-            this.lbl_PropertyItem.Name = "lbl_PropertyItem";
-            this.lbl_PropertyItem.Size = new System.Drawing.Size(77, 13);
-            this.lbl_PropertyItem.TabIndex = 21;
-            this.lbl_PropertyItem.Text = "Property Items:";
+            this.lblLocation.AutoSize = true;
+            this.lblLocation.Location = new System.Drawing.Point(8, 15);
+            this.lblLocation.Name = "lblLocation";
+            this.lblLocation.Size = new System.Drawing.Size(51, 13);
+            this.lblLocation.TabIndex = 0;
+            this.lblLocation.Text = "Location:";
             // 
-            // panel1
+            // label1
             // 
-            this.panel1.AutoScroll = true;
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.lbl_PropertyItemDisplay);
-            this.panel1.Location = new System.Drawing.Point(11, 156);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(392, 168);
-            this.panel1.TabIndex = 23;
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(8, 28);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(30, 13);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "Size:";
             // 
-            // lbl_PropertyItemDisplay
+            // label2
             // 
-            this.lbl_PropertyItemDisplay.AutoSize = true;
-            this.lbl_PropertyItemDisplay.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbl_PropertyItemDisplay.Location = new System.Drawing.Point(0, 0);
-            this.lbl_PropertyItemDisplay.Name = "lbl_PropertyItemDisplay";
-            this.lbl_PropertyItemDisplay.Size = new System.Drawing.Size(35, 13);
-            this.lbl_PropertyItemDisplay.TabIndex = 0;
-            this.lbl_PropertyItemDisplay.Text = "label1";
-            this.lbl_PropertyItemDisplay.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(8, 46);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(47, 13);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "Created:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(8, 59);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(50, 13);
+            this.label3.TabIndex = 3;
+            this.label3.Text = "Modified:";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(8, 72);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(63, 13);
+            this.label4.TabIndex = 4;
+            this.label4.Text = "Accesseed:";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(8, 90);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(54, 13);
+            this.label5.TabIndex = 5;
+            this.label5.Text = "Attributes:";
+            // 
+            // tbLocationDisplay
+            // 
+            this.tbLocationDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbLocationDisplay.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.tbLocationDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbLocationDisplay.Location = new System.Drawing.Point(90, 15);
+            this.tbLocationDisplay.Name = "tbLocationDisplay";
+            this.tbLocationDisplay.ReadOnly = true;
+            this.tbLocationDisplay.Size = new System.Drawing.Size(313, 13);
+            this.tbLocationDisplay.TabIndex = 6;
+            this.tbLocationDisplay.TabStop = false;
+            // 
+            // tbSizeDisplay
+            // 
+            this.tbSizeDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSizeDisplay.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.tbSizeDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbSizeDisplay.Location = new System.Drawing.Point(90, 30);
+            this.tbSizeDisplay.Name = "tbSizeDisplay";
+            this.tbSizeDisplay.ReadOnly = true;
+            this.tbSizeDisplay.Size = new System.Drawing.Size(313, 13);
+            this.tbSizeDisplay.TabIndex = 7;
+            this.tbSizeDisplay.TabStop = false;
+            // 
+            // tbDateCreatedDisplay
+            // 
+            this.tbDateCreatedDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDateCreatedDisplay.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.tbDateCreatedDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbDateCreatedDisplay.Location = new System.Drawing.Point(90, 46);
+            this.tbDateCreatedDisplay.Name = "tbDateCreatedDisplay";
+            this.tbDateCreatedDisplay.ReadOnly = true;
+            this.tbDateCreatedDisplay.Size = new System.Drawing.Size(313, 13);
+            this.tbDateCreatedDisplay.TabIndex = 8;
+            this.tbDateCreatedDisplay.TabStop = false;
+            // 
+            // tbDateModifiedDisplay
+            // 
+            this.tbDateModifiedDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDateModifiedDisplay.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.tbDateModifiedDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbDateModifiedDisplay.Location = new System.Drawing.Point(90, 59);
+            this.tbDateModifiedDisplay.Name = "tbDateModifiedDisplay";
+            this.tbDateModifiedDisplay.ReadOnly = true;
+            this.tbDateModifiedDisplay.Size = new System.Drawing.Size(313, 13);
+            this.tbDateModifiedDisplay.TabIndex = 9;
+            this.tbDateModifiedDisplay.TabStop = false;
+            // 
+            // tbDateAccessedDisplay
+            // 
+            this.tbDateAccessedDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDateAccessedDisplay.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.tbDateAccessedDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbDateAccessedDisplay.Location = new System.Drawing.Point(90, 72);
+            this.tbDateAccessedDisplay.Name = "tbDateAccessedDisplay";
+            this.tbDateAccessedDisplay.ReadOnly = true;
+            this.tbDateAccessedDisplay.Size = new System.Drawing.Size(313, 13);
+            this.tbDateAccessedDisplay.TabIndex = 10;
+            this.tbDateAccessedDisplay.TabStop = false;
+            // 
+            // panel2
+            // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.cbArchive);
+            this.panel2.Controls.Add(this.cbHidden);
+            this.panel2.Controls.Add(this.cbSystem);
+            this.panel2.Controls.Add(this.cbReadOnly);
+            this.panel2.Location = new System.Drawing.Point(25, 106);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(185, 47);
+            this.panel2.TabIndex = 11;
+            // 
+            // cbReadOnly
+            // 
+            this.cbReadOnly.AutoSize = true;
+            this.cbReadOnly.Location = new System.Drawing.Point(3, 3);
+            this.cbReadOnly.Name = "cbReadOnly";
+            this.cbReadOnly.Size = new System.Drawing.Size(74, 17);
+            this.cbReadOnly.TabIndex = 0;
+            this.cbReadOnly.Text = "Read-only";
+            this.cbReadOnly.UseVisualStyleBackColor = true;
+            this.cbReadOnly.CheckedChanged += new System.EventHandler(this.ReadOnly_CheckChanged);
+            // 
+            // cbSystem
+            // 
+            this.cbSystem.AutoSize = true;
+            this.cbSystem.Location = new System.Drawing.Point(3, 26);
+            this.cbSystem.Name = "cbSystem";
+            this.cbSystem.Size = new System.Drawing.Size(60, 17);
+            this.cbSystem.TabIndex = 1;
+            this.cbSystem.Text = "System";
+            this.cbSystem.UseVisualStyleBackColor = true;
+            this.cbSystem.CheckedChanged += new System.EventHandler(this.System_CheckChanged);
+            // 
+            // cbHidden
+            // 
+            this.cbHidden.AutoSize = true;
+            this.cbHidden.Location = new System.Drawing.Point(117, 3);
+            this.cbHidden.Name = "cbHidden";
+            this.cbHidden.Size = new System.Drawing.Size(60, 17);
+            this.cbHidden.TabIndex = 2;
+            this.cbHidden.Text = "Hidden";
+            this.cbHidden.UseVisualStyleBackColor = true;
+            this.cbHidden.CheckedChanged += new System.EventHandler(this.Hidden_CheckChanged);
+            // 
+            // cbArchive
+            // 
+            this.cbArchive.AutoSize = true;
+            this.cbArchive.Location = new System.Drawing.Point(117, 26);
+            this.cbArchive.Name = "cbArchive";
+            this.cbArchive.Size = new System.Drawing.Size(62, 17);
+            this.cbArchive.TabIndex = 3;
+            this.cbArchive.Text = "Archive";
+            this.cbArchive.UseVisualStyleBackColor = true;
+            this.cbArchive.CheckedChanged += new System.EventHandler(this.Archive_CheckChanged);
             // 
             // ImagePropertiesForm
             // 
@@ -332,10 +537,14 @@
             this.Name = "ImagePropertiesForm";
             this.Text = "Properties";
             this.tc_Main.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -369,5 +578,21 @@
         private System.Windows.Forms.Label lbl_PropertyItem;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label lbl_PropertyItemDisplay;
+        private System.Windows.Forms.TextBox tbDateAccessedDisplay;
+        private System.Windows.Forms.TextBox tbDateModifiedDisplay;
+        private System.Windows.Forms.TextBox tbDateCreatedDisplay;
+        private System.Windows.Forms.TextBox tbSizeDisplay;
+        private System.Windows.Forms.TextBox tbLocationDisplay;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblLocation;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.CheckBox cbHidden;
+        private System.Windows.Forms.CheckBox cbSystem;
+        private System.Windows.Forms.CheckBox cbReadOnly;
+        private System.Windows.Forms.CheckBox cbArchive;
     }
 }

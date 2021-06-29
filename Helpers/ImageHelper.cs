@@ -546,7 +546,7 @@ namespace ImageViewer.Helpers
         /// <returns> true if the image was saved successfully, else false </returns>
         public static bool SaveImage(Bitmap img, string filePath, bool collectGarbage = true)
         {
-            return SaveImage(img, filePath, collectGarbage);
+            return SaveImage((Image)img, filePath, collectGarbage);
         }
 
 
