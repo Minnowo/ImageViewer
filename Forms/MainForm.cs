@@ -48,7 +48,14 @@ namespace ImageViewer
         private _TabPage currentPage;
         
         private bool preventOverflow = false;
-        
+
+        public MainForm(string[] args) : this()
+        {
+            if (args != null && args.Length > 0)
+            {
+                LoadItems(args.OnlyValidFiles());
+            }
+        }
 
         public MainForm()
         {
@@ -75,7 +82,7 @@ namespace ImageViewer
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
         }
 
-        #region ContextMenuStrip
+        
 
         #region cmsFileBtn
         private void cmsFileBtn_Opening(object sender, CancelEventArgs e)
@@ -114,48 +121,7 @@ namespace ImageViewer
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string[] openImages = ImageHelper.OpenImageFileDialog(true, this);
-
-            if (openImages == null)
-                return;
-
-            string dir = Path.GetDirectoryName(openImages[0]);
-            int preCount = tcMain.TabPages.Count;
-
-            foreach (string image in openImages)
-            {
-                _TabPage tp = new _TabPage(image)
-                {
-                    Name = image,
-                    Tag = new FileInfo(image)
-                };
-
-                tp.Text = Path.GetFileName(image).Truncate(25);
-                tp.ToolTipText = tp.ImagePath.Name;
-                tp.ibMain.Zoomed += IdMain_ZoomChangedEvent;
-                tcMain.TabPages.Add(tp);
-            }
-
-            if (tcMain.TabPages.Count >= 1)
-            {
-                if (preCount == 0)
-                {
-                    CurrentPage = (_TabPage)tcMain.TabPages[0];
-                }
-                else
-                {
-                    CurrentPage = (_TabPage)tcMain.TabPages[(tcMain.SelectedIndex + 1).Clamp(0, tcMain.TabPages.Count - 1)];
-                }
-
-                // need to set this here in order for the LoadImage function to be called
-                CurrentPage.PreventLoadImage = false;
-            }
-
-            if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
-            {
-                CurrentFolder.UpdateDirectory(dir);
-            }
-
-            UpdateBottomInfoLabel();
+            LoadItems(openImages);
         }
 
 
@@ -636,8 +602,6 @@ namespace ImageViewer
 
         #endregion
 
-        #endregion
-
 
         #region ToolStripMain Buttons
 
@@ -704,6 +668,7 @@ namespace ImageViewer
 
         #endregion
 
+
         #region TabControlMain
 
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
@@ -725,6 +690,8 @@ namespace ImageViewer
 
         #endregion
 
+
+        #region Other event callbacks
 
         private void MainWindow_Resize(object sender, EventArgs e)
         {
@@ -755,6 +722,45 @@ namespace ImageViewer
             preventOverflow = false;
         }
 
+        private void ParentFollowChild(object sender, EventArgs e)
+        {
+            Form f = sender as Form;
+
+            if (f == null)
+                return;
+
+            if (InternalSettings.CenterChild_When_Parent_Following_Child)
+            {
+                Point p = f.Location;
+
+                if (f.Width < Width)
+                {
+                    p.X -= Math.Abs(Width - f.Width) >> 1;
+                }
+                else
+                {
+                    p.X += Math.Abs(Width - f.Width) >> 1;
+                }
+
+                if (f.Height < Height)
+                {
+                    p.Y -= Math.Abs(Height - f.Height) >> 1;
+                }
+                else
+                {
+                    p.Y += Math.Abs(Height - f.Height) >> 1;
+                }
+
+                this.Location = p;
+                return;
+            }
+            this.Location = f.Location;
+        }
+
+        #endregion
+
+        #region private helpers
+
         private Point GetTsmiButtonPos(string name)
         {
             // Show context menu at button X position
@@ -774,6 +780,65 @@ namespace ImageViewer
 
             return p;
         }
+        
+        private void UpdateBottomInfoLabel()
+        {
+            if (currentPage == null || currentPage.Image == null)
+            {
+                tsslImageSize.Text = "Nil";
+                tsslImageFileSize.Text = "Nil";
+                tsslPathToImage.Text = "Nil";
+                return;
+            }
+
+            long size = 0;
+
+            if (File.Exists(CurrentPage.ImagePath.FullName))
+            {
+                size = currentPage.ImagePath.Length;
+            }
+
+            tsslImageSize.Text = string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height);
+            tsslImageFileSize.Text = string.Format("{0}", Helpers.Helper.SizeSuffix(size));
+            tsslPathToImage.Text = string.Format("{0}", currentPage.ImagePath.FullName);
+
+            Text = tsslPathToImage.Text;
+        }
+
+        private Color AskChooseColor()
+        {
+            return AskChooseColor(Color.Empty);
+        }
+
+        private Color AskChooseColor(Color initColor)
+        {
+            Color c;
+            Point p;
+
+            c = initColor;
+            p = Location;
+
+            using (ColorPickerForm f = new ColorPickerForm())
+            {
+                f.Owner = this;
+                f.TopMost = true;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                f.LocationChanged += ParentFollowChild;
+
+                f.UpdateColors(c);
+                f.ShowDialog();
+
+                c = f.GetCurrentColor();
+            }
+
+            Location = p;
+
+            return c;
+        }
+
+        #endregion
+
+        #region public helpers
 
         public void CloseCurrentTabPage()
         {
@@ -811,67 +876,86 @@ namespace ImageViewer
             ResumeLayout();
         }
 
-
-        private void UpdateBottomInfoLabel()
+        public void LoadItems(string[] items)
         {
-            if (currentPage == null || currentPage.Image == null)
-            {
-                tsslImageSize.Text = "Nil";
-                tsslImageFileSize.Text = "Nil";
-                tsslPathToImage.Text = "Nil";
-                return;
-            }
-
-            long size = 0;
-
-            if (File.Exists(CurrentPage.ImagePath.FullName))
-            {
-                size = currentPage.ImagePath.Length;
-            }
-
-            tsslImageSize.Text = string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height);
-            tsslImageFileSize.Text = string.Format("{0}", Helpers.Helper.SizeSuffix(size));
-            tsslPathToImage.Text = string.Format("{0}", currentPage.ImagePath.FullName);
-
-            Text = tsslPathToImage.Text;
-        }
-
-        private void ParentFollowChild(object sender, EventArgs e)
-        {
-            Form f = sender as Form;
-
-            if (f == null)
+            if (items == null || items.Length < 1)
                 return;
 
-            if (InternalSettings.CenterChild_When_Parent_Following_Child)
-            {
-                Point p = f.Location;
+            string dir = Path.GetDirectoryName(items[0]);
+            int preCount = tcMain.TabPages.Count;
 
-                if(f.Width < Width)
+            foreach (string image in items)
+            {
+                _TabPage tp = new _TabPage(image)
                 {
-                    p.X -= Math.Abs(Width - f.Width)>> 1;
+                    Name = image,
+                    Tag = new FileInfo(image)
+                };
+
+                tp.Text = Path.GetFileName(image).Truncate(25);
+                tp.ToolTipText = tp.ImagePath.Name;
+                tp.ibMain.Zoomed += IdMain_ZoomChangedEvent;
+                tcMain.TabPages.Add(tp);
+            }
+
+            if (tcMain.TabPages.Count >= 1)
+            {
+                if (preCount == 0)
+                {
+                    CurrentPage = (_TabPage)tcMain.TabPages[0];
                 }
                 else
                 {
-                    p.X += Math.Abs(Width - f.Width) >> 1;
+                    CurrentPage = (_TabPage)tcMain.TabPages[(tcMain.SelectedIndex + 1).Clamp(0, tcMain.TabPages.Count - 1)];
                 }
 
-                if (f.Height < Height)
-                {
-                    p.Y -= Math.Abs(Height - f.Height) >> 1;
-                }
-                else
-                {
-                    p.Y += Math.Abs(Height - f.Height) >> 1;
-                }
-
-                this.Location = p;
-                return;
+                // need to set this here in order for the LoadImage function to be called
+                CurrentPage.PreventLoadImage = false;
             }
-            this.Location = f.Location;
+
+            if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
+            {
+                CurrentFolder.UpdateDirectory(dir);
+            }
+
+            UpdateBottomInfoLabel();
         }
 
-        private void FitCurrentToScreen()
+        public void NewPageFromImage(Image img)
+        {
+            if (img == null)
+                return;
+
+            string dir = InternalSettings.Temp_Image_Folder;
+            string imagePath = Helper.GetNewFileName(dir);
+            
+            if(!ImageHelper.SaveImage(img, imagePath, false))
+                return;
+
+            _TabPage tp = new _TabPage(imagePath)
+            {
+                Name = imagePath,
+                Tag = new FileInfo(imagePath)
+            };
+
+            tp.Text = Path.GetFileName(imagePath).Truncate(25);
+            tp.ToolTipText = tp.ImagePath.Name;
+            tp.ibMain.Zoomed += IdMain_ZoomChangedEvent;
+            tcMain.TabPages.Add(tp);
+
+            CurrentPage = tp;
+            // need to set this here in order for the LoadImage function to be called
+            CurrentPage.PreventLoadImage = false;
+
+            if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
+            {
+                CurrentFolder.UpdateDirectory(dir);
+            }
+
+            UpdateBottomInfoLabel();
+        }
+
+        public void FitCurrentToScreen()
         {
             if (currentPage == null)
                 return;
@@ -883,38 +967,7 @@ namespace ImageViewer
             }
         }
 
-        private Color AskChooseColor()
-        {
-            return AskChooseColor(Color.Empty);
-        }
-
-        private Color AskChooseColor(Color initColor)
-        {
-            Color c;
-            Point p;
-
-            c = initColor;
-            p = Location;
-
-            using (ColorPickerForm f = new ColorPickerForm())
-            {
-                f.Owner = this;
-                f.TopMost = true;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                f.LocationChanged += ParentFollowChild;
-
-                f.UpdateColors(c);
-                f.ShowDialog();
-
-                c = f.GetCurrentColor();
-            }
-
-            Location = p;
-
-            return c;
-        }
-
-        private void UpdateCurrentPageTransparentBackColor()
+        public void UpdateCurrentPageTransparentBackColor()
         {
             if (currentPage == null)
                 return;
@@ -947,7 +1000,7 @@ namespace ImageViewer
             currentPage.ibMain.Invalidate();
         }
 
-        private void UpdatePixelGrid()
+        public void UpdatePixelGrid()
         {
             if (currentPage == null)
                 return;
@@ -955,7 +1008,7 @@ namespace ImageViewer
             CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
         }
 
-        private void UpdateWatcherIndex()
+        public void UpdateWatcherIndex()
         {
             if (InternalSettings.Watch_Directory)
             {
@@ -1009,14 +1062,17 @@ namespace ImageViewer
             }
         }
 
+        #endregion
+
+        #region Overrides
+
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyDown(e);
 
             switch (e.KeyData)
             {
-                case (Keys.Right | Keys.LShiftKey):
-                case (Keys.Right | Keys.Shift):
+                case (Keys.Right | Keys.Alt):
                     if (currentPage == null)
                         return;
 
@@ -1027,8 +1083,7 @@ namespace ImageViewer
                     }
                     break;
 
-                case (Keys.Left | Keys.LShiftKey):
-                case (Keys.Left | Keys.Shift):
+                case (Keys.Left | Keys.Alt):
                     if (currentPage == null)
                         return;
 
@@ -1053,5 +1108,6 @@ namespace ImageViewer
             }
         }
 
+        #endregion
     }
 }

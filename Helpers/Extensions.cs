@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using System.IO;
 
 using ImageViewer.structs;
 namespace ImageViewer.Helpers
@@ -25,6 +25,22 @@ namespace ImageViewer.Helpers
             }
 
             return str;
+        }
+
+        public static string[] OnlyValidFiles(this string[] str)
+        {
+            if (str == null || str.Length < 1)
+                return null;
+            List<string> newA = str.ToList();
+
+            for(int i = 0; i < newA.Count; i++)
+            {
+                if (!File.Exists(newA[i]))
+                    newA.RemoveAt(i);
+                else
+                    newA[i] = new FileInfo(newA[i]).FullName; // force absolute paths
+            }
+            return newA.ToArray();
         }
 
         #endregion
@@ -135,10 +151,8 @@ namespace ImageViewer.Helpers
             // this line feels like cheating lmao bouta intercept some key up events
             host.KeyUp += (KeyEventHandler)((s, e) => {
                 Program.mainForm.FullscreenKeyUpCallback(e);
-            });
 
-            // Exit full screen with escape key
-            host.KeyDown += (KeyEventHandler)((s, e) => {
+                // Exit full screen with escape key
                 if (e.KeyCode == Keys.Escape) host.Close();
             });
 

@@ -31,6 +31,37 @@ namespace ImageViewer.Helpers
             }
         }
 
+        public static string GetNewFileName(string dir = "")
+        {
+            string fileFormat = ImageHelper.DEFAULT_IMAGE_FORMAT.ToString().ToLower();
+
+            if (fileFormat == "jpeg") 
+                fileFormat = "jpg";
+
+            if (string.IsNullOrEmpty(dir)) 
+                dir = Directory.GetCurrentDirectory();
+
+            // try 10 times 
+            for (int x = 0; x < 10; x++)
+            {
+                string fileName = string.Format("{0}\\{1}.{2}", 
+                    dir, DateTime.Now.Ticks.GetHashCode().ToString("x").ToUpper(), fileFormat);
+
+                if (!File.Exists(fileName))
+                    return fileName;
+            }
+
+            // start using guid after 10 tries at the other method
+            // would be really surprised if this code ever runs tbh
+            while (true)
+            {
+                string fileName = string.Format(@"{0}", Guid.NewGuid()) + "." + fileFormat;
+
+                if (!File.Exists(fileName))
+                    return fileName;
+            }
+        }
+
         public static string[] AskOpenFile(string initialDir="", Form form =null, string DialogFilter = InternalSettings.All_Files_File_Dialog, bool multiSelect = false)
         {
             using (OpenFileDialog ofd = new OpenFileDialog())

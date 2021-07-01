@@ -18,7 +18,6 @@ namespace ImageViewer.Helpers
     {
         public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
 
-
         public static Bitmap CopyTo32bppArgb(this Image image)
         {
             Bitmap copy;

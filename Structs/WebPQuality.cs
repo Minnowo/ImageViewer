@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ImageViewer.Helpers;
 
-namespace ImageViewer
+namespace ImageViewer.structs
 {
     public enum Format
     {

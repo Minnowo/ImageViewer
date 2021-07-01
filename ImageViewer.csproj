@@ -213,7 +213,7 @@
       <DependentUpon>_TabPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\WebPHelper.cs" />
-    <Compile Include="Misc\WebPQuality.cs" />
+    <Compile Include="Structs\WebPQuality.cs" />
     <EmbeddedResource Include="Controls\ColorDisplay.resx">
       <DependentUpon>ColorDisplay.cs</DependentUpon>
     </EmbeddedResource>

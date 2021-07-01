@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
 using ImageViewer.Helpers;
+using ImageViewer.structs;
 
 namespace ImageViewer.Settings
 {
@@ -20,6 +21,8 @@ namespace ImageViewer.Settings
         public static string Save_File_Dialog_Default = "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
 
         public static string WebP_File_Dialog_Option = "WebP (*.webp)|*.webp";
+
+        public static string Temp_Image_Folder = string.Format("{0}\\{1}", Directory.GetCurrentDirectory(), "tmp");
 
         public static List<string> Open_All_Image_Files_File_Dialog_Options = new List<string> { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff" };
 

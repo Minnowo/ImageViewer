@@ -3894,7 +3894,10 @@ namespace Cyotek.Windows.Forms
         {
             base.OnKeyDown(e);
 
-            this.ProcessScrollingShortcuts(e);
+            if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
+            {
+                this.ProcessScrollingShortcuts(e);
+            }
 
             if (this.ShortcutsEnabled)
             {
@@ -4537,7 +4540,7 @@ namespace Cyotek.Windows.Forms
             currentPixel = this.PointToImage(relativePoint);
             currentZoom = this.Zoom;
 
-            switch (e.KeyCode)
+            switch (e.KeyData)
             {
                 case Keys.Home:
                     if (this.AllowZoom)
@@ -4559,6 +4562,25 @@ namespace Cyotek.Windows.Forms
                     if (this.AllowZoom)
                     {
                         this.PerformZoomOut(ImageBoxActionSources.User, true);
+                    }
+                    break;
+
+                case (Keys.C | Keys.Control):
+                    if (_image == null)
+                        return;
+
+                    if (SelectionRegion == RectangleF.Empty || SelectionMode != ImageBoxSelectionMode.Rectangle)
+                    {
+                        using (Image toCopy = VisibleImage)
+                        {
+                            ClipboardHelper.CopyImageDefault(toCopy);
+                        }
+                        return;
+                    }
+
+                    using (Image toCopy = GetSelectedImage())
+                    {
+                        ClipboardHelper.CopyImageDefault(toCopy);
                     }
                     break;
             }
@@ -4632,42 +4654,39 @@ namespace Cyotek.Windows.Forms
             switch (e.KeyData)
             {
                 case Keys.Left:
-                    if(this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
-                        this.AdjustScroll(-(e.Modifiers == Keys.None ? this.HorizontalScroll.SmallChange : this.HorizontalScroll.LargeChange), 0);
+                        this.AdjustScroll(-this.HorizontalScroll.SmallChange, 0);
                     break;
 
                 case Keys.Right:
-                    if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
-                        this.AdjustScroll(e.Modifiers == Keys.None ? this.HorizontalScroll.SmallChange : this.HorizontalScroll.LargeChange, 0);
+                        this.AdjustScroll(this.HorizontalScroll.SmallChange, 0);
                     break;
 
                 case Keys.Up:
-                    if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
-                        this.AdjustScroll(0, -(e.Modifiers == Keys.None ? this.VerticalScroll.SmallChange : this.VerticalScroll.LargeChange));
+                        this.AdjustScroll(0, -this.VerticalScroll.SmallChange);
                     break;
 
                 case Keys.Down:
-                    if (this.AllowZoom && this.SizeMode == ImageBoxSizeMode.Normal)
-                        this.AdjustScroll(0, e.Modifiers == Keys.None ? this.VerticalScroll.SmallChange : this.VerticalScroll.LargeChange);
+                        this.AdjustScroll(0, this.VerticalScroll.SmallChange);
                     break;
 
-                case (Keys.C | Keys.Control):
-                    if (_image == null)
-                        return;
+                case (Keys.Left | Keys.LShiftKey):
+                case (Keys.Left | Keys.Shift):
+                        this.AdjustScroll(-this.HorizontalScroll.LargeChange, 0);
+                    break;
 
-                    if (SelectionRegion == RectangleF.Empty || SelectionMode != ImageBoxSelectionMode.Rectangle)
-                    {
-                        using(Image toCopy = VisibleImage)
-                        {
-                            ClipboardHelper.CopyImageDefault(toCopy);
-                        }
-                        return;
-                    }
+                case (Keys.Right | Keys.LShiftKey):
+                case (Keys.Right | Keys.Shift):
+                        this.AdjustScroll(this.HorizontalScroll.LargeChange, 0);
+                    break;
 
-                    using (Image toCopy = GetSelectedImage())
-                    {
-                        ClipboardHelper.CopyImageDefault(toCopy);
-                    }
+                case (Keys.Up | Keys.LShiftKey):
+                case (Keys.Up | Keys.Shift):
+                        this.AdjustScroll(0, -this.VerticalScroll.LargeChange);
+                    break;
+
+                case (Keys.Down | Keys.LShiftKey):
+                case (Keys.Down | Keys.Shift):
+                        this.AdjustScroll(0, this.VerticalScroll.LargeChange);
                     break;
             }
         }

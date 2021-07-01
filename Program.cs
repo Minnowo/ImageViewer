@@ -16,7 +16,7 @@ namespace ImageViewer
         /// </summary>
         public static MainForm mainForm;
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -37,8 +37,7 @@ namespace ImageViewer
                     InternalSettings.EnabledLibwebPExtension();
                 }
             }
-
-            mainForm = new MainForm();
+            mainForm = new MainForm(args);
             Application.Run(mainForm);
         }
     }

@@ -33,6 +33,7 @@ namespace ImageViewer.Controls
             set
             {
                 imagePath = value;
+                this.Text = value.Name;
 
                 if (isCurrentPage)
                 {
