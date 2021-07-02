@@ -126,6 +126,8 @@ namespace ImageViewer.Settings
         public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation = true;
         public static bool Garbage_Collect_After_Gif_Export = true;
 
+        public static bool Delete_Temp_Directory = true;
+
         public static bool WebP_Plugin_Exists = false;
 
         public static bool CPU_Type_x64 = IntPtr.Size == 8;

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
+using System.Drawing;
 using ImageViewer.Helpers;
 using ImageViewer.Settings;
 
-using System.Drawing;
 namespace ImageViewer
 {
     static class Program
@@ -23,7 +24,7 @@ namespace ImageViewer
 
             if (InternalSettings.CPU_Type_x64)
             {
-                if (System.IO.File.Exists(InternalSettings.libwebP_x64))
+                if (File.Exists(InternalSettings.libwebP_x64))
                 {
                     // if the right dll exists we can allow use of webp images
                     InternalSettings.EnabledLibwebPExtension();
@@ -31,7 +32,7 @@ namespace ImageViewer
             }
             else
             {
-                if (System.IO.File.Exists(InternalSettings.libwebP_x86))
+                if (File.Exists(InternalSettings.libwebP_x86))
                 {
                     // if the right dll exists we can allow use of webp images
                     InternalSettings.EnabledLibwebPExtension();
@@ -39,6 +40,9 @@ namespace ImageViewer
             }
             mainForm = new MainForm(args);
             Application.Run(mainForm);
+
+            if (InternalSettings.Delete_Temp_Directory && Directory.Exists(InternalSettings.Temp_Image_Folder))
+                Directory.Delete(InternalSettings.Temp_Image_Folder, true);
         }
     }
 }

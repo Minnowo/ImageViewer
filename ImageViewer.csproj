@@ -57,6 +57,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\CyotekImageBoxEx\DragHandle.cs" />
+    <Compile Include="Controls\CyotekImageBoxEx\DragHandleAnchor.cs" />
+    <Compile Include="Controls\CyotekImageBoxEx\DragHandleCollection.cs" />
+    <Compile Include="Controls\CyotekImageBoxEx\ImageBoxEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\CyotekImageBox\Enums.cs" />
     <Compile Include="Controls\CyotekImageBox\ImageBox.cs">
       <SubType>Component</SubType>

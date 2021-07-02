@@ -1102,8 +1102,20 @@ namespace ImageViewer
                     PreviousImage();
                     break;
 
+                case (Keys.S | Keys.LControlKey):
                 case (Keys.S | Keys.Control):
 
+                    break;
+
+                case (Keys.V | Keys.LControlKey):
+                case (Keys.V | Keys.Control):
+                    if (!Clipboard.ContainsImage())
+                        return;
+
+                    using(Image im = Clipboard.GetImage())
+                    {
+                        NewPageFromImage(im);
+                    }
                     break;
             }
         }

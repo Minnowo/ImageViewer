@@ -91,7 +91,7 @@ namespace ImageViewer.Controls
         private bool preventLoadImage = false;
 
 
-        public ImageBox ibMain { get; private set; }
+        public ImageBoxEx ibMain { get; private set; }
         public Image ScaledImage
         {
             get
@@ -117,7 +117,7 @@ namespace ImageViewer.Controls
 
             imagePath = new FileInfo(path);
 
-            ibMain = new ImageBox();
+            ibMain = new ImageBoxEx();
 
             ibMain.AllowClickZoom = false;
             ibMain.AllowDrop = false;

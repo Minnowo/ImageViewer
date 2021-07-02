@@ -3404,7 +3404,7 @@ namespace Cyotek.Windows.Forms
         {
             RectangleF rect;
 
-            e.Graphics.SetClip(this.GetInsideViewPort(true));
+            //e.Graphics.SetClip(this.GetInsideViewPort(true));
 
             rect = this.GetOffsetRectangle(this.SelectionRegion);
 
@@ -3418,7 +3418,7 @@ namespace Cyotek.Windows.Forms
                 e.Graphics.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
             }
 
-            e.Graphics.ResetClip();
+            //e.Graphics.ResetClip();
         }
 
         /// <summary>
