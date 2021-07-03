@@ -732,6 +732,17 @@ namespace Cyotek.Windows.Forms
 
         #region Properties
 
+        public bool SelectionBoxVisible
+        {
+            get
+            {
+                return !SelectionRegion.IsEmpty;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current image can be animated, else false.
+        /// </summary>
         public bool HasAnimationFrames
         {
             get
@@ -2093,6 +2104,20 @@ namespace Cyotek.Windows.Forms
         }
 
         /// <summary>
+        /// Crop the current image to the current selected region.
+        /// </summary>
+        public void CropImageToSelection()
+        {
+            if (!this.SelectionBoxVisible || this.Image == null)
+                return;
+
+            Image newIm = this.GetSelectedImage(false);
+            this.SelectionRegion = Rectangle.Empty;
+            this.Image.Dispose();
+            this.Image = newIm;
+        }
+
+        /// <summary>
         ///   Returns the source <see cref="T:System.Drawing.Point" /> repositioned to include the current image offset and scaled by the current zoom level
         /// </summary>
         /// <param name="source">The source <see cref="Point"/> to offset.</param>
@@ -2410,7 +2435,7 @@ namespace Cyotek.Windows.Forms
         /// <param name="visibleSelectedImage">Should the image be scaled by the zoom factor to be the size visible on screen <see cref="bool"/> true or false.</param>
         /// <returns>An image containing the selection contents if a selection if present, otherwise null</returns>
         /// <remarks>The caller is responsible for disposing of the returned image</remarks>
-        public Image GetSelectedImage()
+        public Image GetSelectedImage(bool fitRectangle = true)
         {
             if (_image == null || this.SelectionRegion.IsEmpty)
                 return null;
@@ -2418,14 +2443,17 @@ namespace Cyotek.Windows.Forms
             Rectangle srcRect;
             Rectangle destRect;
 
-            srcRect = this.FitRectangle(
-                new Rectangle(
-                    (int)this.SelectionRegion.X, 
-                    (int)this.SelectionRegion.Y, 
-                    (int)this.SelectionRegion.Width, 
-                    (int)this.SelectionRegion.Height
-                    )
-                );
+            srcRect = new Rectangle(
+                        (int)this.SelectionRegion.X,
+                        (int)this.SelectionRegion.Y,
+                        (int)this.SelectionRegion.Width,
+                        (int)this.SelectionRegion.Height
+                        );
+
+            if (fitRectangle)
+            {
+                srcRect = this.FitRectangle(srcRect);
+            }
 
             if (srcRect.Width < 0 || srcRect.Height < 0)
                 return null;
@@ -4578,7 +4606,7 @@ namespace Cyotek.Windows.Forms
                         return;
                     }
 
-                    using (Image toCopy = GetSelectedImage())
+                    using (Image toCopy = GetSelectedImage(false))
                     {
                         ClipboardHelper.CopyImageDefault(toCopy);
                     }

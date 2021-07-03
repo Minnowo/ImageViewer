@@ -80,9 +80,9 @@ namespace ImageViewer
 
             _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
+            _TabPage.ImageChanged += _TabPage_ImageChanged;
         }
 
-        
 
         #region cmsFileBtn
         private void cmsFileBtn_Opening(object sender, CancelEventArgs e)
@@ -303,7 +303,7 @@ namespace ImageViewer
                 flipHorizontallyToolStripMenuItem.Enabled = true;
                 flipVerticallyToolStripMenuItem.Enabled = true;
                 resizeToolStripMenuItem.Enabled = true;
-                cropToolStripMenuItem.Enabled = true;
+                cropToolStripMenuItem.Enabled = currentPage.ibMain.SelectionBoxVisible;
                 grayScaleToolStripMenuItem.Enabled = true;
                 invertColorToolStripMenuItem.Enabled = true;
                 ditherToolStripMenuItem.Enabled = true;
@@ -374,7 +374,10 @@ namespace ImageViewer
 
         private void cropToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+            if (currentPage == null || !currentPage.ibMain.SelectionBoxVisible)
+                return;
+
+            currentPage.ibMain.CropImageToSelection();
         }
 
         private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
@@ -686,6 +689,12 @@ namespace ImageViewer
             {
                 UpdateWatcherIndex();
             }
+        }
+
+        private void _TabPage_ImageChanged()
+        {
+            Console.WriteLine("image changed");
+            _TabPage_ImageLoadChanged(true);
         }
 
         #endregion

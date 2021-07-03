@@ -24,6 +24,9 @@ namespace ImageViewer.Controls
         public delegate void ImageUnloadedEvent(bool imloaded);
         public static event ImageUnloadedEvent ImageUnloaded;
 
+        public delegate void ImageChangedEvent();
+        public static event ImageChangedEvent ImageChanged;
+
         public FileInfo ImagePath
         {
             get
@@ -121,8 +124,8 @@ namespace ImageViewer.Controls
 
             ibMain.AllowClickZoom = false;
             ibMain.AllowDrop = false;
+            ibMain.LimitSelectionToImage = false;
 
-            ibMain.LimitSelectionToImage = true;
             ibMain.DisposeImageBeforeChange = true;
             ibMain.AutoCenter = true;
             ibMain.AutoPan = true;
@@ -141,16 +144,11 @@ namespace ImageViewer.Controls
 
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
 
-            //ibMain.AutoScrollMinSize = new Size(5000, 5000);
-            /*idMain = new ImageDisplay();
-            idMain.Location = new Point(0, 0);
-            idMain.Dock = DockStyle.Fill;
-            idMain.CenterOnLoad = true;*/
-
-            //state = ImageDisplayState.empty;
+            ibMain.ImageChanged += IbMain_ImageChanged;
 
             Controls.Add(ibMain);
         }
+
 
         private void LoadImage()
         {
@@ -201,6 +199,19 @@ namespace ImageViewer.Controls
             if (InternalSettings.Garbage_Collect_On_Image_Unload)
             {
                 GC.Collect();
+            }
+        }
+
+        private void IbMain_ImageChanged(object sender, EventArgs e)
+        {
+            OnImageChanged();
+        }
+
+        private void OnImageChanged()
+        {
+            if(ImageChanged != null)
+            {
+                ImageChanged();
             }
         }
 

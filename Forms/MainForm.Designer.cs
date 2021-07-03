@@ -45,6 +45,7 @@
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveUnscaledImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveScaledImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportGifFrames = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.moveToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,7 +80,6 @@
             this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslPathToImage = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tsmiExportGifFrames = new System.Windows.Forms.ToolStripMenuItem();
             this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
@@ -272,6 +272,13 @@
             this.saveScaledImageToolStripMenuItem.Text = "Save Scaled Image";
             this.saveScaledImageToolStripMenuItem.Click += new System.EventHandler(this.saveScaledImageToolStripMenuItem_Click);
             // 
+            // tsmiExportGifFrames
+            // 
+            this.tsmiExportGifFrames.Name = "tsmiExportGifFrames";
+            this.tsmiExportGifFrames.Size = new System.Drawing.Size(185, 22);
+            this.tsmiExportGifFrames.Text = "Export Gif Frames";
+            this.tsmiExportGifFrames.Click += new System.EventHandler(this.ExportGifFrames_Click);
+            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -332,26 +339,26 @@
             this.ditherToolStripMenuItem});
             this.cmsEditBtn.Name = "cmsEditBtn";
             this.cmsEditBtn.ShowImageMargin = false;
-            this.cmsEditBtn.Size = new System.Drawing.Size(136, 242);
+            this.cmsEditBtn.Size = new System.Drawing.Size(156, 264);
             this.cmsEditBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsEditBtn_Opening);
             // 
             // fillTransparentToolStripMenuItem
             // 
             this.fillTransparentToolStripMenuItem.Name = "fillTransparentToolStripMenuItem";
-            this.fillTransparentToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.fillTransparentToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.fillTransparentToolStripMenuItem.Text = "Fill Transparent";
             this.fillTransparentToolStripMenuItem.Click += new System.EventHandler(this.FillTransparent_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(132, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(152, 6);
             // 
             // rotateLeftToolStripMenuItem
             // 
             this.rotateLeftToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.rotateLeftToolStripMenuItem.Name = "rotateLeftToolStripMenuItem";
-            this.rotateLeftToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.rotateLeftToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.rotateLeftToolStripMenuItem.Text = "Rotate Left";
             this.rotateLeftToolStripMenuItem.Click += new System.EventHandler(this.rotateLeftToolStripMenuItem_Click);
             // 
@@ -359,7 +366,7 @@
             // 
             this.rotateRightToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.rotateRightToolStripMenuItem.Name = "rotateRightToolStripMenuItem";
-            this.rotateRightToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.rotateRightToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.rotateRightToolStripMenuItem.Text = "Rotate Right";
             this.rotateRightToolStripMenuItem.Click += new System.EventHandler(this.rotateRightToolStripMenuItem_Click);
             // 
@@ -367,7 +374,7 @@
             // 
             this.flipHorizontallyToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.flipHorizontallyToolStripMenuItem.Name = "flipHorizontallyToolStripMenuItem";
-            this.flipHorizontallyToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.flipHorizontallyToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.flipHorizontallyToolStripMenuItem.Text = "Flip Horizontally";
             this.flipHorizontallyToolStripMenuItem.Click += new System.EventHandler(this.flipHorizontallyToolStripMenuItem_Click);
             // 
@@ -375,20 +382,20 @@
             // 
             this.flipVerticallyToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.flipVerticallyToolStripMenuItem.Name = "flipVerticallyToolStripMenuItem";
-            this.flipVerticallyToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.flipVerticallyToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.flipVerticallyToolStripMenuItem.Text = "Flip Vertically";
             this.flipVerticallyToolStripMenuItem.Click += new System.EventHandler(this.flipVerticallyToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(132, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
             // 
             // resizeToolStripMenuItem
             // 
             this.resizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.resizeToolStripMenuItem.Name = "resizeToolStripMenuItem";
-            this.resizeToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.resizeToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.resizeToolStripMenuItem.Text = "Resize";
             this.resizeToolStripMenuItem.Click += new System.EventHandler(this.resizeToolStripMenuItem_Click);
             // 
@@ -396,20 +403,20 @@
             // 
             this.cropToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.cropToolStripMenuItem.Name = "cropToolStripMenuItem";
-            this.cropToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
-            this.cropToolStripMenuItem.Text = "Crop";
+            this.cropToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.cropToolStripMenuItem.Text = "Crop To Selection";
             this.cropToolStripMenuItem.Click += new System.EventHandler(this.cropToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(132, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(152, 6);
             // 
             // grayScaleToolStripMenuItem
             // 
             this.grayScaleToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.grayScaleToolStripMenuItem.Name = "grayScaleToolStripMenuItem";
-            this.grayScaleToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.grayScaleToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.grayScaleToolStripMenuItem.Text = "Gray Scale";
             this.grayScaleToolStripMenuItem.Click += new System.EventHandler(this.grayScaleToolStripMenuItem_Click);
             // 
@@ -417,14 +424,14 @@
             // 
             this.invertColorToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.invertColorToolStripMenuItem.Name = "invertColorToolStripMenuItem";
-            this.invertColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.invertColorToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.invertColorToolStripMenuItem.Text = "Invert Color";
             this.invertColorToolStripMenuItem.Click += new System.EventHandler(this.invertColorToolStripMenuItem_Click);
             // 
             // ditherToolStripMenuItem
             // 
             this.ditherToolStripMenuItem.Name = "ditherToolStripMenuItem";
-            this.ditherToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.ditherToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.ditherToolStripMenuItem.Text = "Dither";
             this.ditherToolStripMenuItem.Click += new System.EventHandler(this.ditherToolStripMenuItem_Click);
             // 
@@ -550,13 +557,6 @@
             this.tsslPathToImage.MergeAction = System.Windows.Forms.MergeAction.Insert;
             this.tsslPathToImage.Name = "tsslPathToImage";
             this.tsslPathToImage.Size = new System.Drawing.Size(0, 18);
-            // 
-            // tsmiExportGifFrames
-            // 
-            this.tsmiExportGifFrames.Name = "tsmiExportGifFrames";
-            this.tsmiExportGifFrames.Size = new System.Drawing.Size(185, 22);
-            this.tsmiExportGifFrames.Text = "Export Gif Frames";
-            this.tsmiExportGifFrames.Click += new System.EventHandler(this.ExportGifFrames_Click);
             // 
             // tcMain
             // 
