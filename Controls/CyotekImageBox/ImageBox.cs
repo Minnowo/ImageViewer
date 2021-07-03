@@ -2111,7 +2111,7 @@ namespace Cyotek.Windows.Forms
             if (!this.SelectionBoxVisible || this.Image == null)
                 return;
 
-            Image newIm = this.GetSelectedImage(false);
+            Image newIm = this.GetSelectedImage(false, true);
             this.SelectionRegion = Rectangle.Empty;
             this.Image.Dispose();
             this.Image = newIm;
@@ -2435,13 +2435,18 @@ namespace Cyotek.Windows.Forms
         /// <param name="visibleSelectedImage">Should the image be scaled by the zoom factor to be the size visible on screen <see cref="bool"/> true or false.</param>
         /// <returns>An image containing the selection contents if a selection if present, otherwise null</returns>
         /// <remarks>The caller is responsible for disposing of the returned image</remarks>
-        public Image GetSelectedImage(bool fitRectangle = true)
+        public Image GetSelectedImage(bool fitRectangle = true, bool fromActualImageSize = true)
         {
             if (_image == null || this.SelectionRegion.IsEmpty)
                 return null;
             
             Rectangle srcRect;
             Rectangle destRect;
+
+            if (fromActualImageSize)
+            {
+                ActualSize();
+            }
 
             srcRect = new Rectangle(
                         (int)this.SelectionRegion.X,
