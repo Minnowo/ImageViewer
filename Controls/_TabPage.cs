@@ -212,6 +212,13 @@ namespace ImageViewer.Controls
             if (!imageCached)
             {
                 ibMain.Image = null;
+                BitmapChangeTracker.Dispose();
+            }
+            else
+            {
+                ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
+                ibMain.Image = null;
+                ibMain.DisposeImageBeforeChange = true;
             }
 
             ImageShown = false;

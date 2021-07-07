@@ -373,7 +373,9 @@ namespace ImageViewer
                 
                 using(Image tmp = currentPage.Image)
                 {
-                    currentPage.ibMain.Image = ImageHelper.ResizeImage(tmp, r.NewImage);
+                    currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
+                    currentPage.BitmapChangeTracker.ReplaceBitmap(ImageHelper.ResizeImage(tmp, r.NewImage));
+                    currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
                 }
                 UpdateBottomInfoLabel();
             }
@@ -384,7 +386,9 @@ namespace ImageViewer
             if (currentPage == null || !currentPage.ibMain.SelectionBoxVisible)
                 return;
 
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Cropped);
             currentPage.ibMain.CropImageToSelection();
+            currentPage.BitmapChangeTracker.ReplaceBitmap((Bitmap)currentPage.Image);
         }
 
         private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)

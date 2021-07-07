@@ -55,6 +55,7 @@ namespace ImageViewer.Helpers.UndoRedo
             undos = new Stack<BitmapChanges>();
             redos = new Stack<BitmapChanges>();
             bitmapUndoHistoryData = new Stack<Bitmap>();
+            bitmapRedoHistoryData = new Stack<Bitmap>();
         }
 
         public BitmapUndo(Bitmap bmp)
@@ -65,6 +66,24 @@ namespace ImageViewer.Helpers.UndoRedo
             bitmapRedoHistoryData = new Stack<Bitmap>();
 
             CurrentBitmap = bmp;
+        }
+
+        public void PrintUndos()
+        {
+            Console.Clear();
+            Console.WriteLine("UNDOS [ ");
+            foreach(BitmapChanges c in undos)
+            {
+                Console.Write($"{c} ");
+            }
+            Console.WriteLine("]");
+
+            Console.WriteLine("REDOS [ ");
+            foreach (BitmapChanges c in redos)
+            {
+                Console.Write($"{c} ");
+            }
+            Console.WriteLine("]");
         }
 
         public void ReplaceBitmap(Bitmap bmp)
@@ -82,9 +101,9 @@ namespace ImageViewer.Helpers.UndoRedo
 
         public void TrackChange(BitmapChanges change)
         {
-            redos.Clear();
+            ClearRedos();
             undos.Push(change);
-
+            PrintUndos();
             switch (change)
             {
                 // need to track history data
@@ -106,24 +125,52 @@ namespace ImageViewer.Helpers.UndoRedo
             }
         }
 
+        public void ClearRedos()
+        {
+            redos.Clear();
+            for (int i = 0; i < bitmapRedoHistoryData.Count; i++)
+            {
+                bitmapRedoHistoryData.Pop().Dispose();
+            }
+        }
+
+        public void DisposeLastRedo()
+        {
+            if (undos.Count < 1)
+                return;
+
+            redos.Pop();
+
+            if (bitmapRedoHistoryData.Count < 1)
+                return;
+
+            bitmapUndoHistoryData.Pop().Dispose();
+        }
+
         public void Redo()
         {
+            Console.WriteLine("redoing");
             if (redos.Count < 1)
                 return;
 
             BitmapChanges change = redos.Pop();
             undos.Push(change);
-
+            PrintUndos();
+            Bitmap bmp;
             switch (change)
             {
                 // need to track history data
                 case BitmapChanges.Cropped:
                 case BitmapChanges.Resized:
+                    bmp = bitmapRedoHistoryData.Pop();
+                    bitmapUndoHistoryData.Push(CurrentBitmap.CloneSafe());
+                    ReplaceBitmap(bmp);
+                    OnUpdateReferences();
                     break;
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    Bitmap bmp = bitmapRedoHistoryData.Pop();
+                    bmp = bitmapRedoHistoryData.Pop();
                     bitmapUndoHistoryData.Push(bmp);
                     
                     if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
@@ -131,6 +178,7 @@ namespace ImageViewer.Helpers.UndoRedo
                         Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)CurrentBitmap);
                         ReplaceBitmap(newBmp);
                         OnUpdateReferences();
+                        OnRedo(change);
                         return;
                     }
 
@@ -145,6 +193,7 @@ namespace ImageViewer.Helpers.UndoRedo
                         Bitmap newBmp = ImageHelper.InvertGif((Bitmap)CurrentBitmap);
                         ReplaceBitmap(newBmp);
                         OnUpdateReferences();
+                        OnRedo(change);
                         return;
                     }
 
@@ -157,13 +206,22 @@ namespace ImageViewer.Helpers.UndoRedo
                     CurrentBitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
                     break;
                 case BitmapChanges.FlippedHorizontal:
-                    CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
                     break;
                 case BitmapChanges.FlippedVirtical:
-                    CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX); 
+                    CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipY); 
                     break;
             }
             OnRedo(change);
+        }
+
+        public void ClearUndos()
+        {
+            undos.Clear();
+            for (int i = 0; i < bitmapUndoHistoryData.Count; i++)
+            {
+                bitmapUndoHistoryData.Pop().Dispose();
+            }
         }
 
         public void DisposeLastUndo()
@@ -171,7 +229,7 @@ namespace ImageViewer.Helpers.UndoRedo
             if (undos.Count < 1)
                 return;
 
-            BitmapChanges change = undos.Pop();
+            undos.Pop();
 
             if (bitmapUndoHistoryData.Count < 1)
                 return;
@@ -187,24 +245,30 @@ namespace ImageViewer.Helpers.UndoRedo
 
             BitmapChanges change = undos.Pop();
             redos.Push(change);
-
+            PrintUndos();
+            Bitmap bmp;
             switch (change)
             {
                 // need to track history data
                 case BitmapChanges.Cropped:
                 case BitmapChanges.Resized:
+                    bmp = bitmapUndoHistoryData.Pop();
+                    bitmapRedoHistoryData.Push(CurrentBitmap.CloneSafe());
+                    ReplaceBitmap(bmp);
+                    OnUpdateReferences();
                     break;
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    Bitmap bmp = bitmapUndoHistoryData.Pop();
+                    bmp = bitmapUndoHistoryData.Pop();
                     bitmapRedoHistoryData.Push(bmp);
 
                     if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
-                    {
+                    {   // can't update a gif using pointers so we need to update the references
                         Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)CurrentBitmap);
                         ReplaceBitmap(newBmp);
                         OnUpdateReferences();
+                        OnUndo(change);
                         return;
                     }
 
@@ -215,10 +279,11 @@ namespace ImageViewer.Helpers.UndoRedo
                 // changes are easily undone and do not need to be kept in memory
                 case BitmapChanges.Inverted:
                     if (ImageAnimator.CanAnimate(CurrentBitmap))
-                    {
+                    {   // can't update a gif using pointers so we need to update the references
                         Bitmap newBmp = ImageHelper.InvertGif((Bitmap)CurrentBitmap);
                         ReplaceBitmap(newBmp);
                         OnUpdateReferences();
+                        OnUndo(change);
                         return;
                     }
 
@@ -249,12 +314,18 @@ namespace ImageViewer.Helpers.UndoRedo
             {
                 bitmapUndoHistoryData.Pop().Dispose();
             }
+
+            for (int i = 0; i < bitmapRedoHistoryData.Count; i++)
+            {
+                bitmapRedoHistoryData.Pop().Dispose();
+            }
         }
 
         public void Dispose()
         {
             ClearHistory();
             CurrentBitmap.Dispose();
+            CurrentBitmap = null;
         }
 
         private void OnUndo(BitmapChanges change)
