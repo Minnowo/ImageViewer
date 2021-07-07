@@ -315,7 +315,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            currentPage.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedLeft);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
             currentPage.ibMain.Invalidate();
         }
 
@@ -324,7 +325,9 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            //currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
             currentPage.ibMain.Invalidate();
         }
 
@@ -333,7 +336,9 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
             currentPage.ibMain.Invalidate();
         }
 
@@ -342,7 +347,9 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
             currentPage.ibMain.Invalidate();
         }
 
@@ -387,7 +394,7 @@ namespace ImageViewer
 
             if (currentPage.ibMain.HasAnimationFrames)
             {
-                Bitmap newBmp = ImageHelper.GreyScaleGif((Bitmap)currentPage.Image);
+                Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)currentPage.Image);
 
                 if (newBmp == null)
                 {
@@ -399,12 +406,16 @@ namespace ImageViewer
                     return;
                 }
 
-                currentPage.ibMain.Image = newBmp;
+
+                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
+                currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
+                currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
                 currentPage.ibMain.Invalidate();
                 return;
             }
 
-            ImageHelper.GrayscaleBitmapSafe((Bitmap)currentPage.ibMain.Image);
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
+            ImageHelper.GrayscaleBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
             currentPage.ibMain.Invalidate();
         }
 
@@ -427,12 +438,16 @@ namespace ImageViewer
                     return;
                 }
 
-                currentPage.ibMain.Image = newBmp;
+                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
+                currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
+                currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
                 currentPage.ibMain.Invalidate();
                 return;
             }
-            
-            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image);
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
+            //currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
+            ImageHelper.InvertBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
             currentPage.ibMain.Invalidate();
         }
 
@@ -471,7 +486,9 @@ namespace ImageViewer
 
             Point p = Location;
             bool collectGarbage = false;
-            using (DitherForm df = new DitherForm((Bitmap)currentPage.ibMain.Image))
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
+
+            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
             {
                 df.Owner = this;
                 df.TopMost = true;
@@ -479,6 +496,14 @@ namespace ImageViewer
                 df.LocationChanged += ParentFollowChild;
 
                 df.ShowDialog();
+
+                // since we track the change before it happens if the dither was canceled dispose of the kept change and 
+                // remove it from the undos list
+                if (df.Canceled)
+                {
+                    currentPage.BitmapChangeTracker.DisposeLastUndo();
+                }
+
                 currentPage.ibMain.Invalidate();
             }
 
@@ -1116,6 +1141,29 @@ namespace ImageViewer
                     {
                         NewPageFromImage(im);
                     }
+                    break;
+
+
+                case (Keys.Y | Keys.Control):
+                case (Keys.Y | Keys.LControlKey):
+                    if (currentPage == null)
+                        return;
+                    if (currentPage.BitmapChangeTracker.RedoCount == 0)
+                        return;
+
+                    currentPage.BitmapChangeTracker.Redo();
+                    currentPage.ibMain.Invalidate();
+                    break;
+
+                case (Keys.Z | Keys.Control):
+                case (Keys.Z | Keys.LControlKey):
+                    if (currentPage == null)
+                        return;
+                    if (currentPage.BitmapChangeTracker.UndoCount == 0)
+                        return;
+
+                    currentPage.BitmapChangeTracker.Undo();
+                    currentPage.ibMain.Invalidate();
                     break;
             }
         }

@@ -12,7 +12,9 @@ using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.structs;
 using ImageViewer.Settings;
+using ImageViewer.Helpers.UndoRedo;
 using Cyotek.Windows.Forms;
+
 
 namespace ImageViewer.Controls
 {
@@ -26,6 +28,8 @@ namespace ImageViewer.Controls
 
         public delegate void ImageChangedEvent();
         public static event ImageChangedEvent ImageChanged;
+
+        public BitmapUndo BitmapChangeTracker;
 
         public FileInfo ImagePath
         {
@@ -92,6 +96,7 @@ namespace ImageViewer.Controls
             }
         }
         private bool preventLoadImage = false;
+        private bool imageCached = false;
 
 
         public ImageBoxEx ibMain { get; private set; }
@@ -147,6 +152,12 @@ namespace ImageViewer.Controls
             ibMain.ImageChanged += IbMain_ImageChanged;
 
             Controls.Add(ibMain);
+
+            BitmapChangeTracker = new BitmapUndo();
+
+            BitmapUndo.RedoHappened += OnUndoRedo;
+            BitmapUndo.UndoHappened += OnUndoRedo;
+            BitmapUndo.UpdateReferences += UpdateReference;
         }
 
 
@@ -171,7 +182,11 @@ namespace ImageViewer.Controls
                 return;
             }
 
-            ibMain.Image = ImageHelper.LoadImage(imagePath.FullName);
+            if(BitmapChangeTracker.CurrentBitmap == null)
+                BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(imagePath.FullName);
+
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+            //BitmapChangeTracker.UpdateBitmapReferance((Bitmap)ibMain.Image);
 
             if (InternalSettings.Fill_Transparent)
             {
@@ -192,7 +207,13 @@ namespace ImageViewer.Controls
 
         public void UnloadImage()
         {
-            ibMain.Image = null;
+            imageCached = BitmapChangeTracker.UndoCount != 0;
+
+            if (!imageCached)
+            {
+                ibMain.Image = null;
+            }
+
             ImageShown = false;
             OnImageUnload();
 
@@ -229,6 +250,38 @@ namespace ImageViewer.Controls
             {
                 ImageUnloaded(ImageShown);
             }
+        }
+
+
+        private void OnUndoRedo(BitmapChanges change)
+        {
+            switch (change)
+            {
+                case BitmapChanges.Cropped:
+                case BitmapChanges.Dithered:
+                case BitmapChanges.Resized:
+                case BitmapChanges.SetGray:
+                case BitmapChanges.TransparentFilled:
+                    ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
+                    ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+                    ibMain.DisposeImageBeforeChange = true;
+                    break;
+                case BitmapChanges.Inverted:
+                case BitmapChanges.RotatedLeft:
+                case BitmapChanges.RotatedRight:
+                case BitmapChanges.FlippedHorizontal:
+                case BitmapChanges.FlippedVirtical:
+                    break;
+            }
+
+            ibMain.Invalidate();
+        }
+
+        private void UpdateReference()
+        {
+            ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+            ibMain.DisposeImageBeforeChange = true;
         }
     }
 }

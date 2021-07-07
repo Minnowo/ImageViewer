@@ -22,6 +22,7 @@ namespace ImageViewer
     {
         public string CustomColorPalette { get; private set; } = "";
         public bool CanceledOnClosing = false;
+        public bool Canceled = false;
 
         private Color[] customPalette;
         private Bitmap originalImage;
@@ -298,6 +299,7 @@ namespace ImageViewer
         private void btn_Cancel_Click(object sender, EventArgs e)
         {
             ibMain.Image = null;
+            Canceled = true;
             Close();
         }
 

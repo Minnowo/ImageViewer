@@ -15,6 +15,7 @@ namespace ImageViewer.Helpers
     {
         public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
 
+
         /// <summary>
 		/// A value from 0-1 which is used to convert a color to grayscale.
 		/// <para>Default: 0.3</para>
@@ -52,431 +53,6 @@ namespace ImageViewer.Helpers
         private static double gsbm = 0.11; // 0.071
 
 
-        /// <summary>
-		/// Locks the given bitmap and return bitmap data with a pixel format of 32bppArgb.
-		/// </summary>
-		/// <param name="srcImg">The image to lock.</param>
-		/// <returns>32bppArgb bitmap data.</returns>
-		public static BitmapData Get32bppArgbBitmapData(Bitmap srcImg)
-        {
-            return srcImg.LockBits(
-                new Rectangle(0, 0, srcImg.Width, srcImg.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-        }
-
-
-        /// <summary>
-        /// Copy the given image to a 32bppArgb image.
-        /// </summary>
-        /// <param name="image">Image to copy.</param>
-        /// <returns>A 32bppArgb copy.</returns>
-        public static Bitmap CopyTo32bppArgb(this Image image)
-        {
-            Bitmap copy;
-
-            copy = new Bitmap(image.Size.Width, image.Size.Height, PixelFormat.Format32bppArgb);
-
-            using (Graphics g = Graphics.FromImage(copy))
-            {
-                g.CompositingMode = CompositingMode.SourceCopy;
-                g.DrawImage(image, new Rectangle(Point.Empty, image.Size), new Rectangle(Point.Empty, image.Size), GraphicsUnit.Pixel);
-            }
-
-            return copy;
-        }
-
-
-        public static Bitmap ToBitmap(this ARGB[] data, Size size)
-        {
-            int height;
-            int width;
-            BitmapData bitmapData;
-            Bitmap result;
-
-            // Based on code from http://blog.biophysengr.net/2011/11/rapid-bitmap-access-using-unsafe-code.html
-
-            result = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
-            width = result.Width;
-            height = result.Height;
-
-            // Lock the entire bitmap
-            bitmapData = result.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-
-            //Enter unsafe mode so that we can use pointers
-            unsafe
-            {
-                ARGB* pixelPtr;
-
-                // Get a pointer to the beginning of the pixel data region
-                // The upper-left corner
-                pixelPtr = (ARGB*)bitmapData.Scan0;
-
-                // Iterate through rows and columns
-                for (int row = 0; row < size.Height; row++)
-                {
-                    for (int col = 0; col < size.Width; col++)
-                    {
-                        int index;
-                        ARGB color;
-
-                        index = row * size.Width + col;
-                        color = data[index];
-
-                        // Set the pixel (fast!)
-                        *pixelPtr = color;
-
-                        // Update the pointer
-                        pixelPtr++;
-                    }
-                }
-            }
-
-            // Unlock the bitmap
-            result.UnlockBits(bitmapData);
-
-            return result;
-        }
-
-        public static ARGB[] GetPixelsFrom32BitArgbImage(this Bitmap bitmap)
-        {
-            int width;
-            int height;
-            BitmapData bitmapData;
-            ARGB[] results;
-
-            // NOTE: As the name should give a hint, it only supports 32bit ARGB images.
-            // Don't rely on this for production, it needs expanding to support multiple other types
-
-            width = bitmap.Width;
-            height = bitmap.Height;
-            results = new ARGB[width * height];
-            bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-            unsafe
-            {
-                ARGB* pixel;
-
-                pixel = (ARGB*)bitmapData.Scan0;
-
-                for (int row = 0; row < height; row++)
-                {
-                    for (int col = 0; col < width; col++)
-                    {
-                        results[row * width + col] = *pixel;
-
-                        pixel++;
-                    }
-                }
-            }
-
-            bitmap.UnlockBits(bitmapData);
-
-            return results;
-        }
-
-
-        /// <summary>
-		/// Gets a array of ARGB colors from the given image.
-		/// </summary>
-		/// <param name="srcImg">The image.</param>
-		/// <returns>An array of color.</returns>
-		public static Color[] GetBitmapColors(Image srcImg)
-        {
-            return GetBitmapColors((Bitmap)srcImg);
-        }
-
-        /// <summary>
-        /// Gets a array of ARGB colors from the given image.
-        /// </summary>
-        /// <param name="srcImg">The image.</param>
-        /// <returns>An array of color.</returns>
-        public static unsafe Color[] GetBitmapColors(Bitmap srcImg)
-        {
-            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
-
-            byte* pDst = (byte*)(void*)dstBD.Scan0;
-
-            Color[] result = new Color[srcImg.Width * srcImg.Height];
-
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = Color.FromArgb(*(pDst + 3), *(pDst + 2), *(pDst + 1), *pDst);
-                pDst += 4;
-            }
-            srcImg.UnlockBits(dstBD);
-
-            return result;
-        }
-
-
-        /// <summary>
-		/// Convert an array of ARGB color to a bitmap of the given size.
-		/// </summary>
-		/// <param name="srcAry">The array of color.</param>
-		/// <param name="size">The dimensions of the bitmap.</param>
-		/// <returns>A bitmap of the given size, filled with colors from the given array. If the array is empty return null.</returns>
-		public static unsafe Bitmap GetBitmapFromArray(Color[] srcAry, Size size)
-        {
-            if (srcAry.Length < 1)
-                return null;
-
-            Bitmap resultBmp = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
-            BitmapData dstBD = Get32bppArgbBitmapData(resultBmp);
-
-            byte* pDst = (byte*)(void*)dstBD.Scan0;
-
-            for (int i = 0; i < srcAry.Length; i++)
-            {
-                *(pDst++) = srcAry[i].B; // B
-                *(pDst++) = srcAry[i].G; // G
-                *(pDst++) = srcAry[i].R; // R
-                *(pDst++) = srcAry[i].A; // A		 
-            }
-            resultBmp.UnlockBits(dstBD);
-
-            return resultBmp;
-        }
-
-
-        /// <summary>
-        /// Updates a bitmap's pixel data using pointers.
-        /// </summary>
-        /// <param name="toUpdate"> The bitmap that is going to be written on. </param>
-        /// <param name="dataBitmap"> The bitmap that the data comes from. </param>
-        /// <returns></returns>
-        public static bool UpdateBitmapSafe(Bitmap toUpdate, Bitmap dataBitmap)
-        {
-            if (toUpdate.Width != dataBitmap.Width || toUpdate.Height != dataBitmap.Height)
-                return false;
-
-            try
-            {
-                UpdateBitmap(toUpdate, dataBitmap);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-
-        /// <summary>
-        /// Updates a bitmap pixel data using pointers.
-        /// </summary>
-        /// <param name="toUpdate"> The bitmap that is going to be written on. </param>
-        /// <param name="dataBitmap"> The bitmap that the data comes from. </param>
-        public static void UpdateBitmap(Bitmap toUpdate, Bitmap dataBitmap)
-        {
-            BitmapData bmpData;
-            ARGB[] data;
-
-            bmpData = toUpdate.LockBits(new Rectangle(0, 0, toUpdate.Width, toUpdate.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            data = dataBitmap.GetPixelsFrom32BitArgbImage();
-
-            unsafe
-            {
-                ARGB* pixelPtr;
-
-                pixelPtr = (ARGB*)bmpData.Scan0;
-
-                for (int row = 0; row < toUpdate.Height; row++)
-                {
-                    for (int col = 0; col < toUpdate.Width; col++)
-                    {
-                        int index;
-                        ARGB color;
-
-                        index = row * toUpdate.Width + col;
-                        color = data[index];
-
-                        *pixelPtr = color;
-
-                        pixelPtr++;
-                    }
-                }
-            }
-
-            toUpdate.UnlockBits(bmpData);
-        }
-
-        
-        /// <summary>
-        /// Resizes the given image.
-        /// </summary>
-        /// <param name="im"> The image to resize. </param>
-        /// <param name="ri"> The graphics settings and new image size data. </param>
-        /// <returns></returns>
-        public static Bitmap ResizeImage(Image im, ResizeImage ri)
-        {
-            Bitmap newIm = new Bitmap(ri.NewSize.Width, ri.NewSize.Height);
-
-            using (Graphics g = Graphics.FromImage(newIm))
-            {
-                g.InterpolationMode = ri.InterpolationMode;
-                g.SmoothingMode = ri.SmoothingMode;
-                g.CompositingMode = ri.CompositingMode;
-                g.CompositingQuality = ri.CompositingQuality;
-                g.PixelOffsetMode = ri.PixelOffsetMode;
-
-                g.DrawImage(im,
-                    new Rectangle(new Point(0, 0), ri.NewSize),
-                    new Rectangle(0, 0, im.Width, im.Height),
-                    ri.GraphicsUnit);
-            }
-            return newIm;
-        }
-
-
-        /// <summary>
-        /// Load a wemp image. (Requires the libwebp_x64.dll or libwebp_x86.dll)
-        /// </summary>
-        /// <param name="path"> The path to the image. </param>
-        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
-        public static Bitmap LoadWebP(string path)
-        {
-            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
-                return null;
-
-            try
-            {
-                using (WebP webp = new WebP())
-                    return webp.Load(path);
-            }
-            catch (Exception e)
-            {
-                e.ShowError();
-            }
-            return null;
-        }
-
-
-        /// <summary>
-        /// Loads an image.
-        /// </summary>
-        /// <param name="path"> The path to the image. </param>
-        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
-        public static Bitmap LoadImage(string path)
-        {
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                return null;
-
-            if (Path.GetExtension(path) == ".webp")
-                return LoadWebP(path);
-
-            try
-            {
-                return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
-            }
-            catch (Exception e)
-            {
-                // in case the file doesn't have proper extension there is no harm in trying to load as webp
-                Bitmap tryLoadWebP;
-                if ((tryLoadWebP = LoadWebP(path)) != null)
-                    return tryLoadWebP;
-
-                e.ShowError();
-            }
-            return null;
-        }
-
-
-        /// <summary>
-        /// Gets the size of an image from a file.
-        /// </summary>
-        /// <param name="imagePath"> Path to the image. </param>
-        /// <param name="collectGarbage"> Bool indicating if GC.Collect should be called after loading disposing of the image and stream. </param>
-        /// <returns> The Size of the image, or Size.Empty if failed to load / not valid image. </returns>
-        public static Size GetImageDimensionsFile(string imagePath, bool collectGarbage = true)
-        {
-            if (!File.Exists(imagePath))
-                return Size.Empty;
-
-            try
-            {
-                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (Image image = Image.FromStream(fileStream, false, false))
-                {
-                    return new Size(image.Width, image.Height);
-                }
-            }
-            catch
-            {
-                return Size.Empty;
-            }
-            finally
-            {
-                if (collectGarbage)
-                {
-                    GC.Collect();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Convert the colors of every frame of a Gif object to greyscale.
-        /// </summary>
-        /// <param name="g"> The gif object to convert. </param>
-        public static void GreyScaleGif(Gif g)
-        {
-            for (int i = 0; i < g.Count; i++)
-            {
-                GrayscaleBitmap((Bitmap)g[i]);
-            }
-        }
-
-        /// <summary>
-        /// Convert the colors of every frame of a Gif object  with animated frames to greyscale.
-        /// </summary>
-        /// <param name="bmp"> The bitmap to convert. </param>
-        /// <returns></returns>
-        public static Bitmap GreyScaleGif(Bitmap bmp)
-        {
-            try
-            {
-                using (Gif g = new Gif(bmp))
-                {
-                    GreyScaleGif(g);
-                    return g.ToBitmap();
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Invert the colors of every frame of a Gif object.
-        /// </summary>
-        /// <param name="g"> The gif object to invert. </param>
-        public static void InvertGif(Gif g)
-        {
-            for (int i = 0; i < g.Count; i++)
-            {
-                InvertBitmapSafe((Bitmap)g[i]);
-            }
-        }
-
-        /// <summary>
-        /// Invert the colors of every frame of a bitmap with animated frames.
-        /// </summary>
-        /// <param name="bmp"> The bitmap to invert. </param>
-        /// <returns></returns>
-        public static Bitmap InvertGif(Bitmap bmp)
-        {
-            try
-            {
-                using (Gif g = new Gif(bmp))
-                {
-                    InvertGif(g);
-                    return g.ToBitmap();
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         /// <summary>
         /// Get image format.
@@ -502,7 +78,6 @@ namespace ImageViewer.Helpers
                     return null;
             }
         }
-
 
         /// <summary>
         /// Gets the image format from the file extension.
@@ -539,6 +114,7 @@ namespace ImageViewer.Helpers
         }
 
 
+
         /// <summary>
         /// Save a bitmap as a webp file. (Requires the libwebp_x64.dll or libwebp_x86.dll)
         /// </summary>
@@ -549,7 +125,7 @@ namespace ImageViewer.Helpers
         /// <returns> true if the bitmap was saved successfully, else false </returns>
         public static bool SaveWebp(Bitmap img, string filePath, WebPQuality q, bool collectGarbage = true)
         {
-            if(!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(filePath) || img == null)
+            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(filePath) || img == null)
                 return false;
 
             if (q == WebPQuality.empty)
@@ -593,7 +169,6 @@ namespace ImageViewer.Helpers
             }
         }
 
-
         /// <summary>
         /// Save an image as a webp file. (Requires the libwebp_x64.dll or libwebp_x86.dll)
         /// </summary>
@@ -606,6 +181,7 @@ namespace ImageViewer.Helpers
         {
             return SaveWebp((Bitmap)img, filePath, q, collectGarbage);
         }
+
 
 
         /// <summary>
@@ -649,7 +225,6 @@ namespace ImageViewer.Helpers
             }
         }
 
-
         /// <summary>
         /// Saves an image.
         /// </summary>
@@ -661,7 +236,6 @@ namespace ImageViewer.Helpers
         {
             return SaveImage((Image)img, filePath, collectGarbage);
         }
-
 
         /// <summary>
         /// Opens a save file dialog asking where to save an image.
@@ -726,6 +300,59 @@ namespace ImageViewer.Helpers
         }
 
 
+
+
+        /// <summary>
+        /// Load a wemp image. (Requires the libwebp_x64.dll or libwebp_x86.dll)
+        /// </summary>
+        /// <param name="path"> The path to the image. </param>
+        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
+        public static Bitmap LoadWebP(string path)
+        {
+            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
+
+            try
+            {
+                using (WebP webp = new WebP())
+                    return webp.Load(path);
+            }
+            catch (Exception e)
+            {
+                e.ShowError();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Loads an image.
+        /// </summary>
+        /// <param name="path"> The path to the image. </param>
+        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
+        public static Bitmap LoadImage(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
+
+            if (Path.GetExtension(path) == ".webp")
+                return LoadWebP(path);
+
+            try
+            {
+                return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+            }
+            catch (Exception e)
+            {
+                // in case the file doesn't have proper extension there is no harm in trying to load as webp
+                Bitmap tryLoadWebP;
+                if ((tryLoadWebP = LoadWebP(path)) != null)
+                    return tryLoadWebP;
+
+                e.ShowError();
+            }
+            return null;
+        }
+
         /// <summary>
         /// Opens a file dialog to select an image.
         /// </summary>
@@ -759,6 +386,7 @@ namespace ImageViewer.Helpers
         }
 
 
+
         /// <summary>
         /// Gets the mime type of the image.
         /// </summary>
@@ -778,6 +406,46 @@ namespace ImageViewer.Helpers
         }
 
 
+
+        /// <summary>
+        /// Gets the size of an image from a file.
+        /// </summary>
+        /// <param name="imagePath"> Path to the image. </param>
+        /// <returns> The Size of the image, or Size.Empty if failed to load / not valid image. </returns>
+        public static Size GetImageDimensionsFile(string imagePath)
+        {
+            if (!File.Exists(imagePath))
+                return Size.Empty;
+
+            try
+            {
+                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (Image image = Image.FromStream(fileStream, false, false))
+                {
+                    return new Size(image.Width, image.Height);
+                }
+            }
+            catch
+            {
+                return Size.Empty;
+            }
+        }
+
+
+
+        /// <summary>
+		/// Locks the given bitmap and return bitmap data with a pixel format of 32bppArgb.
+		/// </summary>
+		/// <param name="srcImg">The image to lock.</param>
+		/// <returns>32bppArgb bitmap data.</returns>
+		public static BitmapData Get32bppArgbBitmapData(Bitmap srcImg)
+        {
+            return srcImg.LockBits(
+                new Rectangle(0, 0, srcImg.Width, srcImg.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+        }
+
+
+
         /// <summary>
         /// Creates a solid color bitmap.
         /// </summary>
@@ -795,6 +463,260 @@ namespace ImageViewer.Helpers
             }
             return b;
         }
+
+
+
+        /// <summary>
+        /// Copy the given image to a 32bppArgb image.
+        /// </summary>
+        /// <param name="image">Image to copy.</param>
+        /// <returns>A 32bppArgb copy.</returns>
+        public static Bitmap CopyTo32bppArgb(this Image image)
+        {
+            Bitmap copy;
+
+            copy = new Bitmap(image.Size.Width, image.Size.Height, PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(copy))
+            {
+                g.CompositingMode = CompositingMode.SourceCopy;
+                g.DrawImage(image, new Rectangle(Point.Empty, image.Size), new Rectangle(Point.Empty, image.Size), GraphicsUnit.Pixel);
+            }
+
+            return copy;
+        }
+
+
+
+        /// <summary>
+        /// Resizes the given image. This returns a new image and the caller should be responsible for disposing of the old image.
+        /// </summary>
+        /// <param name="im"> The image to resize. </param>
+        /// <param name="s"> The new size. </param>
+        /// <returns></returns>
+        public static Bitmap ResizeImage(Image im, Size s)
+        {
+            Bitmap newIm = new Bitmap(s.Width, s.Height);
+
+            using (Graphics g = Graphics.FromImage(newIm))
+            {
+                g.DrawImage(im,
+                    new Rectangle(new Point(0, 0), s),
+                    new Rectangle(0, 0, im.Width, im.Height),
+                    GraphicsUnit.Pixel);
+            }
+            return newIm;
+        }
+
+        /// <summary>
+        /// Resizes the given image. This returns a new image and the caller should be responsible for disposing of the old image.
+        /// </summary>
+        /// <param name="im"> The image to resize. </param>
+        /// <param name="ri"> The graphics settings and new image size data. </param>
+        /// <returns></returns>
+        public static Bitmap ResizeImage(Image im, ResizeImage ri)
+        {
+            Bitmap newIm = new Bitmap(ri.NewSize.Width, ri.NewSize.Height);
+
+            using (Graphics g = Graphics.FromImage(newIm))
+            {
+                g.InterpolationMode = ri.InterpolationMode;
+                g.SmoothingMode = ri.SmoothingMode;
+                g.CompositingMode = ri.CompositingMode;
+                g.CompositingQuality = ri.CompositingQuality;
+                g.PixelOffsetMode = ri.PixelOffsetMode;
+
+                g.DrawImage(im,
+                    new Rectangle(new Point(0, 0), ri.NewSize),
+                    new Rectangle(0, 0, im.Width, im.Height),
+                    ri.GraphicsUnit);
+            }
+            return newIm;
+        }
+
+
+
+        /// <summary>
+		/// Gets a array of ARGB colors from the given image.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <returns>An array of color.</returns>
+		public static Color[] GetBitmapColors(Image srcImg)
+        {
+            return GetBitmapColors((Bitmap)srcImg);
+        }
+
+        /// <summary>
+        /// Gets a array of ARGB colors from the given image.
+        /// </summary>
+        /// <param name="srcImg">The image.</param>
+        /// <returns>An array of color.</returns>
+        public static unsafe Color[] GetBitmapColors(Bitmap srcImg)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            Color[] result = new Color[srcImg.Width * srcImg.Height];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = Color.FromArgb(*(pDst + 3), *(pDst + 2), *(pDst + 1), *pDst);
+                pDst += 4;
+            }
+            srcImg.UnlockBits(dstBD);
+
+            return result;
+        }
+
+
+
+        /// <summary>
+		/// Convert an array of ARGB color to a bitmap of the given size.
+		/// </summary>
+		/// <param name="srcAry">The array of color.</param>
+		/// <param name="size">The dimensions of the bitmap.</param>
+		/// <returns>A bitmap of the given size, filled with colors from the given array. If the array is empty return null.</returns>
+		public static unsafe Bitmap GetBitmapFromArray(Color[] srcAry, Size size)
+        {
+            if (srcAry.Length < 1)
+                return null;
+
+            Bitmap resultBmp = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
+            BitmapData dstBD = Get32bppArgbBitmapData(resultBmp);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < srcAry.Length; i++)
+            {
+                *(pDst++) = srcAry[i].B; // B
+                *(pDst++) = srcAry[i].G; // G
+                *(pDst++) = srcAry[i].R; // R
+                *(pDst++) = srcAry[i].A; // A		 
+            }
+            resultBmp.UnlockBits(dstBD);
+
+            return resultBmp;
+        }
+
+
+
+        /// <summary>
+        /// Updates a bitmap's pixel data using pointers.
+        /// </summary>
+        /// <param name="toUpdate"> The bitmap that is going to be written on. </param>
+        /// <param name="dataBitmap"> The bitmap that the data comes from. </param>
+        /// <returns></returns>
+        public static bool UpdateBitmapSafe(Bitmap toUpdate, Bitmap dataBitmap)
+        {
+            if (toUpdate.Width != dataBitmap.Width || toUpdate.Height != dataBitmap.Height)
+                return false;
+
+            try
+            {
+                UpdateBitmap(toUpdate, dataBitmap);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Updates a bitmap pixel data using pointers.
+        /// </summary>
+        /// <param name="toUpdate"> The bitmap that is going to be written on. </param>
+        /// <param name="dataBitmap"> The bitmap that the data comes from. </param>
+        public static unsafe void UpdateBitmap(Bitmap toUpdate, Bitmap dataBitmap)
+        {
+            Color[] data = GetBitmapColors(dataBitmap);
+
+            BitmapData dstBD = Get32bppArgbBitmapData(toUpdate);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                *(pDst++) = data[i].B; // B
+                *(pDst++) = data[i].G; // G
+                *(pDst++) = data[i].R; // R
+                *(pDst++) = data[i].A; // A		 
+            }
+            toUpdate.UnlockBits(dstBD);
+        }
+
+
+
+        /// <summary>
+        /// Convert the colors of every frame of a Gif object to greyscale.
+        /// </summary>
+        /// <param name="g"> The gif object to convert. </param>
+        public static void GrayscaleGif(Gif g)
+        {
+            for (int i = 0; i < g.Count; i++)
+            {
+                GrayscaleBitmap((Bitmap)g[i]);
+            }
+        }
+
+        /// <summary>
+        /// Convert the colors of every frame of a Gif object  with animated frames to greyscale.
+        /// </summary>
+        /// <param name="bmp"> The bitmap to convert. </param>
+        /// <returns></returns>
+        public static Bitmap GrayscaleGif(Bitmap bmp)
+        {
+            try
+            {
+                using (Gif g = new Gif(bmp))
+                {
+                    GrayscaleGif(g);
+                    return g.ToBitmap();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+
+        /// <summary>
+        /// Invert the colors of every frame of a Gif object.
+        /// </summary>
+        /// <param name="g"> The gif object to invert. </param>
+        public static void InvertGif(Gif g)
+        {
+            for (int i = 0; i < g.Count; i++)
+            {
+                InvertBitmapSafe((Bitmap)g[i]);
+            }
+        }
+
+        /// <summary>
+        /// Invert the colors of every frame of a bitmap with animated frames.
+        /// </summary>
+        /// <param name="bmp"> The bitmap to invert. </param>
+        /// <returns></returns>
+        public static Bitmap InvertGif(Bitmap bmp)
+        {
+            try
+            {
+                using (Gif g = new Gif(bmp))
+                {
+                    InvertGif(g);
+                    return g.ToBitmap();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
 
 
         /// <summary>
@@ -817,7 +739,6 @@ namespace ImageViewer.Helpers
                 return false;
             }
         }
-
 
         /// <summary>
 		/// Invert the color of the given image.
@@ -854,6 +775,7 @@ namespace ImageViewer.Helpers
         }
 
 
+
         /// <summary>
         /// Convert a bitmap to greyscale.
         /// </summary>
@@ -874,7 +796,6 @@ namespace ImageViewer.Helpers
                 return false;
             }
         }
-
 
         /// <summary>
 		/// Convert the given image to grayscale.
@@ -916,6 +837,7 @@ namespace ImageViewer.Helpers
         }
 
 
+
         /// <summary>
 		/// Fills all colors with an alpha value less than the given amount, with the specified color.
 		/// </summary>
@@ -937,7 +859,6 @@ namespace ImageViewer.Helpers
                 return false;
             }
         }
-
 
         /// <summary>
 		/// Fills all colors with an alpha value less than the given amount, with the specified color.

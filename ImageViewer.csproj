@@ -44,6 +44,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -193,6 +194,8 @@
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform256.cs" />
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform8.cs" />
     <Compile Include="Helpers\Transforms\UserCustomColorPaletteTransform.cs" />
+    <Compile Include="Helpers\UndoRedo\BitmapUndo.cs" />
+    <Compile Include="Helpers\UndoRedo\IUndoable.cs" />
     <Compile Include="Misc\FolderWatcher.cs" />
     <Compile Include="Helpers\Gif.cs" />
     <Compile Include="Structs\Structs.cs" />
