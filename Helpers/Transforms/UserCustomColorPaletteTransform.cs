@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace ImageViewer.Helpers.Transforms
 {
@@ -10,7 +6,7 @@ namespace ImageViewer.Helpers.Transforms
     {
         #region Constructors
 
-        public UserCustomColorPaletteTransform(ARGB[] input)
+        public UserCustomColorPaletteTransform(Color[] input)
           : base(input)
         { }
 

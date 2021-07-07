@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Drawing;
 using System.ComponentModel;
 
 namespace ImageViewer.Helpers.Dithering
@@ -17,15 +18,15 @@ namespace ImageViewer.Helpers.Dithering
   {
     #region Constants
 
-    private readonly ARGB _black;
+    private readonly Color _black;
 
-    private static readonly ARGB _blackDefault = new ARGB(255, 0, 0, 0);
+    private static readonly Color _blackDefault = Color.FromArgb(255, 0, 0, 0);
 
     private readonly Random _random;
 
-    private readonly ARGB _white;
+    private readonly Color _white;
 
-    private static readonly ARGB _whiteDefault = new ARGB(255, 255, 255, 255);
+    private static readonly Color _whiteDefault = Color.FromArgb(255, 255, 255, 255);
 
     #endregion
 
@@ -57,7 +58,7 @@ namespace ImageViewer.Helpers.Dithering
     bool IErrorDiffusion.Prescan
     { get { return false; } }
 
-    void IErrorDiffusion.Diffuse(ARGB[] data, ARGB original, ARGB transformed, int x, int y, int width, int height)
+    void IErrorDiffusion.Diffuse(Color[] data, Color original, Color transformed, int x, int y, int width, int height)
     {
       byte gray;
 

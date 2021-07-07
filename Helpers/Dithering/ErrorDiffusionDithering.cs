@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Drawing;
 
 namespace ImageViewer.Helpers.Dithering
 {
@@ -65,7 +66,7 @@ namespace ImageViewer.Helpers.Dithering
     bool IErrorDiffusion.Prescan
     { get { return false; } }
 
-    void IErrorDiffusion.Diffuse(ARGB[] data, ARGB original, ARGB transformed, int x, int y, int width, int height)
+    void IErrorDiffusion.Diffuse(Color[] data, Color original, Color transformed, int x, int y, int width, int height)
     {
       int redError;
       int blueError;
@@ -91,7 +92,7 @@ namespace ImageViewer.Helpers.Dithering
 
           if (coefficient != 0 && offsetX > 0 && offsetX < width && offsetY > 0 && offsetY < height)
           {
-                        ARGB offsetPixel;
+            Color offsetPixel;
             int offsetIndex;
             int newR;
             int newG;
@@ -123,7 +124,7 @@ namespace ImageViewer.Helpers.Dithering
             g = (offsetPixel.G + newG).ToByte();
             b = (offsetPixel.B + newB).ToByte();
 
-            data[offsetIndex] = ARGB.FromArgb(offsetPixel.A, r, g, b);
+            data[offsetIndex] = Color.FromArgb(offsetPixel.A, r, g, b);
           }
         }
       }

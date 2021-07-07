@@ -15,11 +15,11 @@ namespace ImageViewer
 {
     public partial class FillTransparentForm : Form
     {
-        public int Alpha 
+        public byte Alpha 
         { 
             get
             {
-                return Convert.ToInt32(nudAlphaValue.Value);
+                return Convert.ToByte(nudAlphaValue.Value);
             }
             set
             {

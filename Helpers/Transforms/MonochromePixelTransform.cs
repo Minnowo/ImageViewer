@@ -1,4 +1,5 @@
 ﻿using ImageViewer.Helpers;
+using System.Drawing;
 
 namespace ImageViewer.Helpers.Transforms
 {
@@ -6,11 +7,11 @@ namespace ImageViewer.Helpers.Transforms
   {
     #region Constants
 
-    private readonly ARGB _black;
+    private readonly Color _black;
+
+    private readonly Color _white;
 
     private readonly byte _threshold;
-
-    private readonly ARGB _white;
 
     #endregion
 
@@ -19,16 +20,16 @@ namespace ImageViewer.Helpers.Transforms
     public MonochromePixelTransform(byte threshold)
     {
       _threshold = threshold;
-      _black = new ARGB(0, 0, 0);
-      _white = new ARGB(255, 255, 255);
+      _black = Color.FromArgb(0, 0, 0);
+      _white = Color.FromArgb(255, 255, 255);
     }
 
     #endregion
 
     #region IPixelTransform Interface
 
-    public ARGB Transform(ARGB[] data, ARGB pixel, int x, int y, int width, int height)
-    {
+    public Color Transform(Color pixel)
+        {
       byte gray;
 
       gray = (byte)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);

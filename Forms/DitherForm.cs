@@ -23,7 +23,7 @@ namespace ImageViewer
         public string CustomColorPalette { get; private set; } = "";
         public bool CanceledOnClosing = false;
 
-        private ARGB[] customPalette;
+        private Color[] customPalette;
         private Bitmap originalImage;
         private Stopwatch fitToScreenLimiter = new Stopwatch();
         private System.Windows.Forms.Timer updateThresholdTimer = new System.Windows.Forms.Timer();
@@ -39,11 +39,15 @@ namespace ImageViewer
 
             ibMain.AllowClickZoom = false;
             ibMain.AllowDrop = false;
+            ibMain.LimitSelectionToImage = false;
 
-            ibMain.LimitSelectionToImage = true;
             ibMain.DisposeImageBeforeChange = true;
             ibMain.AutoCenter = true;
             ibMain.AutoPan = true;
+            ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
+
+            ibMain.BorderStyle = BorderStyle.None;
+            ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
 
             ibMain.SelectionMode = ImageBoxSelectionMode.Rectangle;
             ibMain.SelectionButton = MouseButtons.Right;
@@ -91,7 +95,7 @@ namespace ImageViewer
 
             transform = GetPixelTransform();
             ditherer = GetDitheringInstance();
-            image = originalImage.CopyTo32bppArgb();
+            image = originalImage.CloneSafe();//.CopyTo32bppArgb();
 
             if (image == null)
                 return;
@@ -116,7 +120,8 @@ namespace ImageViewer
             }
             else
             {
-                backgroundWorker_RunWorkerCompleted(backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
+                backgroundWorker_RunWorkerCompleted(
+                    backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
             }
         }
 
@@ -285,13 +290,14 @@ namespace ImageViewer
                 MessageBox.Show(this, "cannot save while worker thread is running", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
+            
             ImageHelper.UpdateBitmapSafe(originalImage, (Bitmap)ibMain.Image);
             Close();
         }
 
         private void btn_Cancel_Click(object sender, EventArgs e)
         {
+            ibMain.Image = null;
             Close();
         }
 
@@ -324,7 +330,7 @@ namespace ImageViewer
 
             string ext = Helper.GetFilenameExtension(CustomColorPalette).ToLower();
 
-            ARGB[] palette = null;
+            Color[] palette = null;
             switch (ext)
             {
                 case "txt":

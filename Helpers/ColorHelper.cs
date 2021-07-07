@@ -1252,11 +1252,11 @@ namespace ImageViewer.Helpers
             return number.Clamp<byte>(0, 255);
         }
 
-        public static List<ARGB> ReadPlainTextColorPalette(string fileName)
+        public static List<Color> ReadPlainTextColorPalette(string fileName)
         {
-            List<ARGB> colorPalette;
+            List<Color> colorPalette;
 
-            colorPalette = new List<ARGB>();
+            colorPalette = new List<Color>();
 
             const Int32 BufferSize = 128;
             using (var fileStream = File.OpenRead(fileName))
@@ -1278,11 +1278,11 @@ namespace ImageViewer.Helpers
         }
 
         // https://www.cyotek.com/blog/loading-the-color-palette-from-a-bbm-lbm-image-file-using-csharp#files
-        public static List<ARGB> ReadColorMap(string fileName)
+        public static List<Color> ReadColorMap(string fileName)
         {
-            List<ARGB> colorPalette;
+            List<Color> colorPalette;
 
-            colorPalette = new List<ARGB>();
+            colorPalette = new List<Color>();
 
             using (FileStream stream = File.OpenRead(fileName))
             {
@@ -1354,9 +1354,9 @@ namespace ImageViewer.Helpers
         }
 
         // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
-        public static List<ARGB> ReadPhotoShopSwatchFile(string fileName)
+        public static List<Color> ReadPhotoShopSwatchFile(string fileName)
         {
-            List<ARGB> colorPalette;
+            List<Color> colorPalette;
 
             using (Stream stream = File.OpenRead(fileName))
             {
@@ -1388,12 +1388,12 @@ namespace ImageViewer.Helpers
 
 
         // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
-        private static List<ARGB> ReadSwatches(Stream stream, FileVersion version)
+        private static List<Color> ReadSwatches(Stream stream, FileVersion version)
         {
             int colorCount;
-            List<ARGB> results;
+            List<Color> results;
 
-            results = new List<ARGB>();
+            results = new List<Color>();
 
             // read the number of colors, which also occupies two bytes
             colorCount = Helper.ReadInt16(stream);

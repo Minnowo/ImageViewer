@@ -1,4 +1,5 @@
 ﻿using ImageViewer.Helpers;
+using System.Drawing;
 
 /* Finding nearest colors using Euclidean distance
  * https://www.cyotek.com/blog/finding-nearest-colors-using-euclidean-distance
@@ -15,22 +16,22 @@ namespace ImageViewer.Helpers.Transforms
     public SimpleIndexedPalettePixelTransform16()
       : base(new[]
              {
-               ARGB.FromArgb(0, 0, 0),
-               ARGB.FromArgb(128, 0, 0),
-               ARGB.FromArgb(0, 128, 0),
-               ARGB.FromArgb(128, 128, 0),
-               ARGB.FromArgb(0, 0, 128),
-               ARGB.FromArgb(128, 0, 128),
-               ARGB.FromArgb(0, 128, 128),
-               ARGB.FromArgb(128, 128, 128),
-               ARGB.FromArgb(192, 192, 192),
-               ARGB.FromArgb(255, 0, 0),
-               ARGB.FromArgb(0, 255, 0),
-               ARGB.FromArgb(255, 255, 0),
-               ARGB.FromArgb(0, 0, 255),
-               ARGB.FromArgb(255, 0, 255),
-               ARGB.FromArgb(0, 255, 255),
-               ARGB.FromArgb(255, 255, 255)
+               Color.FromArgb(0, 0, 0),
+               Color.FromArgb(128, 0, 0),
+               Color.FromArgb(0, 128, 0),
+               Color.FromArgb(128, 128, 0),
+               Color.FromArgb(0, 0, 128),
+               Color.FromArgb(128, 0, 128),
+               Color.FromArgb(0, 128, 128),
+               Color.FromArgb(128, 128, 128),
+               Color.FromArgb(192, 192, 192),
+               Color.FromArgb(255, 0, 0),
+               Color.FromArgb(0, 255, 0),
+               Color.FromArgb(255, 255, 0),
+               Color.FromArgb(0, 0, 255),
+               Color.FromArgb(255, 0, 255),
+               Color.FromArgb(0, 255, 255),
+               Color.FromArgb(255, 255, 255)
              })
     { }
 

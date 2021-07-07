@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ImageViewer.Settings;
@@ -18,6 +15,60 @@ namespace ImageViewer.Helpers
     {
         public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
 
+        /// <summary>
+		/// A value from 0-1 which is used to convert a color to grayscale.
+		/// <para>Default: 0.3</para>
+		/// <para>Gray = (Red * GrayscaleRedMultiplier) + (Green * GrayscaleGreenMultiplier) + (Blue * GrayscaleBlueMultiplier)</para> 
+		/// </summary>
+		public static double GrayscaleRedMultiplier
+        {
+            get { return gsrm; }
+            set { gsrm = value.Clamp(0, 1); }
+        }
+        private static double gsrm = 0.3; // 0.21
+
+        /// <summary>
+        /// A value from 0-1 which is used to convert a color to grayscale.
+        /// <para>Default: 0.59</para>
+        /// <para>Gray = (Red * GrayscaleRedMultiplier) + (Green * GrayscaleGreenMultiplier) + (Blue * GrayscaleBlueMultiplier)</para> 
+        /// </summary>
+        public static double GrayscaleGreenMultiplier
+        {
+            get { return gsgm; }
+            set { gsgm = value.Clamp(0, 1); }
+        }
+        private static double gsgm = 0.59; // 0.71
+
+        /// <summary>
+        /// A value from 0-1 which is used to convert a color to grayscale.
+        /// <para>Default: 0.11</para>
+        /// <para>Gray = (Red * GrayscaleRedMultiplier) + (Green * GrayscaleGreenMultiplier) + (Blue * GrayscaleBlueMultiplier)</para> 
+        /// </summary>
+        public static double GrayscaleBlueMultiplier
+        {
+            get { return gsbm; }
+            set { gsbm = value.Clamp(0, 1); }
+        }
+        private static double gsbm = 0.11; // 0.071
+
+
+        /// <summary>
+		/// Locks the given bitmap and return bitmap data with a pixel format of 32bppArgb.
+		/// </summary>
+		/// <param name="srcImg">The image to lock.</param>
+		/// <returns>32bppArgb bitmap data.</returns>
+		public static BitmapData Get32bppArgbBitmapData(Bitmap srcImg)
+        {
+            return srcImg.LockBits(
+                new Rectangle(0, 0, srcImg.Width, srcImg.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+        }
+
+
+        /// <summary>
+        /// Copy the given image to a 32bppArgb image.
+        /// </summary>
+        /// <param name="image">Image to copy.</param>
+        /// <returns>A 32bppArgb copy.</returns>
         public static Bitmap CopyTo32bppArgb(this Image image)
         {
             Bitmap copy;
@@ -26,7 +77,7 @@ namespace ImageViewer.Helpers
 
             using (Graphics g = Graphics.FromImage(copy))
             {
-                g.Clear(Color.Transparent);
+                g.CompositingMode = CompositingMode.SourceCopy;
                 g.DrawImage(image, new Rectangle(Point.Empty, image.Size), new Rectangle(Point.Empty, image.Size), GraphicsUnit.Pixel);
             }
 
@@ -120,6 +171,69 @@ namespace ImageViewer.Helpers
             bitmap.UnlockBits(bitmapData);
 
             return results;
+        }
+
+
+        /// <summary>
+		/// Gets a array of ARGB colors from the given image.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <returns>An array of color.</returns>
+		public static Color[] GetBitmapColors(Image srcImg)
+        {
+            return GetBitmapColors((Bitmap)srcImg);
+        }
+
+        /// <summary>
+        /// Gets a array of ARGB colors from the given image.
+        /// </summary>
+        /// <param name="srcImg">The image.</param>
+        /// <returns>An array of color.</returns>
+        public static unsafe Color[] GetBitmapColors(Bitmap srcImg)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            Color[] result = new Color[srcImg.Width * srcImg.Height];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = Color.FromArgb(*(pDst + 3), *(pDst + 2), *(pDst + 1), *pDst);
+                pDst += 4;
+            }
+            srcImg.UnlockBits(dstBD);
+
+            return result;
+        }
+
+
+        /// <summary>
+		/// Convert an array of ARGB color to a bitmap of the given size.
+		/// </summary>
+		/// <param name="srcAry">The array of color.</param>
+		/// <param name="size">The dimensions of the bitmap.</param>
+		/// <returns>A bitmap of the given size, filled with colors from the given array. If the array is empty return null.</returns>
+		public static unsafe Bitmap GetBitmapFromArray(Color[] srcAry, Size size)
+        {
+            if (srcAry.Length < 1)
+                return null;
+
+            Bitmap resultBmp = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
+            BitmapData dstBD = Get32bppArgbBitmapData(resultBmp);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < srcAry.Length; i++)
+            {
+                *(pDst++) = srcAry[i].B; // B
+                *(pDst++) = srcAry[i].G; // G
+                *(pDst++) = srcAry[i].R; // R
+                *(pDst++) = srcAry[i].A; // A		 
+            }
+            resultBmp.UnlockBits(dstBD);
+
+            return resultBmp;
         }
 
 
@@ -306,7 +420,7 @@ namespace ImageViewer.Helpers
         {
             for (int i = 0; i < g.Count; i++)
             {
-                GreyScaleBitmapSafe((Bitmap)g[i]);
+                GrayscaleBitmap((Bitmap)g[i]);
             }
         }
 
@@ -684,12 +798,11 @@ namespace ImageViewer.Helpers
 
 
         /// <summary>
-        /// Inverts the colors of a 32bpp bitmap.
+        /// Inverts the colors of a bitmap.
         /// </summary>
-        /// <param name="image"> The 32bpp bitmap to invert </param>
-        /// <param name="collectGarbage"> Should GC.Collect be called after converting the bitmap to free up any held memory </param>
+        /// <param name="image"> The bitmap to invert </param>
         /// <returns> true if the bitmap was inverted, else false </returns>
-        public static bool InvertBitmapSafe(Bitmap image, bool collectGarbage = true)
+        public static bool InvertBitmapSafe(Bitmap image)
         {
             if (image == null)
                 return false;
@@ -703,190 +816,167 @@ namespace ImageViewer.Helpers
             {
                 return false;
             }
-            finally
-            {
-                if(collectGarbage)
-                    GC.Collect();
-            }
         }
 
 
         /// <summary>
-        /// Inverts the colors of a 32bpp bitmap.
-        /// </summary>
-        /// <param name="bitmapImage"> The 32bpp bitmap to invert</param>
-        public static void InvertBitmap(Bitmap bitmapImage)
+		/// Invert the color of the given image.
+		/// </summary>
+		/// <param name="srcImg">The image to invert.</param>
+		public static void InvertBitmap(Image srcImg)
         {
-            // https://stackoverflow.com/a/24376274
+            InvertBitmap((Bitmap)srcImg);
+        }
 
-            int length;
-            byte[] bitmapBGRA;
+        /// <summary>
+        /// Invert the color of the given image.
+        /// </summary>
+        /// <param name="srcImg">The image to invert.</param>
+        public static unsafe void InvertBitmap(Bitmap srcImg)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
 
-            Rectangle bmpRect;
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
 
-            BitmapData bitmapRead;
-            BitmapData bitmapWrite;
-
-            bmpRect = new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height);
-            bitmapRead = bitmapImage.LockBits(bmpRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            length = bitmapRead.Stride * bitmapRead.Height;
-            bitmapBGRA = new byte[length];
-
-            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, length);
-            bitmapImage.UnlockBits(bitmapRead);
-
-            for (int i = 0; i < length; i += 4)
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
             {
-                bitmapBGRA[i] = (byte)(255 - bitmapBGRA[i]);
-                bitmapBGRA[i + 1] = (byte)(255 - bitmapBGRA[i + 1]);
-                bitmapBGRA[i + 2] = (byte)(255 - bitmapBGRA[i + 2]);
-                //        [i + 3] = ALPHA.
-            }
+                *pDst = (byte)(255 - *pDst); // invert B
+                pDst++;
+                *pDst = (byte)(255 - *pDst); // invert G
+                pDst++;
+                *pDst = (byte)(255 - *pDst); // invert R
+                pDst += 2; // skip alpha
 
-            bitmapWrite = bitmapImage.LockBits(bmpRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
-            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, length);
-            bitmapImage.UnlockBits(bitmapWrite);
+                //*pDst = (byte)(255 - *pDst); // invert A
+                //pDst++;						 
+            }
+            srcImg.UnlockBits(dstBD);
         }
 
 
         /// <summary>
-        /// Convert a 32bpp bitmap to greyscale.
+        /// Convert a bitmap to greyscale.
         /// </summary>
-        /// <param name="image"> The 32bpp bitmap to convert </param>
-        /// <param name="collectGarbage"> Should GC.Collect be called after converting the bitmap to free up any held memory </param>
+        /// <param name="image"> The bitmap to convert </param>
         /// <returns> true if the bitmap was converted to greyscale, else false </returns>
-        public static bool GreyScaleBitmapSafe(Bitmap image, bool collectGarbage = true)
+        public static bool GrayscaleBitmapSafe(Bitmap image)
         {
             if (image == null)
                 return false;
 
             try
             {
-                GreyScaleBitmap(image);
+                GrayscaleBitmap(image);
                 return true;
             }
             catch 
             {
                 return false;
             }
-            finally
-            {
-                if (collectGarbage)
-                    GC.Collect();
-            }
         }
 
 
         /// <summary>
-        /// Converts the colors of a 32bpp bitmap to greyscale.
-        /// </summary>
-        /// <param name="bitmapImage"> The 32bpp bitmap to convert</param>
-        public static void GreyScaleBitmap(Bitmap bitmapImage, double bm = 0.11, double gm = 0.59, double rm = 0.3)
+		/// Convert the given image to grayscale.
+		/// </summary>
+		/// <param name="srcImg">The image to convert.</param>
+		public static void GrayscaleBitmap(Image srcImg)
         {
-            // default grey values from
-            // https://web.archive.org/web/20130111215043/http://www.switchonthecode.com/tutorials/csharp-tutorial-convert-a-color-image-to-grayscale
+            GrayscaleBitmap((Bitmap)srcImg);
+        }
 
-            int length;
-            byte[] bitmapBGRA;
+        /// <summary>
+        /// Convert the given image to grayscale.
+        /// </summary>
+        /// <param name="srcImg">The image to convert.</param>
+        public static unsafe void GrayscaleBitmap(Bitmap srcImg)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
 
-            Rectangle bmpRect;
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
 
-            BitmapData bitmapRead;
-            BitmapData bitmapWrite;
-
-            bmpRect = new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height);
-            bitmapRead = bitmapImage.LockBits(bmpRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            length = bitmapRead.Stride * bitmapRead.Height;
-            bitmapBGRA = new byte[length];
-
-            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, length);
-            bitmapImage.UnlockBits(bitmapRead);
-
-            for (int i = 0; i < length; i += 4)
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
             {
-                byte grayScale = (byte)((bitmapBGRA[i] * bm) +  //B
-                                (bitmapBGRA[i + 1] * gm) +      //G
-                                (bitmapBGRA[i + 2] * rm));      //R
+                byte gray = (byte)(
+                    (gsbm * *(pDst)) +      // B
+                    (gsgm * *(pDst + 1)) +  // G
+                    (gsrm * *(pDst + 2)));  // R
 
-                bitmapBGRA[i] = grayScale;      // B
-                bitmapBGRA[i + 1] = grayScale;  // G
-                bitmapBGRA[i + 2] = grayScale;  // R
-                //        [i + 3] = ALPHA.      // A
+                *pDst = gray; // B
+                pDst++;
+                *pDst = gray; // G
+                pDst++;
+                *pDst = gray; // R
+                pDst += 2;    // Skip alpha
+
+                //*pDst = grey; // A
+                //pDst++;
             }
-
-            bitmapWrite = bitmapImage.LockBits(bmpRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
-            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, length);
-            bitmapImage.UnlockBits(bitmapWrite);
+            srcImg.UnlockBits(dstBD);
         }
 
 
         /// <summary>
-        /// Fills pixels with an alpha value less than given amount.
-        /// </summary>
-        /// <param name="bitmapImage"> The 32bpp bitmap to fill </param>
-        /// <param name="fill"> The color to replace transparent pixels </param>
-        /// <param name="alphaLessThan"> The alpha value of pixels that should be replaced with the color. Anything less will also be filled. </param>
-        /// <param name="collectGarbage"> Should GC.Collect be called after converting the bitmap to free up any held memory. </param>
-        public static bool FillTransparentPixelsSafe(Bitmap bitmapImage, Color fill, int alphaLessThan = 255, bool collectGarbage = true)
+		/// Fills all colors with an alpha value less than the given amount, with the specified color.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <param name="fill">The color to fill with.</param>
+		/// <param name="fillAlphaLessThan">The alpha value to fill colors less than.</param>
+        public static bool FillTransparentPixelsSafe(Bitmap bitmapImage, Color fill, byte alphaLessThan = 255)
         {
             if (bitmapImage == null)
                 return false;
 
             try
             {
-                FillTransparentPixels(bitmapImage, fill, alphaLessThan);
+                FillTransparentPixelsOnBitmap(bitmapImage, fill, alphaLessThan);
                 return true;
             }
             catch
             {
                 return false;
             }
-            finally
-            {
-                if (collectGarbage)
-                    GC.Collect();
-            }
         }
 
 
         /// <summary>
-        /// Fills pixels with an alpha value less than given amount.
-        /// </summary>
-        /// <param name="bitmapImage"> The 32bpp bitmap to fill </param>
-        /// <param name="fill"> The color to replace transparent pixels </param>
-        /// <param name="alphaLessThan"> The alpha value of pixels that should be replaced with the color. Anything less will also be filled. </param>
-        public static void FillTransparentPixels(Bitmap bitmapImage, Color fill, int alphaLessThan = 255)
+		/// Fills all colors with an alpha value less than the given amount, with the specified color.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <param name="fill">The color to fill with.</param>
+		/// <param name="fillAlphaLessThan">The alpha value to fill colors less than.</param>
+		public static void FillTransparentPixelsOnBitmap(Image srcImg, Color fill, byte fillAlphaLessThan = 128)
         {
-            int length;
-            byte[] bitmapBGRA;
+            FillTransparentPixelsOnBitmap((Bitmap)srcImg, fill, fillAlphaLessThan);
+        }
 
-            Rectangle bmpRect;
+        /// <summary>
+        /// Fills all colors with an alpha value less than the given amount, with the specified color.
+        /// </summary>
+        /// <param name="srcImg">The image.</param>
+        /// <param name="fill">The color to fill with.</param>
+        /// <param name="fillAlphaLessThan">The alpha value to fill colors less than.</param>
+        public static unsafe void FillTransparentPixelsOnBitmap(Bitmap srcImg, Color fill, byte fillAlphaLessThan = 128)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
 
-            BitmapData bitmapRead;
-            BitmapData bitmapWrite;
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
 
-            bmpRect = new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height);
-            bitmapRead = bitmapImage.LockBits(bmpRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            length = bitmapRead.Stride * bitmapRead.Height;
-            bitmapBGRA = new byte[length];
-
-            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, length);
-            bitmapImage.UnlockBits(bitmapRead);
-
-            for (int i = 0; i < length; i += 4)
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
             {
-                if (bitmapBGRA[i + 3] < alphaLessThan)
+                if (*(pDst + 3) < fillAlphaLessThan)
                 {
-                    bitmapBGRA[i] = fill.B;      // B
-                    bitmapBGRA[i + 1] = fill.G;  // G
-                    bitmapBGRA[i + 2] = fill.R;  // R
-                    bitmapBGRA[i + 3] = fill.A;  // alpha
+                    *pDst = fill.B; // B
+                    pDst++;
+                    *pDst = fill.G; // G
+                    pDst++;
+                    *pDst = fill.R; // R
+                    pDst++;
+                    *pDst = fill.A; // A
+                    pDst++;
                 }
             }
-
-            bitmapWrite = bitmapImage.LockBits(bmpRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
-            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, length);
-            bitmapImage.UnlockBits(bitmapWrite);
+            srcImg.UnlockBits(dstBD);
         }
     }
 }

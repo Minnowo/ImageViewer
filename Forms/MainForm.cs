@@ -404,8 +404,7 @@ namespace ImageViewer
                 return;
             }
 
-            ImageHelper.GreyScaleBitmapSafe(
-                (Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
+            ImageHelper.GrayscaleBitmapSafe((Bitmap)currentPage.ibMain.Image);
             currentPage.ibMain.Invalidate();
         }
 
@@ -433,7 +432,7 @@ namespace ImageViewer
                 return;
             }
             
-            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
+            ImageHelper.InvertBitmapSafe((Bitmap)currentPage.ibMain.Image);
             currentPage.ibMain.Invalidate();
         }
 
@@ -456,8 +455,7 @@ namespace ImageViewer
 
                 if(f.result == SimpleDialogResult.Success)
                 {
-                    ImageHelper.FillTransparentPixelsSafe(
-                        (Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha, InternalSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation);
+                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
                     currentPage.ibMain.Invalidate();
                 }
             }
@@ -481,19 +479,12 @@ namespace ImageViewer
                 df.LocationChanged += ParentFollowChild;
 
                 df.ShowDialog();
-
-                collectGarbage = df.CanceledOnClosing;
-
                 currentPage.ibMain.Invalidate();
             }
 
             Location = p;
 
-            // not sure why this doesn't help
-            // but if you cancel the close / cancel the dither form
-            // while its worker is running, it leaves a bunch of extra memory
-            // which gets cleared after the user does something to the image
-            if (collectGarbage && InternalSettings.Garbage_Collect_On_Dither_Form_Cancel)
+            if (InternalSettings.Garbage_Collect_On_Dither_Form_Cancel) { }
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         }
         #endregion

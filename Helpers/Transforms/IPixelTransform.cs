@@ -1,13 +1,14 @@
 ﻿using ImageViewer.Helpers;
+using System.Drawing;
 
 namespace ImageViewer.Helpers.Transforms
 {
   public interface IPixelTransform
   {
-    #region Methods
+        #region Methods
 
-    ARGB Transform(ARGB[] data, ARGB pixel, int x, int y, int width, int height);
+        Color Transform(Color pixel);
 
-    #endregion
-  }
+        #endregion
+    }
 }

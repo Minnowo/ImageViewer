@@ -5,6 +5,7 @@
  *
  * Licensed under the MIT License. See LICENSE.txt for the full text.
  */
+using System.Drawing;
 
 namespace ImageViewer.Helpers.Dithering
 {
@@ -12,7 +13,7 @@ namespace ImageViewer.Helpers.Dithering
   {
     #region Methods
 
-    void Diffuse(ARGB[] data, ARGB original, ARGB transformed, int x, int y, int width, int height);
+    void Diffuse(Color[] data, Color original, Color transformed, int x, int y, int width, int height);
 
     bool Prescan { get; }
 
