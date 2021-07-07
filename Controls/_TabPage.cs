@@ -150,7 +150,8 @@ namespace ImageViewer.Controls
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
 
             ibMain.ImageChanged += IbMain_ImageChanged;
-
+            /*ibMain.AutoScrollMinSize = new Size(5000,5000);*/
+            ibMain.AutoScroll = true;
             Controls.Add(ibMain);
 
             BitmapChangeTracker = new BitmapUndo();

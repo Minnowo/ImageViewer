@@ -149,7 +149,6 @@ namespace ImageViewer.Helpers.UndoRedo
 
         public void Redo()
         {
-            Console.WriteLine("redoing");
             if (redos.Count < 1)
                 return;
 
@@ -239,7 +238,6 @@ namespace ImageViewer.Helpers.UndoRedo
 
         public void Undo()
         {
-            Console.WriteLine("undoing");
             if (undos.Count < 1)
                 return;
 
@@ -324,7 +322,8 @@ namespace ImageViewer.Helpers.UndoRedo
         public void Dispose()
         {
             ClearHistory();
-            CurrentBitmap.Dispose();
+            if(CurrentBitmap != null)
+                CurrentBitmap.Dispose();
             CurrentBitmap = null;
         }
 

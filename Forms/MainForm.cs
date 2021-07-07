@@ -75,6 +75,9 @@ namespace ImageViewer
             tsmiShowDefaultTransparentGridColors.Checked = InternalSettings.Show_Default_Transparent_Colors;
             tsmiShowTransparentColor1Only.Checked = InternalSettings.Only_Show_Transparent_Color_1;
 
+            nudTopMain_ZoomPercentage.Maximum = ImageBox.MaxZoom;
+            nudTopMain_ZoomPercentage.Minimum = ImageBox.MinZoom;
+
             if (InternalSettings.Watch_Directory)
                 CurrentFolder = new FolderWatcher("");
 
@@ -701,6 +704,7 @@ namespace ImageViewer
 
         private void _TabPage_ImageLoadChanged(bool imageLoaded)
         {
+            UpdateZoomNumericUpDown();
             UpdatePixelGrid();
             UpdateCurrentPageTransparentBackColor();
             UpdateBottomInfoLabel();
@@ -1037,6 +1041,18 @@ namespace ImageViewer
             CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
         }
 
+        public void UpdateZoomNumericUpDown()
+        {
+            if (currentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            nudTopMain_ZoomPercentage.Value = currentPage.ibMain.Zoom;
+
+            preventOverflow = false;
+        }
+
         public void UpdateWatcherIndex()
         {
             if (InternalSettings.Watch_Directory)
@@ -1147,7 +1163,8 @@ namespace ImageViewer
                     }
                     break;
 
-
+                case (Keys.Z | Keys.Control | Keys.Shift):
+                case (Keys.Z | Keys.LControlKey | Keys.Shift):
                 case (Keys.Y | Keys.Control):
                 case (Keys.Y | Keys.LControlKey):
                     if (currentPage == null)

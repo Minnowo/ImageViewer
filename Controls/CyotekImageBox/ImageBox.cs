@@ -111,9 +111,9 @@ namespace Cyotek.Windows.Forms
 
         private static readonly object _eventZoomLevelsChanged = new object();
 
-        private const int MaxZoom = 3500;
+        public const int MaxZoom = 20000;
 
-        private const int MinZoom = 1;
+        public const int MinZoom = 1;
 
         private const int SelectionDeadZone = 5;
 
@@ -2057,6 +2057,7 @@ namespace Cyotek.Windows.Forms
             {
                 width = Math.Min(this.ScaledImageWidth - Math.Abs(this.AutoScrollPosition.X), innerRectangle.Width);
                 height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
+                //return new Rectangle(viewX,viewY, width, height);
                 return new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
 
             }
@@ -2115,6 +2116,7 @@ namespace Cyotek.Windows.Forms
             this.SelectionRegion = Rectangle.Empty;
             this.Image.Dispose();
             this.Image = newIm;
+            this.ZoomToFit();
         }
 
         /// <summary>
@@ -3384,47 +3386,43 @@ namespace Cyotek.Windows.Forms
             viewport = this.GetImageViewPort();
             offsetX = Math.Abs(this.AutoScrollPosition.X) % pixelSize;
             offsetY = Math.Abs(this.AutoScrollPosition.Y) % pixelSize;
+      
+            if (makeNewGridTexture || this.gridBrush == null)
+            {
+                this.gridBrushZoom = pixelSize;
+                this.gridBrush?.Dispose();
+                this.gridBrush = null;
 
-            using (Pen pen = new Pen(this.PixelGridColor)
-            {
-                DashStyle = DashStyle.Dot
-            })
-            {
-                if (makeNewGridTexture || this.gridBrush == null)
+                using (Bitmap bmp = new Bitmap(Convert.ToInt32(viewport.Width + pixelSize), Convert.ToInt32(viewport.Height + pixelSize)))
+                using (Graphics gr = Graphics.FromImage(bmp))
+                using (Pen pen = new Pen(this.PixelGridColor))
                 {
-                    this.gridBrushZoom = pixelSize;
-                    this.gridBrush?.Dispose();
-                    this.gridBrush = null;
-
-                    using (Bitmap bmp = new Bitmap(Convert.ToInt32(viewport.Width + pixelSize), Convert.ToInt32(viewport.Height + pixelSize)))
-                    using (Graphics gr = Graphics.FromImage(bmp))
-                    { 
-                        for (float x = 0; x < bmp.Width; x += pixelSize)
-                        {
-                            gr.DrawLine(pen, x, viewport.Top, x, bmp.Height);
-                        }
-
-                        for (float y = 0; y < bmp.Height; y += pixelSize)
-                        {
-                            gr.DrawLine(pen, viewport.Left, y, bmp.Width, y);
-                        }
-
-                        gr.DrawRectangle(pen, new Rectangle(0, 0, bmp.Width, bmp.Height));
-
-                        this.gridBrush = new TextureBrush(bmp) { WrapMode = WrapMode.Clamp};
+                    pen.DashStyle = DashStyle.Dot;
+                    for (float x = 0; x < bmp.Width; x += pixelSize)
+                    {
+                        gr.DrawLine(pen, x, 0, x, bmp.Height);
                     }
+
+                    for (float y = 0; y < bmp.Height; y += pixelSize)
+                    {
+                        gr.DrawLine(pen, 0, y, bmp.Width, y);
+                    }
+
+                    gr.DrawRectangle(pen, new Rectangle(0, 0, bmp.Width, bmp.Height));
+
+                    this.gridBrush = new TextureBrush(bmp) { WrapMode = WrapMode.Clamp };
                 }
-                float drawOffsetX = viewport.Left - offsetX;
-                float drawOffsetY = viewport.Top - offsetY;
-                    
-                gridBrush.ResetTransform();
-                gridBrush.TranslateTransform(drawOffsetX, drawOffsetY);
-                g.FillRectangle(gridBrush,
-                        -pixelSize,
-                        -pixelSize,
-                        viewport.Width + pixelSize,
-                        viewport.Height + pixelSize);
             }
+            float drawOffsetX = viewport.Left - offsetX;
+            float drawOffsetY = viewport.Top - offsetY;
+                    
+            gridBrush.ResetTransform();
+            gridBrush.TranslateTransform(drawOffsetX, drawOffsetY);
+            g.FillRectangle(gridBrush,
+                    viewport.X,
+                    viewport.Y,
+                    viewport.Width,
+                    viewport.Height);
         }
 
         /// <summary>
@@ -3964,6 +3962,7 @@ namespace Cyotek.Windows.Forms
             base.OnMouseDown(e);
 
             _startMousePosition = e.Location;
+            //lastPos = e.Location;
 
             if (e.Button == this.SelectionButton)
             {
@@ -3976,7 +3975,9 @@ namespace Cyotek.Windows.Forms
                 this.Focus();
             }
         }
-
+        //private Point lastPos;
+        //private int viewX=0;
+        //private int viewY=0;
         /// <summary>
         ///   Raises the <see cref="System.Windows.Forms.Control.MouseMove" /> event.
         /// </summary>
@@ -3993,8 +3994,43 @@ namespace Cyotek.Windows.Forms
                 {
                     this.SelectionRegion = RectangleF.Empty;
                 }
-
                 this.ProcessPanning(e);
+
+                //viewX = AutoScrollPosition.X;//viewX + (e.X - lastPos.X);
+                //viewY = AutoScrollPosition.Y;//viewY + (e.Y - lastPos.Y);
+                //lastPos = e.Location;
+                /*
+                if (HScroll)
+                {
+                    int scrollToX = viewX;
+                    if (viewX < 0)
+                    {
+                        //viewX = 0;
+                        this.AdjustScroll(Math.Abs(scrollToX), VerticalScroll.Value);
+                    }
+                    else if (viewX > 0)
+                    {
+                        //viewX = 0;
+                        this.AdjustScroll(-scrollToX, VerticalScroll.Value);
+                    }
+                }
+
+                if (VScroll)
+                {
+                    int scrollToY = viewY;
+                    if (viewY < 0)
+                    {
+                        //viewY = 0;
+                        this.AdjustScroll(HorizontalScroll.Value, Math.Abs(scrollToY));
+                    }
+                    else if (viewY > 0)
+                    {
+                        //viewY = 0;
+                        this.AdjustScroll(HorizontalScroll.Value, -scrollToY);
+                    }
+                }
+
+                this.Invalidate();*/
             }
             else if(e.Button == this.SelectionButton)
             {
