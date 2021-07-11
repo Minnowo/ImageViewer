@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using System.ComponentModel;
 using System.Collections;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace ImageViewer.Settings
 {
@@ -154,6 +155,11 @@ namespace ImageViewer.Settings
             set { CurrentUserSettings.Remove_Selected_Area_On_Pan = value; }
         }
 
+        public static bool Fit_Image_When_Unmaximized
+        {
+            get { return CurrentUserSettings.Fit_Image_When_Unmaximized; }
+            set { CurrentUserSettings.Fit_Image_When_Unmaximized = value; }
+        }
         public static bool Fit_Image_When_Maximized
         {
             get { return CurrentUserSettings.Fit_Image_When_Maximized; }
@@ -236,6 +242,12 @@ namespace ImageViewer.Settings
         public static UserControlledSettings CurrentUserSettings = new UserControlledSettings();
         public static SettingsProfiles SettingProfiles = new SettingsProfiles();
 
+        public static Cursor Drag_Cursor = GetDragCursor();
+
+        public static Cursor GetDragCursor()
+        {
+            return new Cursor(new MemoryStream(Properties.Resources.drag));
+        }
 
         public static void EnableWebPIfPossible()
         {
@@ -286,50 +298,92 @@ namespace ImageViewer.Settings
 
         [Description("The name of the profile."), DisplayName("Name")]
         public string ProfileName { get; set; } = "Nil";
+
+
         [Description("Should the garbage collecter be called after every image unloads."), DisplayName("Garbage Collect On Image Unload")]
         public bool Garbage_Collect_On_Image_Unload { get; set; } = false;
+
+
         [Description("Should the garbage collecter be called after the dither form."), DisplayName("Garbage Collect After Dither")]
         public bool Garbage_Collect_On_Dither_Form_Cancel { get; set; } = true;
+
+
         [Description("Should the garbage collecter be called after unmanaged image manipulation."), DisplayName("Garbage Collect After Unmanaged Image Manipulation")]
         public bool Garbage_Collect_After_Unmanaged_Image_Manipulation { get; set; } = true;
+
+
         [Description("Should the garbage collecter be called after exporting a gif."), DisplayName("Garbage Collect After Gif Export")]
         public bool Garbage_Collect_After_Gif_Export { get; set; } = true;
+
+
 
         [Description("Should the tmp directory be deleted when the application closes."), DisplayName("Delete Temp Dir On Exit")]
         public bool Delete_Temp_Directory_On_Close { get; set; } = true;
 
+
+
         [Description("Should the image backing only show the default colors."), DisplayName("Show Default Image Backing")]
         public bool Show_Default_Transparent_Colors { get; set; } = false;
+
+
         [Description("Should the image backing be only color 1."), DisplayName("Show Color 1 As Image Backing")]
         public bool Only_Show_Transparent_Color_1 { get; set; } = false;
+
+
         [Description("Should the pixel grid be shown."), DisplayName("Display Pixel Grid")]
         public bool Show_Pixel_Grid { get; set; } = true;
+
+
         [Description("Should the selected area be removed when panning."), DisplayName("Deselect On Pan")]
         public bool Remove_Selected_Area_On_Pan { get; set; } = false;
 
+
+
         [Description("Should the current image be fit to the screen when maximized."), DisplayName("Fit Image To Screen When Maximized")]
         public bool Fit_Image_When_Maximized { get; set; } = true;
+
+
+        [Description("Should the current image be fit to the screen when unmaximized."), DisplayName("Fit Image To Screen When Un-Maximized")]
+        public bool Fit_Image_When_Unmaximized { get; set; } = true;
+
+
         [Description("Should the current image be fit to the screen when the window is resized."), DisplayName("Fit Image To Screen On Window Resize")]
         public bool Fit_Image_On_Resize { get; set; } = true;
 
+
+
         [Description("Should the parent window follow children that take control."), DisplayName("Parent Follow Children")]
         public bool Parent_Follow_Child { get; set; } = true;
+
+
         [Description("Should the child window be centered on the parent when parent following child."), DisplayName("Center Child When Parent Following")]
         public bool CenterChild_When_Parent_Following_Child { get; set; } = true;
 
+
+
         [Description("Should the current image directory be watched for changed."), DisplayName("Watch Current Image Directory")]
         public bool Watch_Directory { get; set; } = true;
+
+
         [Description("Should explorer be opened to the file after export."), DisplayName("Open Explorer After Exporting")]
         public bool Open_Explorer_After_Export { get; set; } = true;
+
+
         [Description("Should explorer be opened to the file after save as."), DisplayName("Open Explorer After Saving")]
         public bool Open_Explorer_After_SaveAs { get; set; } = true;
+
+
 
         [Description("Should async be used when dithering."), DisplayName("Use Async When Dithering")]
         public bool Use_Async_Dither { get; set; } = true;
 
+
+
         [XmlIgnore]
         [Description("The default image format."), DisplayName("Default Image Format")]
         public ImgFormat Default_Image_Format { get; set; } = ImgFormat.png;
+
+
 
         [Browsable(false)]
         [XmlElement("Default_Image_Format")]
@@ -341,7 +395,9 @@ namespace ImageViewer.Settings
 
         [XmlIgnore]
         [Description("The default webp quality"), DisplayName("Default Webp Quality")]
-        public WebPQuality WebpQuality_Default { get; set; } = new WebPQuality(WebpFormat.EncodeLossy, 74, 6);
+        public WebPQuality WebpQuality_Default { get; set; } = new WebPQuality(WebpEncodingFormat.EncodeLossy, 74, 6);
+
+
 
         [Browsable(false)]
         [XmlElement("WebpQuality_Default")]
@@ -354,18 +410,28 @@ namespace ImageViewer.Settings
         [XmlIgnore]
         [Description("The back color of the image display."), DisplayName("Image Display Back Color")]
         public Color Image_Box_Back_Color { get; set; } = Color.Black;
+
+
         [XmlIgnore]
         [Description("The default transparent grid color 1."), DisplayName("Default Image Backing 1")]
         public Color Default_Transparent_Grid_Color { get; set; } = Color.Gainsboro;
+
+
         [XmlIgnore]
         [Description("The default transparent grid color 2."), DisplayName("Default Image Backing 2")]
         public Color Default_Transparent_Grid_Color_Alternate { get; set; } = Color.White;
+
+
         [XmlIgnore]
         [Description("The current transparent grid color 1."), DisplayName("Current Image Backing 1")]
         public Color Current_Transparent_Grid_Color { get; set; } = Color.Gainsboro;
+
+
         [XmlIgnore]
         [Description("The current transparent grid color 2."), DisplayName("Current Image Backing 2")]
         public Color Current_Transparent_Grid_Color_Alternate { get; set; } = Color.White;
+
+
 
         [Browsable(false)]
         [XmlElement("Image_Box_Back_Color")]

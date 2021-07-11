@@ -44,7 +44,10 @@ namespace ImageViewer.Controls
 
                 if (isCurrentPage)
                 {
+                    changingImagePath = true;
+                    preventLoadImage = false;
                     LoadImage();
+                    changingImagePath = false;
                 }
             }
         }
@@ -97,6 +100,7 @@ namespace ImageViewer.Controls
         }
         private bool preventLoadImage = false;
         private bool imageCached = false;
+        private bool changingImagePath = false;
 
 
         public ImageBoxEx ibMain { get; private set; }
@@ -183,6 +187,9 @@ namespace ImageViewer.Controls
                 return;
             }
 
+            if (changingImagePath)
+                BitmapChangeTracker?.Dispose();
+            
             if(BitmapChangeTracker.CurrentBitmap == null)
                 BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(imagePath.FullName);
 

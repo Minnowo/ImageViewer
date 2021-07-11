@@ -561,6 +561,7 @@
             // 
             // tcMain
             // 
+            this.tcMain.AllowDrop = true;
             this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -575,6 +576,8 @@
             this.tcMain.Size = new System.Drawing.Size(797, 375);
             this.tcMain.TabIndex = 2;
             this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);
+            this.tcMain.DragDrop += new System.Windows.Forms.DragEventHandler(this.TabControl_DragDrop);
+            this.tcMain.DragEnter += new System.Windows.Forms.DragEventHandler(this.TabControl_DragEnter);
             // 
             // MainForm
             // 

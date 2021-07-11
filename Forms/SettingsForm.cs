@@ -25,6 +25,8 @@ namespace ImageViewer
             cbProfiles.SelectedItem = InternalSettings.CurrentUserSettings;
 
             pgMain.SelectedObject = InternalSettings.CurrentUserSettings;
+
+            FormClosing += SettingsForm_FormClosing;
         }
 
         private void cbProfiles_SelectedIndexChanged(object sender, EventArgs e)
@@ -56,6 +58,11 @@ namespace ImageViewer
             cbProfiles.Items.RemoveAt(indexToRemove);
 
             cbProfiles.SelectedIndex = 0;
+        }
+
+        private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SettingsLoader.Save();
         }
     }
 }

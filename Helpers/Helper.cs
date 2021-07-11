@@ -212,9 +212,22 @@ namespace ImageViewer.Helpers
                 return string.Empty;
 
             if (includeDot)
-                return "." + filePath.Substring(pos + 1).ToLower();
+                return "." + filePath.Substring(pos + 1).ToLowerInvariant().Trim();
 
-            return filePath.Substring(pos + 1).ToLower();
+            return filePath.Substring(pos + 1).ToLowerInvariant().Trim();
+        }
+
+        public static bool IsValidFilePath(string path)
+        {
+            try
+            {
+                new FileInfo(path);
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
         }
 
         /// <summary>

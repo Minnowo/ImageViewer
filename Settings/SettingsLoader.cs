@@ -19,7 +19,7 @@ namespace ImageViewer.Settings
         {
             int oldIndex = InternalSettings.SettingProfiles.FindIndex(p => p.ID == InternalSettings.CurrentUserSettings.ID);
 
-            if(oldIndex > -1)
+            if(oldIndex > 0)
                 Helper.Move(InternalSettings.SettingProfiles, oldIndex, 0); // put cur profile at 0 for loading 
 
             using (TextWriter writer = new StreamWriter(InternalSettings.User_Settings_Path))
@@ -49,7 +49,7 @@ namespace ImageViewer.Settings
                     InternalSettings.SettingProfiles.Add(InternalSettings.CurrentUserSettings);
 
                     Task.Run(() => {
-                        MessageBox.Show(null,
+                        MessageBox.Show(Program.mainForm,
                            InternalSettings.Error_Loading_Settings_Message,
                            InternalSettings.Error_Loading_Settings_Title,
                            MessageBoxButtons.OK,

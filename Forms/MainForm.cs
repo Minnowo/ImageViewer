@@ -21,6 +21,8 @@ namespace ImageViewer
         public const string TSMI_IMAGE_BACK_COLOR_2_NAME = "tsmiImageBackColor2";
 
         public FolderWatcher CurrentFolder;
+        public List<string> DragDropFiles = new List<string>();
+
         public _TabPage CurrentPage
         {
             get
@@ -48,6 +50,8 @@ namespace ImageViewer
         private _TabPage currentPage;
         
         private bool preventOverflow = false;
+        private bool isValidDrop = false;
+        private bool isMaximized = false;
 
         public MainForm(string[] args) : this()
         {
@@ -85,7 +89,6 @@ namespace ImageViewer
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageChanged += _TabPage_ImageChanged;
         }
-
 
         #region cmsFileBtn
         private void cmsFileBtn_Opening(object sender, CancelEventArgs e)
@@ -177,6 +180,9 @@ namespace ImageViewer
             // passing null will use the save file dialog, but won't save anything
             // so it can just be used to get the new path / name
             moveTo = ImageHelper.SaveImageFileDialog(null, currentPage.ImagePath.FullName);
+
+            if (string.IsNullOrEmpty(moveTo))
+                return;
 
             // delete any files with the new path name
             // since the user is using the file select dialog
@@ -709,6 +715,51 @@ namespace ImageViewer
 
         #region TabControlMain
 
+        private void TabControl_DragEnter(object sender, DragEventArgs e)
+        {
+            string[] data = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            if (data == null)
+            {
+                isValidDrop = false;
+                e.Effect = DragDropEffects.None;
+
+                string text = (string)e.Data.GetData(DataFormats.UnicodeText);
+
+                if (string.IsNullOrEmpty(text) || !Helper.IsValidFilePath(text) || !File.Exists(text))
+                    return;
+
+                data = new string[1] { text };
+            }
+
+            isValidDrop = true;
+            e.Effect = DragDropEffects.Move;
+
+            DragDropFiles.Clear();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (string.IsNullOrEmpty(data[i]) || !Helper.IsValidFilePath(data[i]) || !File.Exists(data[i]))
+                    continue;
+
+                DragDropFiles.Add(new FileInfo(data[i]).FullName);
+                Console.WriteLine(DragDropFiles[i]);
+            }
+        }
+
+        private void TabControl_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!isValidDrop || DragDropFiles.Count < 1)
+                return;
+
+            string[] files = DragDropFiles.ToArray();
+
+            DragDropFiles.Clear();
+            isValidDrop = false;
+
+            LoadItems(files);
+        }
+
         private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentPage = (_TabPage)tcMain.SelectedTab;
@@ -743,6 +794,8 @@ namespace ImageViewer
             switch (WindowState)
             {
                 case FormWindowState.Maximized:
+                    isMaximized = true;
+                    if (InternalSettings.Fit_Image_When_Maximized)
                         FitCurrentToScreen();
                     break;
 
@@ -750,7 +803,12 @@ namespace ImageViewer
                     break;
 
                 case FormWindowState.Normal:
+                    if(isMaximized && InternalSettings.Fit_Image_When_Unmaximized)
                         FitCurrentToScreen();
+                    else if (InternalSettings.Fit_Image_On_Resize)
+                        FitCurrentToScreen();
+
+                    isMaximized = false;
                     break;
             }
         }
@@ -1006,11 +1064,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            if (InternalSettings.Fit_Image_On_Resize)
-            {
-                currentPage.ibMain.ZoomToFit();
-                currentPage.ibMain.Invalidate();
-            }
+            currentPage.ibMain.ZoomToFit();
+            currentPage.ibMain.Invalidate();
         }
 
         public void UpdateCurrentPageTransparentBackColor()
@@ -1201,6 +1256,7 @@ namespace ImageViewer
                     break;
             }
         }
+
 
         #endregion
 

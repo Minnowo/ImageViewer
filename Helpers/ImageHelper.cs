@@ -52,31 +52,6 @@ namespace ImageViewer.Helpers
 
 
         /// <summary>
-        /// Get image format.
-        /// </summary>
-        /// <param name="fmt"> The image format to get the instance of. </param>
-        /// <returns> Gets the ImageFormat equivalent of the enum, null if the image format is not part of the built in class. </returns>
-        public static ImageFormat GetImageFormat(ImgFormat fmt)
-        {
-            switch (fmt)
-            {
-                default:
-                case ImgFormat.png:
-                    return ImageFormat.Png;
-                case ImgFormat.jpg:
-                    return ImageFormat.Jpeg;
-                case ImgFormat.bmp:
-                    return ImageFormat.Bmp;
-                case ImgFormat.gif:
-                    return ImageFormat.Gif;
-                case ImgFormat.tif:
-                    return ImageFormat.Tiff;
-                case ImgFormat.webp:
-                    return null;
-            }
-        }
-
-        /// <summary>
         /// Gets the image format from the file extension.
         /// </summary>
         /// <param name="filePath"> The path to the file. </param>
@@ -88,10 +63,9 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(ext))
                 return InternalSettings.Default_Image_Format;
 
-            switch (ext.Trim().ToLower())
+            switch (ext)
             {
                 case "png":
-                default:
                     return ImgFormat.png;
                 case "jpg":
                 case "jpeg":
@@ -108,6 +82,7 @@ namespace ImageViewer.Helpers
                 case "webp":
                     return ImgFormat.webp;
             }
+            return ImgFormat.nil;
         }
 
 
@@ -137,13 +112,13 @@ namespace ImageViewer.Helpers
                     switch (q.Format)
                     {
                         default:
-                        case WebpFormat.EncodeLossless:
+                        case WebpEncodingFormat.EncodeLossless:
                             rawWebP = webp.EncodeLossless(img, q.Speed);
                             break;
-                        case WebpFormat.EncodeNearLossless:
+                        case WebpEncodingFormat.EncodeNearLossless:
                             rawWebP = webp.EncodeNearLossless(img, q.Quality, q.Speed);
                             break;
-                        case WebpFormat.EncodeLossy:
+                        case WebpEncodingFormat.EncodeLossy:
                             rawWebP = webp.EncodeLossy(img, q.Quality, q.Speed);
                             break;
                     }
@@ -194,18 +169,29 @@ namespace ImageViewer.Helpers
                 return false;
 
             PathHelper.CreateDirectoryFromFilePath(filePath);
-            ImageFormat imageFormat = GetImageFormat(GetImageFormat(filePath));
-
+            Program.mainForm.UseWaitCursor = true;
             try
             {
-                if (imageFormat == null)
+                switch (GetImageFormat(filePath))
                 {
-                    return SaveWebp(img, filePath, WebPQuality.empty);
-                }
-                else
-                {
-                    img.Save(filePath, imageFormat);
-                    return true;
+                    default:
+                    case ImgFormat.png:
+                        img.Save(filePath, ImageFormat.Png);
+                        return true;
+                    case ImgFormat.jpg:
+                        img.Save(filePath, ImageFormat.Jpeg);
+                        return true;
+                    case ImgFormat.bmp:
+                        img.Save(filePath, ImageFormat.Bmp);
+                        return true;
+                    case ImgFormat.gif:
+                        img.Save(filePath, ImageFormat.Gif);
+                        return true;
+                    case ImgFormat.tif:
+                        img.Save(filePath, ImageFormat.Tiff);
+                        return true;
+                    case ImgFormat.webp:
+                        return SaveWebp(img, filePath, InternalSettings.WebpQuality_Default);
                 }
             }
             catch (Exception e)
@@ -215,6 +201,7 @@ namespace ImageViewer.Helpers
             }
             finally
             {
+                Program.mainForm.UseWaitCursor = false;
                 if (collectGarbage)
                 {
                     GC.Collect();
@@ -255,32 +242,34 @@ namespace ImageViewer.Helpers
                 {
                     sfd.FileName = Path.GetFileName(filePath);
 
-                    string ext = Helper.GetFilenameExtension(filePath);
+                    ImgFormat fmt = GetImageFormat(filePath);
 
-                    if (!string.IsNullOrEmpty(ext))
+                    if (fmt != ImgFormat.nil)
                     {
-                        ext = ext.ToLowerInvariant();
-
-                        switch (ext)
+                        switch (fmt)
                         {
-                            case "png":
+                            case ImgFormat.png:
                                 sfd.FilterIndex = 1;
                                 break;
-                            case "jpg":
-                            case "jpeg":
-                            case "jpe":
-                            case "jfif":
+                            case ImgFormat.jpg:
                                 sfd.FilterIndex = 2;
                                 break;
-                            case "gif":
+                            case ImgFormat.gif:
                                 sfd.FilterIndex = 3;
                                 break;
-                            case "bmp":
+                            case ImgFormat.bmp:
                                 sfd.FilterIndex = 4;
                                 break;
-                            case "tif":
-                            case "tiff":
+                            case ImgFormat.tif:
                                 sfd.FilterIndex = 5;
+                                break;
+                            case ImgFormat.webp:
+                                if (InternalSettings.WebP_Plugin_Exists)
+                                {
+                                    sfd.FilterIndex = 6;
+                                    break;
+                                }
+                                sfd.FilterIndex = 1;
                                 break;
                         }
                     }
@@ -304,7 +293,7 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="path"> The path to the image. </param>
         /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
-        public static Bitmap LoadWebP(string path)
+        public static Bitmap LoadWebP(string path, bool supressError = false)
         {
             if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
@@ -316,6 +305,8 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
+                if (supressError)
+                    return null;
                 e.ShowError();
             }
             return null;
@@ -342,7 +333,7 @@ namespace ImageViewer.Helpers
             {
                 // in case the file doesn't have proper extension there is no harm in trying to load as webp
                 Bitmap tryLoadWebP;
-                if ((tryLoadWebP = LoadWebP(path)) != null)
+                if ((tryLoadWebP = LoadWebP(path, true)) != null)
                     return tryLoadWebP;
 
                 e.ShowError();

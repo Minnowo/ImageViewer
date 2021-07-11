@@ -35,7 +35,7 @@ namespace ImageViewer.Helpers
 
             for(int i = 0; i < newA.Count; i++)
             {
-                if (!File.Exists(newA[i]))
+                if (!Helper.IsValidFilePath(newA[i]) || !File.Exists(newA[i]))
                     newA.RemoveAt(i);
                 else
                     newA[i] = new FileInfo(newA[i]).FullName; // force absolute paths
@@ -112,7 +112,7 @@ namespace ImageViewer.Helpers
 
         public static void ShowError(this Exception e)
         {
-            MessageBox.Show(null ,e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(Program.mainForm ,e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }        
 
         public static void ShowFullScreen(this Control ctl)

@@ -68,7 +68,8 @@ namespace ImageViewer.Helpers
         tif,
         bmp,
         gif,
-        webp
+        webp,
+        nil
     }
 
     public enum ColorSpace

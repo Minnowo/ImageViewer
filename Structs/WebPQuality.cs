@@ -12,22 +12,46 @@ using ImageViewer.Misc;
 
 namespace ImageViewer.structs
 {
-    public enum WebpFormat
+    public enum WebpEncodingFormat
     {
         EncodeLossless,
-        EncodeLossy,
-        EncodeNearLossless
+        EncodeNearLossless,
+        EncodeLossy
     }
 
-    
 
     [TypeConverter(typeof(ValueTypeTypeConverter))]
     public struct WebPQuality
     {
         public static readonly WebPQuality empty;
 
-        public WebpFormat Format { get; set; }
+        /// <summary>
+        /// The encoding format of the webp.
+        /// </summary>
+        [Description("The encoding format."), DisplayName("Encoding Format")]
+        public WebpEncodingFormat Format { get; set; }
 
+        /// <summary>
+        /// Between 0 (lower quality, lowest file size) and 100 (highest quality, higher file size)
+        /// </summary>
+        [Description("The quality level."), DisplayName("Quality 0 - 100")]
+        public int Quality
+        {
+            get
+            {
+                return quality;
+            }
+            set
+            {
+                quality = value.Clamp(0, 100);
+            }
+        }
+        private int quality;
+
+        /// <summary>
+        /// Between 0 (fastest, lowest compression) and 9 (slower, best compression)
+        /// </summary>
+        [Description("The speed."), DisplayName("Speed 0 - 9 (fast - slow)")]
         public int Speed
         {
             get
@@ -39,22 +63,9 @@ namespace ImageViewer.structs
                 speed = value.Clamp(0, 9);
             }
         }
-
         private int speed;
-        public int Quality
-        {
-            get
-            {
-                return quality;
-            }
-            set
-            {
-                quality = value.Clamp(1, 100);
-            }
-        }
-        private int quality;
 
-        public WebPQuality(WebpFormat fmt, int quality, int speed) : this()
+        public WebPQuality(WebpEncodingFormat fmt, int quality, int speed) : this()
         {
             Format = fmt;
             Speed = speed;
@@ -78,7 +89,7 @@ namespace ImageViewer.structs
 
         public static WebPQuality FromDecimal(int dec)
         {
-            return new WebPQuality((WebpFormat)((dec >> 16) & 0xFF).Clamp(0,2), (dec >> 8) & 0xFF, dec & 0xFF);
+            return new WebPQuality((WebpEncodingFormat)((dec >> 16) & 0xFF).Clamp(0,2), (dec >> 8) & 0xFF, dec & 0xFF);
         }
 
         public override int GetHashCode()
