@@ -1,24 +1,32 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ImageViewer.Helpers;
+using ImageViewer.Settings;
+using ImageViewer.Misc;
 
 namespace ImageViewer.structs
 {
-    public enum Format
+    public enum WebpFormat
     {
         EncodeLossless,
         EncodeLossy,
         EncodeNearLossless
     }
 
+    
+
+    [TypeConverter(typeof(ValueTypeTypeConverter))]
     public struct WebPQuality
     {
         public static readonly WebPQuality empty;
 
-        public Format Format;
+        public WebpFormat Format { get; set; }
 
         public int Speed
         {
@@ -46,7 +54,7 @@ namespace ImageViewer.structs
         }
         private int quality;
 
-        public WebPQuality(Format fmt, int quality, int speed) : this()
+        public WebPQuality(WebpFormat fmt, int quality, int speed) : this()
         {
             Format = fmt;
             Speed = speed;
@@ -70,7 +78,7 @@ namespace ImageViewer.structs
 
         public static WebPQuality FromDecimal(int dec)
         {
-            return new WebPQuality((Format)((dec >> 16) & 0xFF).Clamp(0,2), (dec >> 8) & 0xFF, dec & 0xFF);
+            return new WebPQuality((WebpFormat)((dec >> 16) & 0xFF).Clamp(0,2), (dec >> 8) & 0xFF, dec & 0xFF);
         }
 
         public override int GetHashCode()
@@ -81,6 +89,11 @@ namespace ImageViewer.structs
         public override bool Equals(object obj)
         {
             return base.Equals(obj);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}", Format, quality, speed);
         }
     }
 }

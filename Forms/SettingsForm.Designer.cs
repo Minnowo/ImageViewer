@@ -30,9 +30,7 @@
         {
             this.pgMain = new System.Windows.Forms.PropertyGrid();
             this.cbProfiles = new System.Windows.Forms.ComboBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -43,10 +41,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pgMain.HelpVisible = false;
-            this.pgMain.Location = new System.Drawing.Point(12, 101);
+            this.pgMain.Location = new System.Drawing.Point(12, 60);
             this.pgMain.Name = "pgMain";
             this.pgMain.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.pgMain.Size = new System.Drawing.Size(364, 337);
+            this.pgMain.Size = new System.Drawing.Size(364, 378);
             this.pgMain.TabIndex = 0;
             this.pgMain.ToolbarVisible = false;
             // 
@@ -54,43 +52,24 @@
             // 
             this.cbProfiles.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbProfiles.FormattingEnabled = true;
-            this.cbProfiles.Location = new System.Drawing.Point(175, 32);
+            this.cbProfiles.Location = new System.Drawing.Point(13, 33);
             this.cbProfiles.Name = "cbProfiles";
             this.cbProfiles.Size = new System.Drawing.Size(198, 21);
             this.cbProfiles.TabIndex = 1;
             this.cbProfiles.SelectedIndexChanged += new System.EventHandler(this.cbProfiles_SelectedIndexChanged);
             // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 16);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(124, 17);
-            this.checkBox1.TabIndex = 2;
-            this.checkBox1.Text = "Use Custom Settings";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(334, 16);
+            this.label1.Location = new System.Drawing.Point(12, 17);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(39, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Profile:";
             // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(175, 60);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 5;
-            this.button2.Text = "Reset";
-            this.button2.UseVisualStyleBackColor = true;
-            // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(94, 60);
+            this.button3.Location = new System.Drawing.Point(301, 31);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 23);
             this.button3.TabIndex = 6;
@@ -100,7 +79,7 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(13, 60);
+            this.button4.Location = new System.Drawing.Point(217, 31);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(75, 23);
             this.button4.TabIndex = 7;
@@ -115,9 +94,7 @@
             this.ClientSize = new System.Drawing.Size(388, 450);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.cbProfiles);
             this.Controls.Add(this.pgMain);
             this.Name = "SettingsForm";
@@ -131,9 +108,7 @@
 
         private System.Windows.Forms.PropertyGrid pgMain;
         private System.Windows.Forms.ComboBox cbProfiles;
-        private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
     }

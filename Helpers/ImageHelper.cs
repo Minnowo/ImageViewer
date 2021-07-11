@@ -137,13 +137,13 @@ namespace ImageViewer.Helpers
                     switch (q.Format)
                     {
                         default:
-                        case Format.EncodeLossless:
+                        case WebpFormat.EncodeLossless:
                             rawWebP = webp.EncodeLossless(img, q.Speed);
                             break;
-                        case Format.EncodeNearLossless:
+                        case WebpFormat.EncodeNearLossless:
                             rawWebP = webp.EncodeNearLossless(img, q.Quality, q.Speed);
                             break;
-                        case Format.EncodeLossy:
+                        case WebpFormat.EncodeLossy:
                             rawWebP = webp.EncodeLossy(img, q.Quality, q.Speed);
                             break;
                     }
