@@ -1298,7 +1298,7 @@ namespace ImageViewer.Helpers
                 // the next value is the size of all the data in the FORM chunk
                 // We don't actually need this value, but we have to read it
                 // regardless to advance the stream
-                Helper.ReadInt(stream);
+                Helper.ReadInt32(stream);
 
                 // read either the PBM or ILBM header that identifies this document as an image file
                 stream.Read(buffer, 0, buffer.Length);
@@ -1310,7 +1310,7 @@ namespace ImageViewer.Helpers
                 {
                     int chunkLength;
 
-                    chunkLength = Helper.ReadInt(stream);
+                    chunkLength = Helper.ReadInt32(stream);
 
                     if (Encoding.ASCII.GetString(buffer) != "CMAP")
                     {

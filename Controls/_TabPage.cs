@@ -189,15 +189,15 @@ namespace ImageViewer.Controls
             ibMain.Image = BitmapChangeTracker.CurrentBitmap;
             //BitmapChangeTracker.UpdateBitmapReferance((Bitmap)ibMain.Image);
 
-            if (InternalSettings.Fill_Transparent)
-            {
-                ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
-                ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
-            }
-            else
+            if(InternalSettings.Show_Default_Transparent_Colors)
             {
                 ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
                 ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+            }
+            else
+            {
+                ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+                ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
             }
 
             ImageShown = true;

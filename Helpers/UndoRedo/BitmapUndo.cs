@@ -169,20 +169,21 @@ namespace ImageViewer.Helpers.UndoRedo
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    bmp = bitmapRedoHistoryData.Pop();
-                    bitmapUndoHistoryData.Push(bmp);
-                    
-                    if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
+                    using (bmp = bitmapRedoHistoryData.Pop())
                     {
-                        Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)CurrentBitmap);
-                        ReplaceBitmap(newBmp);
-                        OnUpdateReferences();
-                        OnRedo(change);
-                        return;
-                    }
+                        bitmapUndoHistoryData.Push(CurrentBitmap.CloneSafe());
 
-                    ImageHelper.UpdateBitmap(CurrentBitmap, bmp);
-                    
+                        if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
+                        {
+                            Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)CurrentBitmap);
+                            ReplaceBitmap(newBmp);
+                            OnUpdateReferences();
+                            OnRedo(change);
+                            return;
+                        }
+
+                        ImageHelper.UpdateBitmap(CurrentBitmap, bmp);
+                    }
                     break;
 
                 // changes are easily undone and do not need to be kept in memory
@@ -258,20 +259,21 @@ namespace ImageViewer.Helpers.UndoRedo
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    bmp = bitmapUndoHistoryData.Pop();
-                    bitmapRedoHistoryData.Push(bmp);
+                    using (bmp = bitmapUndoHistoryData.Pop())
+                    {
+                        bitmapRedoHistoryData.Push(CurrentBitmap.CloneSafe());
 
-                    if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
-                    {   // can't update a gif using pointers so we need to update the references
-                        Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)CurrentBitmap);
-                        ReplaceBitmap(newBmp);
-                        OnUpdateReferences();
-                        OnUndo(change);
-                        return;
+                        if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
+                        {   // can't update a gif using pointers so we need to update the references
+                            Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)CurrentBitmap);
+                            ReplaceBitmap(newBmp);
+                            OnUpdateReferences();
+                            OnUndo(change);
+                            return;
+                        }
+
+                        ImageHelper.UpdateBitmap(CurrentBitmap, bmp);
                     }
-
-                    ImageHelper.UpdateBitmap(CurrentBitmap, bmp);
-                    
                     break;
 
                 // changes are easily undone and do not need to be kept in memory

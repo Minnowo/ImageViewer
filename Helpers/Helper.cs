@@ -20,8 +20,7 @@ namespace ImageViewer.Helpers
         public const float PixelPerCm = 37.8f;
 
         public static readonly Version OSVersion = Environment.OSVersion.Version;
-        public static readonly string[] SizeSuffixes =
-                   { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        public static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
         public static bool IsElevated
         {
@@ -31,9 +30,14 @@ namespace ImageViewer.Helpers
             }
         }
 
+        /// <summary>
+        /// Returns a file name that does not exist.
+        /// </summary>
+        /// <param name="dir">The directory of the file.</param>
+        /// <returns></returns>
         public static string GetNewFileName(string dir = "")
         {
-            string fileFormat = ImageHelper.DEFAULT_IMAGE_FORMAT.ToString().ToLower();
+            string fileFormat = InternalSettings.Default_Image_Format.ToString().ToLower();
 
             if (fileFormat == "jpeg") 
                 fileFormat = "jpg";
@@ -55,13 +59,21 @@ namespace ImageViewer.Helpers
             // would be really surprised if this code ever runs tbh
             while (true)
             {
-                string fileName = string.Format(@"{0}", Guid.NewGuid()) + "." + fileFormat;
+                string fileName = string.Format(@"{0}.{1}", Guid.NewGuid(), fileFormat);
 
                 if (!File.Exists(fileName))
                     return fileName;
             }
         }
 
+        /// <summary>
+        /// Asks the user to pick a file using the all files dialog filter.
+        /// </summary>
+        /// <param name="initialDir">The directory to start in.</param>
+        /// <param name="form">The form to parent the dialog.</param>
+        /// <param name="DialogFilter">Custom dialog filter.</param>
+        /// <param name="multiSelect">Allow multi select.</param>
+        /// <returns></returns>
         public static string[] AskOpenFile(string initialDir="", Form form =null, string DialogFilter = InternalSettings.All_Files_File_Dialog, bool multiSelect = false)
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
@@ -84,6 +96,12 @@ namespace ImageViewer.Helpers
             return null;
         }
 
+        /// <summary>
+        /// Read a string from the given stream.
+        /// </summary>
+        /// <param name="stream">The stream to read the data from.</param>
+        /// <param name="length">The length of the string</param>
+        /// <returns></returns>
         public static string ReadString(Stream stream, int length)
         {
             // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
@@ -96,16 +114,6 @@ namespace ImageViewer.Helpers
             return Encoding.BigEndianUnicode.GetString(buffer);
         }
 
-        /// <summary>
-        /// Reads a 32bit unsigned integer in big-endian format.
-        /// </summary>
-        /// <param name="stream">The stream to read the data from.</param>
-        /// <returns>The unsigned 32bit integer cast to an <c>Int32</c>.</returns>
-        public static int ReadInt32(Stream stream)
-        {
-            // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
-            return ((byte)stream.ReadByte() << 24) | ((byte)stream.ReadByte() << 16) | ((byte)stream.ReadByte() << 8) | ((byte)stream.ReadByte() << 0);
-        }
 
         /// <summary>
         /// Reads a 16bit unsigned integer in big-endian format.
@@ -118,7 +126,12 @@ namespace ImageViewer.Helpers
             return (stream.ReadByte() << 8) | (stream.ReadByte() << 0);
         }
 
-        public static int ReadInt(Stream stream)
+        /// <summary>
+        /// Reads a 32bit unsigned integer in big-endian format.
+        /// </summary>
+        /// <param name="stream">The stream to read the data from.</param>
+        /// <returns>The unsigned 32bit integer cast to an <c>Int32</c>.</returns>
+        public static int ReadInt32(Stream stream)
         {
             byte[] buffer;
 
@@ -130,12 +143,22 @@ namespace ImageViewer.Helpers
             return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
         }
 
-        public static bool ValidSize(Size s)
+        /// <summary>
+        /// Checks if the given size is valid.
+        /// </summary>
+        /// <param name="size">The size to check.</param>
+        /// <returns></returns>
+        public static bool ValidSize(Size size)
         {
-            return (s.Width > 0 && s.Height > 0);
+            return (size.Width > 0 && size.Height > 0);
         }
 
-
+        /// <summary>
+        /// Convert the given bytes to the proper size suffix. (MB, KB, GB)
+        /// </summary>
+        /// <param name="value">The bytes.</param>
+        /// <param name="decimalPlaces">Number of decimal places.</param>
+        /// <returns></returns>
         public static string SizeSuffix(Int64 value, int decimalPlaces = 1)
         {
             if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException("decimalPlaces"); }
@@ -157,38 +180,48 @@ namespace ImageViewer.Helpers
                 adjustedSize /= 1024;
             }
 
-            return string.Format("{0:n" + decimalPlaces + "} {1}",
+            return string.Format(
+                "{0:n" + decimalPlaces + "} {1}",
                 adjustedSize,
                 SizeSuffixes[mag]);
         }
 
+        /// <summary>
+        /// Checks if the current OS version is windows vista or greator.
+        /// </summary>
+        /// <returns></returns>
         public static bool IsWindowsVistaOrGreater()
         {
             return OSVersion.Major >= 6;
         }
 
+        /// <summary>
+        /// Gets the file extension from the given string.
+        /// </summary>
+        /// <param name="filePath">The string.</param>
+        /// <param name="includeDot">To include the dot with the file name.</param>
+        /// <returns></returns>
         public static string GetFilenameExtension(string filePath, bool includeDot = false)
         {
-            string extension = "";
+            if (string.IsNullOrEmpty(filePath))
+                return string.Empty;
 
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                int pos = filePath.LastIndexOf('.');
+            int pos = filePath.LastIndexOf('.');
 
-                if (pos >= 0)
-                {
-                    extension = filePath.Substring(pos + 1);
+            if (pos < 0)
+                return string.Empty;
 
-                    if (includeDot)
-                    {
-                        extension = "." + extension;
-                    }
-                }
-            }
+            if (includeDot)
+                return "." + filePath.Substring(pos + 1).ToLower();
 
-            return extension.ToLower();
+            return filePath.Substring(pos + 1).ToLower();
         }
 
+        /// <summary>
+        /// Opens explorer at the given file or directory.
+        /// </summary>
+        /// <param name="path">The path to open.</param>
+        /// <returns></returns>
         public static bool OpenExplorerAtLocation(string path)
         {
             if (File.Exists(path))
@@ -210,11 +243,22 @@ namespace ImageViewer.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Removes file attribute from the given file attributes.
+        /// </summary>
+        /// <param name="attributes">The attribute to remove from.</param>
+        /// <param name="attributesToRemove">The attribute to remove.</param>
+        /// <returns></returns>
         public static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
         {
             return attributes & ~attributesToRemove;
         }
 
+        /// <summary>
+        /// Convert the given byte[] to a string[] of hex.
+        /// </summary>
+        /// <param name="bytes">The given byte[].</param>
+        /// <returns></returns>
         public static string[] BytesToHexadecimal(byte[] bytes)
         {
             string[] result = new string[bytes.Length];
@@ -227,103 +271,34 @@ namespace ImageViewer.Helpers
             return result;
         }
 
-        public static string ColorArrayToString(Color[] input)
+        public static void Move<T>(List<T> list, int oldIndex, int newIndex)
         {
-            StringBuilder sb = new StringBuilder();
+            var item = list[oldIndex];
 
-            foreach (Color c in input)
-            {
-                sb.Append(c.ToString() + " | ");
-            }
-            return sb.ToString();
+            list.RemoveAt(oldIndex);
+
+            if (newIndex > oldIndex)
+                newIndex--;
+
+            list.Insert(newIndex, item);
         }
-        public class HashCheck
+
+        public static void Move<T>(List<T> list, T item, int newIndex)
         {
-            public bool isRunning { get; private set; } = false;
-
-            private CancellationTokenSource cts;
-
-            public async Task<string> Start(string filePath, HashType hashType)
+            if (item != null)
             {
-                string result = null;
-
-                if (!isRunning && !string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                var oldIndex = list.IndexOf(item);
+                if (oldIndex > -1)
                 {
-                    isRunning = true;
+                    list.RemoveAt(oldIndex);
 
-                    cts = new CancellationTokenSource();
-                    result = await Task.Run(() =>
-                    {
-                        try
-                        {
-                            return HashCheckThread(filePath, hashType, cts.Token);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                        }
+                    if (newIndex > oldIndex)
+                        newIndex--;
 
-                        return null;
-                    }, cts.Token);
-
-                    isRunning = false;
-                }
-
-                return result;
-            }
-
-            public void Stop()
-            {
-                if (cts != null)
-                {
-                    cts.Cancel();
+                    list.Insert(newIndex, item);
                 }
             }
 
-            private string HashCheckThread(string filePath, HashType hashType, CancellationToken ct)
-            {
-                using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (HashAlgorithm hash = GetHashType(hashType))
-                using (CryptoStream cs = new CryptoStream(stream, hash, CryptoStreamMode.Read))
-                {
-                    long bytesRead, totalRead = 0;
-                    byte[] buffer = new byte[8192];
-
-                    while ((bytesRead = cs.Read(buffer, 0, buffer.Length)) > 0 && !ct.IsCancellationRequested)
-                    {
-                        totalRead += bytesRead;
-                    }
-
-                    if (ct.IsCancellationRequested)
-                    {
-                        ct.ThrowIfCancellationRequested();
-                    }
-                    else
-                    {
-                        string[] hex = BytesToHexadecimal(hash.Hash);
-                        return string.Concat(hex);
-                    }
-                }
-
-                return null;
-            }
-
-            public HashAlgorithm GetHashType(HashType type)
-            {
-                switch (type)
-                {
-                    case HashType.MD5:
-                        return new MD5CryptoServiceProvider();
-                    case HashType.SHA1:
-                        return new SHA1CryptoServiceProvider();
-                    case HashType.SHA256:
-                        return new SHA256CryptoServiceProvider();
-                    case HashType.SHA384:
-                        return new SHA384CryptoServiceProvider();
-                    case HashType.SHA512:
-                        return new SHA512CryptoServiceProvider();
-                }
-                return null;
-            }
         }
     }
 }

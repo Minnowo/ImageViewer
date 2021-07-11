@@ -260,7 +260,7 @@ namespace ImageViewer
                         totalFrames = g.Count;
                         for (int i = 0; i < g.Count; i++)
                         {
-                            if (ImageHelper.SaveImage(g[i], string.Format("{0}\\{1}.{2}", dir, i, ImageHelper.DEFAULT_IMAGE_FORMAT), false))
+                            if (ImageHelper.SaveImage(g[i], string.Format("{0}\\{1}.{2}", dir, i, InternalSettings.Default_Image_Format), false))
                                 framesSaved++;
                         }
                     }
@@ -366,7 +366,8 @@ namespace ImageViewer
                 f.Owner = this;
                 f.TopMost = true;
                 f.StartPosition = FormStartPosition.CenterScreen;
-                f.LocationChanged += ParentFollowChild;
+                if (InternalSettings.Parent_Follow_Child) 
+                    f.LocationChanged += ParentFollowChild;
                 f.ShowDialog();
 
                 ResizeImageFormReturn r = f.GetReturnSize();
@@ -471,7 +472,8 @@ namespace ImageViewer
                 f.Owner = this;
                 f.TopMost = true;
                 f.StartPosition = FormStartPosition.CenterScreen;
-                f.LocationChanged += ParentFollowChild;
+                if (InternalSettings.Parent_Follow_Child) 
+                    f.LocationChanged += ParentFollowChild;
 
                 f.ShowDialog();
 
@@ -500,7 +502,9 @@ namespace ImageViewer
                 df.Owner = this;
                 df.TopMost = true;
                 df.StartPosition = FormStartPosition.CenterScreen;
-                df.LocationChanged += ParentFollowChild;
+
+                if(InternalSettings.Parent_Follow_Child)
+                    df.LocationChanged += ParentFollowChild;
 
                 df.ShowDialog();
 
@@ -564,9 +568,6 @@ namespace ImageViewer
 
         private void ImageBackingColors_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
             ToolStripMenuItem btn = sender as ToolStripMenuItem;
 
             if (btn == null)
@@ -575,11 +576,11 @@ namespace ImageViewer
             switch (btn.Name)
             {
                 case TSMI_IMAGE_BACK_COLOR_1_NAME:
-                    InternalSettings.Current_Transparent_Grid_Color = AskChooseColor(currentPage.ibMain.GridColor);
+                    InternalSettings.Current_Transparent_Grid_Color = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color);
                     break;
 
                 case TSMI_IMAGE_BACK_COLOR_2_NAME:
-                    InternalSettings.Current_Transparent_Grid_Color_Alternate = AskChooseColor(currentPage.ibMain.GridColorAlternate);
+                    InternalSettings.Current_Transparent_Grid_Color_Alternate = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color_Alternate);
                     break;
             }
 
@@ -645,6 +646,17 @@ namespace ImageViewer
         private void tsbMain_View_MouseUp(object sender, MouseEventArgs e)
         {
             cmsViewBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_View.Name)));
+        }
+
+        private void Settings_Click(object sender, EventArgs e)
+        {
+            SettingsForm f = new SettingsForm();
+            f.Owner = this;
+            f.TopMost = true;
+            f.StartPosition = FormStartPosition.CenterScreen;
+            if (InternalSettings.Parent_Follow_Child)
+                f.LocationChanged += ParentFollowChild;
+            f.ShowDialog();
         }
 
         private void tsbMain_Settings_MouseUp(object sender, MouseEventArgs e)
@@ -856,7 +868,8 @@ namespace ImageViewer
                 f.Owner = this;
                 f.TopMost = true;
                 f.StartPosition = FormStartPosition.CenterScreen;
-                f.LocationChanged += ParentFollowChild;
+                if (InternalSettings.Parent_Follow_Child) 
+                    f.LocationChanged += ParentFollowChild;
 
                 f.UpdateColors(c);
                 f.ShowDialog();
@@ -1190,5 +1203,7 @@ namespace ImageViewer
         }
 
         #endregion
+
+        
     }
 }

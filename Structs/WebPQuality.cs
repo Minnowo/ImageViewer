@@ -63,6 +63,16 @@ namespace ImageViewer.structs
             return !(left == right);
         }
 
+        public int ToDecimal()
+        {
+            return (int)Format << 16 | quality << 8 | Speed;
+        }
+
+        public static WebPQuality FromDecimal(int dec)
+        {
+            return new WebPQuality((Format)((dec >> 16) & 0xFF).Clamp(0,2), (dec >> 8) & 0xFF, dec & 0xFF);
+        }
+
         public override int GetHashCode()
         {
             return base.GetHashCode();

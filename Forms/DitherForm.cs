@@ -59,15 +59,15 @@ namespace ImageViewer
             ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
             ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
 
-            if (InternalSettings.Fill_Transparent)
-            {
-                ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
-                ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
-            }
-            else
+            if (InternalSettings.Show_Default_Transparent_Colors)
             {
                 ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
                 ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+            }
+            else
+            {
+                ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+                ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
             }
 
             backgroundWorker.WorkerSupportsCancellation = true;

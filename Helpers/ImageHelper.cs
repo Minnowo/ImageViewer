@@ -13,9 +13,6 @@ namespace ImageViewer.Helpers
 {
     public static class ImageHelper
     {
-        public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
-
-
         /// <summary>
 		/// A value from 0-1 which is used to convert a color to grayscale.
 		/// <para>Default: 0.3</para>
@@ -89,7 +86,7 @@ namespace ImageViewer.Helpers
             string ext = Helper.GetFilenameExtension(filePath);
 
             if (string.IsNullOrEmpty(ext))
-                return DEFAULT_IMAGE_FORMAT;
+                return InternalSettings.Default_Image_Format;
 
             switch (ext.Trim().ToLower())
             {

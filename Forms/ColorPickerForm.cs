@@ -143,5 +143,42 @@ namespace ImageViewer
         {
             Close();
         }
+
+        private void HexValue_Changed(object sender, EventArgs e)
+        {
+            if (preventOverflow)
+                return;
+
+            preventOverflow = true;
+            try
+            {
+                UpdateColors(ColorHelper.HexToColor(tb_HexInput.Text));
+            }
+            catch
+            {
+
+            }
+            preventOverflow = false;
+        }
+
+        private void DecimalValue_Changed(object sender, EventArgs e)
+        {
+            if (preventOverflow)
+                return;
+
+            preventOverflow = true;
+            try
+            {
+                if (int.TryParse(tb_DecimalInput.Text, out int dec))
+                {
+                    UpdateColors(ColorHelper.DecimalToColor(dec));
+                }
+            }
+            catch
+            {
+
+            }
+            preventOverflow = false;
+        }
     }
 }

@@ -7,14 +7,18 @@ using System.Drawing;
 using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.structs;
+using System.Xml.Serialization;
+using System.ComponentModel;
 
 namespace ImageViewer.Settings
 {
     public static class InternalSettings
     {
-        public static string FolderSelectDialog_Title_Select_a_folder = "Select a folder";
+        public const string User_Settings_Path = "usrConfig.xml";
 
         public const string All_Files_File_Dialog = "All Files (*.*)|*.";
+        public static string FolderSelectDialog_Title_Select_a_folder = "Select a folder";
+
 
         public static string Color_Palette_File_Dialog = "Color Palettes (*.aco, *.lbm, *bbm, *.txt)|*.aco;*lbm;*bbm;*.txt| ACO (*.aco)|*.aco| LBM (*.lbm)|*.lbm| BBM (*.bmm)|*.bbm| TXT (*.txt)|*.txt";
 
@@ -28,26 +32,29 @@ namespace ImageViewer.Settings
 
         #region message box 
 
-        public static string Delete_Item_Messagebox_Title = "Delete Item?";
-        public static string Delete_Item_Messagebox_Message = "Are you sure you would like to delete this item: ";
+        public const string Delete_Item_Messagebox_Title = "Delete Item?";
+        public const string Delete_Item_Messagebox_Message = "Are you sure you would like to delete this item: ";
 
-        public static string Item_Does_Not_Exist_Title = "Item not found";
-        public static string Item_Does_Not_Exist_Message = "This item does not exist";
+        public const string Item_Does_Not_Exist_Title = "Item not found";
+        public const string Item_Does_Not_Exist_Message = "This item does not exist";
 
-        public static string Invalid_Size_Messagebox_Title = "Invalid image size";
-        public static string Invalid_Size_Messagebox_Message = "The image size is not valid";
+        public const string Invalid_Size_Messagebox_Title = "Invalid image size";
+        public const string Invalid_Size_Messagebox_Message = "The image size is not valid";
 
-        public static string Unable_To_Invert_Image_Title = "Unable to invert colors.";
-        public static string Unable_To_Invert_Image_Message = "There was an error when trying to invert the colors of this image, most likely the pixel format is not 32bppArgb.";
+        public const string Unable_To_Invert_Image_Title = "Unable to invert colors.";
+        public const string Unable_To_Invert_Image_Message = "There was an error when trying to invert the colors of this image, most likely the pixel format is not 32bppArgb.";
 
-        public static string Unable_To_Convert_To_Grey_Image_Title = "Unable to convert to grey.";
-        public static string Unable_To_Convert_To_Grey_Image_Message = "There was an error when trying to convert to grey, most likely the pixel format is not 32bppArgb.";
+        public const string Unable_To_Convert_To_Grey_Image_Title = "Unable to convert to grey.";
+        public const string Unable_To_Convert_To_Grey_Image_Message = "There was an error when trying to convert to grey, most likely the pixel format is not 32bppArgb.";
 
-        public static string Unable_To_Convert_To_Fill_Transparent_Title = "Unable to fill transparent pixels.";
-        public static string Unable_To_Convert_To_Fill_Transparent_Message = "There was an error when trying to fill transparent pixels, most likely the pixel format is not 32bppArgb.";
+        public const string Unable_To_Convert_To_Fill_Transparent_Title = "Unable to fill transparent pixels.";
+        public const string Unable_To_Convert_To_Fill_Transparent_Message = "There was an error when trying to fill transparent pixels, most likely the pixel format is not 32bppArgb.";
 
-        public static string No_Animation_Frames_Found_Title = "No animation frames found.";
-        public static string No_Animation_Frames_Found_Message = "Unable to detect any animation frames to export.";
+        public const string No_Animation_Frames_Found_Title = "No animation frames found.";
+        public const string No_Animation_Frames_Found_Message = "Unable to detect any animation frames to export.";
+
+        public const string Error_Loading_Settings_Title = "Unable to load settings";
+        public const string Error_Loading_Settings_Message = "There was an error trying to load the settings, the file will be deleted / overwritten when the program exits";
 
         #endregion
 
@@ -87,57 +94,293 @@ namespace ImageViewer.Settings
         }
         private static int fill_Alpha_Less_Than = 128;
 
-        public static Color Image_Box_Back_Color = Color.Black; // going to be removed
-        public static Color Fill_Transparent_Color = Color.White;
-
-        public static Color Default_Transparent_Grid_Color = Color.Gainsboro;
-        public static Color Default_Transparent_Grid_Color_Alternate = Color.White;
-
-        public static Color Current_Transparent_Grid_Color = Color.Gainsboro;
-        public static Color Current_Transparent_Grid_Color_Alternate = Color.White;
-
+        public static Color Image_Box_Back_Color { get; set; } = Color.Black;
         public static Size TSMI_Generated_Icon_Size = new Size(16, 16);
 
-        public static WebPQuality WebpQuality_Default = new WebPQuality(Format.EncodeLossy, 74, 6);
+        public static ImgFormat Default_Image_Format
+        {
+            get { return CurrentUserSettings.Default_Image_Format; }
+            set { CurrentUserSettings.Default_Image_Format = value; }
+        }
 
-        public static bool Show_Default_Transparent_Colors = false;
-        public static bool Only_Show_Transparent_Color_1 = false;
-        public static bool Show_Pixel_Grid = true;
-        public static bool Remove_Selected_Area_On_Pan = false;
+        public static WebPQuality WebpQuality_Default
+        {
+            get { return CurrentUserSettings.WebpQuality_Default; }
+            set { CurrentUserSettings.WebpQuality_Default = value; }
+        }
 
-        public static bool Fit_Image_When_Maximized = true;
-        public static bool Fit_Image_On_Resize = true;
+        public static Color Default_Transparent_Grid_Color
+        {
+            get { return CurrentUserSettings.Default_Transparent_Grid_Color; }
+            set { CurrentUserSettings.Default_Transparent_Grid_Color = value; }
+        }
+        public static Color Default_Transparent_Grid_Color_Alternate
+        {
+            get { return CurrentUserSettings.Default_Transparent_Grid_Color_Alternate; }
+            set { CurrentUserSettings.Default_Transparent_Grid_Color_Alternate = value; }
+        }
 
-        public static bool CenterChild_When_Parent_Following_Child = true;
-        public static bool Fill_Transparent = false;
+        public static Color Current_Transparent_Grid_Color
+        {
+            get { return CurrentUserSettings.Current_Transparent_Grid_Color; }
+            set { CurrentUserSettings.Current_Transparent_Grid_Color = value; }
+        }
+        public static Color Current_Transparent_Grid_Color_Alternate
+        {
+            get { return CurrentUserSettings.Current_Transparent_Grid_Color_Alternate; }
+            set { CurrentUserSettings.Current_Transparent_Grid_Color_Alternate = value; }
+        }
 
-        public static bool Watch_Directory = true;
-        public static bool Open_Explorer_After_Export = true;
-        public static bool Open_Explorer_After_SaveAs = true;
+        public static bool Show_Default_Transparent_Colors
+        {
+            get { return CurrentUserSettings.Show_Default_Transparent_Colors; }
+            set { CurrentUserSettings.Show_Default_Transparent_Colors = value; }
+        }
+        public static bool Only_Show_Transparent_Color_1
+        {
+            get { return CurrentUserSettings.Only_Show_Transparent_Color_1; }
+            set { CurrentUserSettings.Only_Show_Transparent_Color_1 = value; }
+        }
+        public static bool Show_Pixel_Grid
+        {
+            get { return CurrentUserSettings.Show_Pixel_Grid; }
+            set { CurrentUserSettings.Show_Pixel_Grid = value; }
+        }
+        public static bool Remove_Selected_Area_On_Pan
+        {
+            get { return CurrentUserSettings.Remove_Selected_Area_On_Pan; }
+            set { CurrentUserSettings.Remove_Selected_Area_On_Pan = value; }
+        }
 
-        public static bool Use_Async_Dither = true;
+        public static bool Fit_Image_When_Maximized
+        {
+            get { return CurrentUserSettings.Fit_Image_When_Maximized; }
+            set { CurrentUserSettings.Fit_Image_When_Maximized = value; }
+        }
+        public static bool Fit_Image_On_Resize
+        {
+            get { return CurrentUserSettings.Fit_Image_On_Resize; }
+            set { CurrentUserSettings.Fit_Image_On_Resize = value; }
+        }
+
+        public static bool CenterChild_When_Parent_Following_Child
+        {
+            get { return CurrentUserSettings.CenterChild_When_Parent_Following_Child; }
+            set { CurrentUserSettings.CenterChild_When_Parent_Following_Child = value; }
+        }
+        public static bool Parent_Follow_Child
+        {
+            get { return CurrentUserSettings.Parent_Follow_Child; }
+            set { CurrentUserSettings.Parent_Follow_Child = value; }
+        }
+
+        public static bool Watch_Directory
+        {
+            get { return CurrentUserSettings.Watch_Directory; }
+            set { CurrentUserSettings.Watch_Directory = value; }
+        }
+        public static bool Open_Explorer_After_Export
+        {
+            get { return CurrentUserSettings.Open_Explorer_After_Export; }
+            set { CurrentUserSettings.Open_Explorer_After_Export = value; }
+        }
+        public static bool Open_Explorer_After_SaveAs
+        {
+            get { return CurrentUserSettings.Open_Explorer_After_SaveAs; }
+            set { CurrentUserSettings.Open_Explorer_After_SaveAs = value; }
+        }
+
+        public static bool Use_Async_Dither
+        {
+            get { return CurrentUserSettings.Use_Async_Dither; }
+            set { CurrentUserSettings.Use_Async_Dither = value; }
+        }
 
         // because of how we load the image there is extra memory that doesn't get disposed
         // and calling GC.Collect removes that, but since garbage collection can cause problems
         // gonna allow the user to disable it as the please 
         // i also just hate when stuff doesn't get cleared from meory so i like to GC a lot
-        public static bool Garbage_Collect_On_Image_Unload = false;
-        public static bool Garbage_Collect_On_Dither_Form_Cancel = true;
-        public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation = true;
-        public static bool Garbage_Collect_After_Gif_Export = true;
+        public static bool Garbage_Collect_On_Image_Unload 
+        { 
+            get { return CurrentUserSettings.Garbage_Collect_On_Image_Unload; }
+            set { CurrentUserSettings.Garbage_Collect_On_Image_Unload = value; }
+        }
+        public static bool Garbage_Collect_On_Dither_Form_Cancel
+        {
+            get { return CurrentUserSettings.Garbage_Collect_On_Dither_Form_Cancel; }
+            set { CurrentUserSettings.Garbage_Collect_On_Dither_Form_Cancel = value; }
+        }
+        public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation
+        {
+            get { return CurrentUserSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation; }
+            set { CurrentUserSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation = value; }
+        }
+        public static bool Garbage_Collect_After_Gif_Export
+        {
+            get { return CurrentUserSettings.Garbage_Collect_After_Gif_Export; }
+            set { CurrentUserSettings.Garbage_Collect_After_Gif_Export = value; }
+        }
 
-        public static bool Delete_Temp_Directory = true;
+        public static bool Delete_Temp_Directory
+        {
+            get { return CurrentUserSettings.Delete_Temp_Directory_On_Close; }
+            set { CurrentUserSettings.Delete_Temp_Directory_On_Close = value; }
+        }
 
         public static bool WebP_Plugin_Exists = false;
 
         public static bool CPU_Type_x64 = IntPtr.Size == 8;
 
+        public static UserControlledSettings CurrentUserSettings = new UserControlledSettings();
+        public static SettingsProfiles SettingProfiles = new SettingsProfiles();
 
-        public static void EnabledLibwebPExtension()
+
+        public static void EnableWebPIfPossible()
         {
-            WebP_Plugin_Exists = true;
-            Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
-            Readable_File_Formats.Add("webp");
+            if (CPU_Type_x64)
+            {
+                if (File.Exists(libwebP_x64))
+                {
+                    WebP_Plugin_Exists = true;
+                    Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
+                    Readable_File_Formats.Add("webp");
+                }
+            }
+            else
+            {
+                if (File.Exists(libwebP_x86))
+                {
+                    WebP_Plugin_Exists = true;
+                    Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
+                    Readable_File_Formats.Add("webp");
+                }
+            }
+            
+        }
+    }
+
+    [Serializable()]
+    [XmlRoot(ElementName = "SettingsProfiles", Namespace = "", IsNullable = false)]
+    public class SettingsProfiles : List<UserControlledSettings>
+    {
+        public SettingsProfiles()
+        {
+
+        }
+
+        public SettingsProfiles(List<UserControlledSettings> items)
+        {
+            this.AddRange(items);
+        }
+    }
+
+    public class UserControlledSettings
+    {
+        [Browsable(false)]
+        [XmlIgnore]
+        public Guid ID = Guid.NewGuid();
+
+        public string ProfileName { get; set; } = "Nil";
+        public bool Garbage_Collect_On_Image_Unload { get; set; } = false;
+        public bool Garbage_Collect_On_Dither_Form_Cancel { get; set; } = true;
+        public bool Garbage_Collect_After_Unmanaged_Image_Manipulation { get; set; } = true;
+        public bool Garbage_Collect_After_Gif_Export { get; set; } = true;
+
+        public bool Delete_Temp_Directory_On_Close { get; set; } = true;
+
+        public bool Show_Default_Transparent_Colors { get; set; } = false;
+        public bool Only_Show_Transparent_Color_1 { get; set; } = false;
+        public bool Show_Pixel_Grid { get; set; } = true;
+        public bool Remove_Selected_Area_On_Pan { get; set; } = false;
+
+        public bool Fit_Image_When_Maximized { get; set; } = true;
+        public bool Fit_Image_On_Resize { get; set; } = true;
+
+        public bool Parent_Follow_Child { get; set; } = true;
+        public bool CenterChild_When_Parent_Following_Child { get; set; } = true;
+
+        public bool Watch_Directory { get; set; } = true;
+        public bool Open_Explorer_After_Export { get; set; } = true;
+        public bool Open_Explorer_After_SaveAs { get; set; } = true;
+
+        public bool Use_Async_Dither { get; set; } = true;
+
+        [XmlIgnore]
+        public ImgFormat Default_Image_Format { get; set; } = ImgFormat.png;
+
+        [Browsable(false)]
+        [XmlElement("Default_Image_Format")]
+        public int WebpQuality_DefaultAsInt
+        {
+            get { return (int)Default_Image_Format; }
+            set { Default_Image_Format = (ImgFormat)value; }
+        }
+
+        [XmlIgnore]
+        public WebPQuality WebpQuality_Default = new WebPQuality(Format.EncodeLossy, 74, 6);
+
+        [Browsable(false)]
+        [XmlElement("WebpQuality_Default")]
+        public int WebpQuality_DefaultAsDecimal
+        {
+            get { return WebpQuality_Default.ToDecimal(); }
+            set { WebpQuality_Default = WebPQuality.FromDecimal(value); }
+        }
+
+        [XmlIgnore]
+        public Color Image_Box_Back_Color { get; set; } = Color.Black;
+        [XmlIgnore]
+        public Color Default_Transparent_Grid_Color { get; set; } = Color.Gainsboro;
+        [XmlIgnore]
+        public Color Default_Transparent_Grid_Color_Alternate { get; set; } = Color.White;
+        [XmlIgnore]
+        public Color Current_Transparent_Grid_Color { get; set; } = Color.Gainsboro;
+        [XmlIgnore]
+        public Color Current_Transparent_Grid_Color_Alternate { get; set; } = Color.White;
+
+        [Browsable(false)]
+        [XmlElement("Image_Box_Back_Color")]
+        public int BackColorAsDecimal
+        {
+            get { return ColorHelper.ColorToDecimal(Image_Box_Back_Color, ColorFormat.ARGB); }
+            set { Image_Box_Back_Color = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
+        }
+
+        [Browsable(false)]
+        [XmlElement("Default_Transparent_Grid_Color")]
+        public int Default_Transparent_Grid_ColorAsDecimal
+        {
+            get { return ColorHelper.ColorToDecimal(Default_Transparent_Grid_Color, ColorFormat.ARGB); }
+            set { Default_Transparent_Grid_Color = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
+        }
+
+        [Browsable(false)]
+        [XmlElement("Default_Transparent_Grid_Color_Alternate")]
+        public int Default_Transparent_Grid_Color_AlternateAsDecimal
+        {
+            get { return ColorHelper.ColorToDecimal(Default_Transparent_Grid_Color_Alternate, ColorFormat.ARGB); }
+            set { Default_Transparent_Grid_Color_Alternate = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
+        }
+
+        [Browsable(false)]
+        [XmlElement("Current_Transparent_Grid_Color")]
+        public int Current_Transparent_Grid_ColorAsDecimal
+        {
+            get { return ColorHelper.ColorToDecimal(Current_Transparent_Grid_Color, ColorFormat.ARGB); }
+            set { Current_Transparent_Grid_Color = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
+        }
+
+        [Browsable(false)]
+        [XmlElement("Current_Transparent_Grid_Color_Alternate")]
+        public int Current_Transparent_Grid_Color_AlternateAsDecimal
+        {
+            get { return ColorHelper.ColorToDecimal(Current_Transparent_Grid_Color_Alternate, ColorFormat.ARGB); }
+            set { Current_Transparent_Grid_Color_Alternate = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
+        }
+
+        public override string ToString()
+        {
+            return this.ProfileName;
         }
     }
 }

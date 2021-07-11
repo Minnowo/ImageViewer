@@ -194,5 +194,15 @@ namespace ImageViewer.Helpers
 
             return null;
         }
+
+        public static void Move<T>(this List<T> list, int oldIndex, int newIndex)
+        {
+            Helper.Move(list, oldIndex, newIndex);
+        }
+
+        public static void Move<T>(this List<T> list, T item, int newIndex)
+        {
+            Helper.Move(list, item, newIndex);
+        }
     }
 }
