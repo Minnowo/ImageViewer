@@ -144,7 +144,7 @@ namespace ImageViewer.Controls
             ibMain.BorderStyle = BorderStyle.None;
             ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
 
-            ibMain.SelectionMode = ImageBoxSelectionMode.Rectangle;
+            ibMain.SelectionMode =   ImageBoxSelectionMode.Rectangle;
             ibMain.SelectionButton = MouseButtons.Right;
             ibMain.PanButton =       MouseButtons.Left;
 

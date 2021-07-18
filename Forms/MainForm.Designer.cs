@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.tsMain = new System.Windows.Forms.ToolStrip();
             this.tsbMain_File = new System.Windows.Forms.ToolStripButton();
             this.tsbMain_Edit = new System.Windows.Forms.ToolStripButton();
@@ -76,11 +77,14 @@
             this.tsmiShowDefaultTransparentGridColors = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiShowTransparentColor1Only = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiViewPixelGrid = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip = new System.Windows.Forms.StatusStrip();
+            this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tsslPathToImage = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tcMain = new ImageViewer.Controls._TabControl();
+            this.statusStrip = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.cbInterpolationMode = new System.Windows.Forms.ComboBox();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -158,6 +162,7 @@
             // 
             // pnlTopMain
             // 
+            this.pnlTopMain.Controls.Add(this.cbInterpolationMode);
             this.pnlTopMain.Controls.Add(this.nudTopMain_ZoomPercentage);
             this.pnlTopMain.Controls.Add(this.btnTopMain_Save);
             this.pnlTopMain.Controls.Add(this.btnTopMain_Open);
@@ -520,45 +525,6 @@
             this.tsmiViewPixelGrid.Text = "Pixel Grid";
             this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
             // 
-            // statusStrip
-            // 
-            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsslImageSize,
-            this.tsslImageFileSize,
-            this.tsslPathToImage});
-            this.statusStrip.Location = new System.Drawing.Point(0, 427);
-            this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(800, 23);
-            this.statusStrip.TabIndex = 4;
-            this.statusStrip.Text = "statusStrip1";
-            // 
-            // tsslImageSize
-            // 
-            this.tsslImageSize.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.tsslImageSize.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
-            this.tsslImageSize.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsslImageSize.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tsslImageSize.Name = "tsslImageSize";
-            this.tsslImageSize.Size = new System.Drawing.Size(32, 18);
-            this.tsslImageSize.Text = "Nil";
-            // 
-            // tsslImageFileSize
-            // 
-            this.tsslImageFileSize.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.tsslImageFileSize.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
-            this.tsslImageFileSize.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tsslImageFileSize.Name = "tsslImageFileSize";
-            this.tsslImageFileSize.Size = new System.Drawing.Size(4, 18);
-            // 
-            // tsslPathToImage
-            // 
-            this.tsslPathToImage.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
-            this.tsslPathToImage.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsslPathToImage.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tsslPathToImage.MergeAction = System.Windows.Forms.MergeAction.Insert;
-            this.tsslPathToImage.Name = "tsslPathToImage";
-            this.tsslPathToImage.Size = new System.Drawing.Size(0, 18);
-            // 
             // tcMain
             // 
             this.tcMain.AllowDrop = true;
@@ -578,6 +544,79 @@
             this.tcMain.SelectedIndexChanged += new System.EventHandler(this.tcMain_SelectedIndexChanged);
             this.tcMain.DragDrop += new System.Windows.Forms.DragEventHandler(this.TabControl_DragDrop);
             this.tcMain.DragEnter += new System.Windows.Forms.DragEventHandler(this.TabControl_DragEnter);
+            // 
+            // tsslImageSize
+            // 
+            this.tsslImageSize.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.tsslImageSize.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+            this.tsslImageSize.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsslImageSize.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tsslImageSize.Name = "tsslImageSize";
+            this.tsslImageSize.Size = new System.Drawing.Size(32, 18);
+            this.tsslImageSize.Text = "Nil";
+            // 
+            // tsslImageFileSize
+            // 
+            this.tsslImageFileSize.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.tsslImageFileSize.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
+            this.tsslImageFileSize.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tsslImageFileSize.Name = "tsslImageFileSize";
+            this.tsslImageFileSize.Size = new System.Drawing.Size(4, 18);
+            // 
+            // statusStrip
+            // 
+            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsslImageSize,
+            this.tsslImageFileSize,
+            this.toolStripStatusLabel1,
+            this.toolStripDropDownButton1,
+            this.toolStripDropDownButton2});
+            this.statusStrip.Location = new System.Drawing.Point(0, 427);
+            this.statusStrip.Name = "statusStrip";
+            this.statusStrip.Size = new System.Drawing.Size(800, 23);
+            this.statusStrip.TabIndex = 4;
+            this.statusStrip.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(711, 18);
+            this.toolStripStatusLabel1.Spring = true;
+            // 
+            // toolStripDropDownButton1
+            // 
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.ShowDropDownArrow = false;
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(19, 21);
+            this.toolStripDropDownButton1.Text = "<";
+            this.toolStripDropDownButton1.ToolTipText = "Previous Image";
+            this.toolStripDropDownButton1.Click += new System.EventHandler(this.PreviousImage_Click);
+            // 
+            // toolStripDropDownButton2
+            // 
+            this.toolStripDropDownButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton2.Image")));
+            this.toolStripDropDownButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton2.Name = "toolStripDropDownButton2";
+            this.toolStripDropDownButton2.ShowDropDownArrow = false;
+            this.toolStripDropDownButton2.Size = new System.Drawing.Size(19, 21);
+            this.toolStripDropDownButton2.Text = ">";
+            this.toolStripDropDownButton2.ToolTipText = "Next Image";
+            this.toolStripDropDownButton2.Click += new System.EventHandler(this.NextImage_Click);
+            // 
+            // cbInterpolationMode
+            // 
+            this.cbInterpolationMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbInterpolationMode.FormattingEnabled = true;
+            this.cbInterpolationMode.Location = new System.Drawing.Point(141, 3);
+            this.cbInterpolationMode.Name = "cbInterpolationMode";
+            this.cbInterpolationMode.Size = new System.Drawing.Size(121, 21);
+            this.cbInterpolationMode.TabIndex = 4;
+            this.cbInterpolationMode.SelectedIndexChanged += new System.EventHandler(this.InterpolationMode_SelectedIndexChanged);
             // 
             // MainForm
             // 
@@ -654,12 +693,15 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiShowDefaultTransparentGridColors;
         private System.Windows.Forms.ToolStripMenuItem tsmiImageBackColor2;
         private System.Windows.Forms.ToolStripMenuItem tsmiViewPixelGrid;
-        private System.Windows.Forms.StatusStrip statusStrip;
-        private System.Windows.Forms.ToolStripStatusLabel tsslImageSize;
-        private System.Windows.Forms.ToolStripStatusLabel tsslImageFileSize;
-        private System.Windows.Forms.ToolStripStatusLabel tsslPathToImage;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowTransparentColor1Only;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportGifFrames;
+        private System.Windows.Forms.ToolStripStatusLabel tsslImageSize;
+        private System.Windows.Forms.ToolStripStatusLabel tsslImageFileSize;
+        private System.Windows.Forms.StatusStrip statusStrip;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton2;
+        private System.Windows.Forms.ComboBox cbInterpolationMode;
     }
 }
 

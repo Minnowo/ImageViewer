@@ -160,6 +160,43 @@ namespace ImageViewer.Helpers
             host.Show();
             form.Hide();
         }
+        public static void InvokeSafe(this Control control, Action action)
+        {
+            if (control != null && !control.IsDisposed)
+            {
+                if (control.InvokeRequired)
+                {
+                    control.Invoke(action);
+                }
+                else
+                {
+                    action();
+                }
+            }
+        }
+        public static void ForceActivate(this Form form)
+        {
+            if (!form.IsDisposed)
+            {
+                if (!form.Visible)
+                {
+                    form.Show();
+                }
+
+                if (form.WindowState == FormWindowState.Minimized)
+                {
+                    form.WindowState = FormWindowState.Normal;
+                }
+                bool alwayOnTop = form.TopMost;
+
+                form.TopMost = false;
+                form.TopMost = true;
+
+                form.TopMost = alwayOnTop;
+                form.BringToFront();
+                form.Activate();
+            }
+        }
 
         public static bool Toggle(this bool input)
         {

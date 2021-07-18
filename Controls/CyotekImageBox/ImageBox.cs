@@ -1139,6 +1139,7 @@ namespace Cyotek.Windows.Forms
                     return null;
 
                 Size visibleSize = GetImageViewPort().Size;
+                RectangleF srcRect = GetSourceImageRegion();
                 Bitmap scaledIm = new Bitmap(visibleSize.Width, visibleSize.Height);
 
                 using (Graphics g = Graphics.FromImage(scaledIm))
@@ -1149,7 +1150,7 @@ namespace Cyotek.Windows.Forms
                     g.DrawImage(
                         _image,
                         new Rectangle(0, 0, visibleSize.Width, visibleSize.Height),
-                        new Rectangle(0, 0, _image.Width, _image.Height),
+                        srcRect,
                         GraphicsUnit.Pixel);
                 }
 
@@ -2437,7 +2438,7 @@ namespace Cyotek.Windows.Forms
         /// <param name="visibleSelectedImage">Should the image be scaled by the zoom factor to be the size visible on screen <see cref="bool"/> true or false.</param>
         /// <returns>An image containing the selection contents if a selection if present, otherwise null</returns>
         /// <remarks>The caller is responsible for disposing of the returned image</remarks>
-        public Image GetSelectedImage(bool fitRectangle = true, bool fromActualImageSize = true)
+        public Image GetSelectedImage(bool fitRectangle = true, bool fromActualImageSize = false)
         {
             if (_image == null || this.SelectionRegion.IsEmpty)
                 return null;
@@ -4642,14 +4643,14 @@ namespace Cyotek.Windows.Forms
                     {
                         using (Image toCopy = VisibleImage)
                         {
-                            ClipboardHelper.CopyImageDefault(toCopy);
+                            ClipboardHelper.CopyImage(toCopy);
                         }
                         return;
                     }
 
                     using (Image toCopy = GetSelectedImage(false))
                     {
-                        ClipboardHelper.CopyImageDefault(toCopy);
+                        ClipboardHelper.CopyImage(toCopy);
                     }
                     break;
             }

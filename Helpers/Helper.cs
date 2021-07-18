@@ -39,9 +39,6 @@ namespace ImageViewer.Helpers
         {
             string fileFormat = InternalSettings.Default_Image_Format.ToString().ToLower();
 
-            if (fileFormat == "jpeg") 
-                fileFormat = "jpg";
-
             if (string.IsNullOrEmpty(dir)) 
                 dir = Directory.GetCurrentDirectory();
 

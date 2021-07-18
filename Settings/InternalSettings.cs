@@ -8,6 +8,7 @@ using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.structs;
 using System.Xml.Serialization;
+using System.Drawing.Drawing2D;
 using System.ComponentModel;
 using System.Collections;
 using System.Reflection;
@@ -29,7 +30,7 @@ namespace ImageViewer.Settings
 
         public static string WebP_File_Dialog_Option = "WebP (*.webp)|*.webp";
 
-        public static string Temp_Image_Folder = string.Format("{0}\\{1}", Directory.GetCurrentDirectory(), "tmp");
+        public static string Temp_Image_Folder = Path.Combine(AppContext.BaseDirectory, "tmp");
 
         public static List<string> Open_All_Image_Files_File_Dialog_Options = new List<string> { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff" };
 
@@ -106,6 +107,12 @@ namespace ImageViewer.Settings
             set { CurrentUserSettings.Default_Image_Format = value; }
         }
 
+        public static InterpolationMode Default_Interpolation_Mode
+        {
+            get { return CurrentUserSettings.Default_Interpolation_Mode; }
+            set { CurrentUserSettings.Default_Interpolation_Mode = value; }
+        }
+
         public static WebPQuality WebpQuality_Default
         {
             get { return CurrentUserSettings.WebpQuality_Default; }
@@ -132,6 +139,12 @@ namespace ImageViewer.Settings
         {
             get { return CurrentUserSettings.Current_Transparent_Grid_Color_Alternate; }
             set { CurrentUserSettings.Current_Transparent_Grid_Color_Alternate = value; }
+        }
+
+        public static Color Fill_Transparency_On_Copy_Color
+        {
+            get { return CurrentUserSettings.Fill_Transparency_On_Copy_Color; }
+            set { CurrentUserSettings.Fill_Transparency_On_Copy_Color = value; }
         }
 
         public static bool Show_Default_Transparent_Colors
@@ -235,6 +248,18 @@ namespace ImageViewer.Settings
             set { CurrentUserSettings.Delete_Temp_Directory_On_Close = value; }
         }
 
+        public static bool Use_Alternate_Copy_Method
+        {
+            get { return CurrentUserSettings.Use_Alternate_Copy_Method; }
+            set { CurrentUserSettings.Use_Alternate_Copy_Method = value; }
+        }
+
+        public static bool Replace_Transparency_On_Copy
+        {
+            get { return CurrentUserSettings.Replace_Transparency_On_Copy; }
+            set { CurrentUserSettings.Replace_Transparency_On_Copy = value; }
+        }
+
         public static bool WebP_Plugin_Exists = false;
 
         public static bool CPU_Type_x64 = IntPtr.Size == 8;
@@ -242,12 +267,12 @@ namespace ImageViewer.Settings
         public static UserControlledSettings CurrentUserSettings = new UserControlledSettings();
         public static SettingsProfiles SettingProfiles = new SettingsProfiles();
 
-        public static Cursor Drag_Cursor = GetDragCursor();
+        /*public static Cursor Drag_Cursor = GetDragCursor();
 
         public static Cursor GetDragCursor()
         {
             return new Cursor(new MemoryStream(Properties.Resources.drag));
-        }
+        }*/
 
         public static void EnableWebPIfPossible()
         {
@@ -378,11 +403,50 @@ namespace ImageViewer.Settings
         public bool Use_Async_Dither { get; set; } = true;
 
 
+        [Description("Copy image in a way that keeps transparency."), DisplayName("Alternate Image Copy Method (keeps transparency)")]
+        public bool Use_Alternate_Copy_Method 
+        {
+            get { return use_Alternate_Copy_Method; }
+            set 
+            { 
+                use_Alternate_Copy_Method = value;
+                if (value)
+                    Replace_Transparency_On_Copy = false;
+            }
+        }
+        [Browsable(false)]
+        [XmlIgnore]
+        private bool use_Alternate_Copy_Method  = true;
+
+        [Description("Fill transparency when copying image."), DisplayName("Fill Transparency On Copy")]
+        public bool Replace_Transparency_On_Copy
+        {
+            get { return replace_Transparency_On_Copy; }
+            set
+            {
+                replace_Transparency_On_Copy = value;
+                if (value)
+                    use_Alternate_Copy_Method = false;
+            }
+        }
+        [Browsable(false)]
+        [XmlIgnore]
+        private bool replace_Transparency_On_Copy  = false;
+
+
+        [XmlIgnore]
+        [Description("The color that fills the transparent pixels when copying an image."), DisplayName("Fill Transparency On Copy Color")]
+        public Color Fill_Transparency_On_Copy_Color { get; set; } = Color.White;
+
 
         [XmlIgnore]
         [Description("The default image format."), DisplayName("Default Image Format")]
         public ImgFormat Default_Image_Format { get; set; } = ImgFormat.png;
 
+
+        [XmlIgnore]
+        [Description("The default interpolation mode."), DisplayName("Interpolation Mode")]
+        public InterpolationMode Default_Interpolation_Mode { get; set; } = InterpolationMode.NearestNeighbor;
 
 
         [Browsable(false)]
@@ -392,6 +456,16 @@ namespace ImageViewer.Settings
             get { return (int)Default_Image_Format; }
             set { Default_Image_Format = (ImgFormat)value; }
         }
+
+
+        [Browsable(false)]
+        [XmlElement("Default_Interpolation_Mode")]
+        public int Default_Interpolation_ModeAsInt
+        {
+            get { return (int)Default_Interpolation_Mode; }
+            set { Default_Interpolation_Mode = (InterpolationMode)value; }
+        }
+
 
         [XmlIgnore]
         [Description("The default webp quality"), DisplayName("Default Webp Quality")]
@@ -471,6 +545,14 @@ namespace ImageViewer.Settings
         {
             get { return ColorHelper.ColorToDecimal(Current_Transparent_Grid_Color_Alternate, ColorFormat.ARGB); }
             set { Current_Transparent_Grid_Color_Alternate = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
+        }
+
+        [Browsable(false)]
+        [XmlElement("Fill_Transparency_On_Copy_Color")]
+        public int Fill_Transparency_On_Copy_ColorAsDecimal
+        {
+            get { return ColorHelper.ColorToDecimal(Fill_Transparency_On_Copy_Color, ColorFormat.ARGB); }
+            set { Fill_Transparency_On_Copy_Color = ColorHelper.DecimalToColor(value, ColorFormat.ARGB); }
         }
 
         public override string ToString()

@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
-
+using System.Drawing.Drawing2D;
 using ImageViewer.Helpers;
 using ImageViewer.Controls;
 using ImageViewer.Native;
@@ -19,6 +19,8 @@ namespace ImageViewer
     {
         public const string TSMI_IMAGE_BACK_COLOR_1_NAME = "tsmiImageBackColor1";
         public const string TSMI_IMAGE_BACK_COLOR_2_NAME = "tsmiImageBackColor2";
+
+        public bool IsReady = false;
 
         public FolderWatcher CurrentFolder;
         public List<string> DragDropFiles = new List<string>();
@@ -82,12 +84,23 @@ namespace ImageViewer
             nudTopMain_ZoomPercentage.Maximum = ImageBox.MaxZoom;
             nudTopMain_ZoomPercentage.Minimum = ImageBox.MinZoom;
 
+            foreach(InterpolationMode it in Enum.GetValues(typeof(InterpolationMode)))
+            {
+                if (it != InterpolationMode.Invalid)
+                    cbInterpolationMode.Items.Add(it);
+            }
+            cbInterpolationMode.SelectedItem = InternalSettings.Default_Interpolation_Mode;
+
             if (InternalSettings.Watch_Directory)
                 CurrentFolder = new FolderWatcher("");
 
             _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageChanged += _TabPage_ImageChanged;
+
+            UpdatePixelGrid(true);
+            UpdateInterpolationMode(true);
+            UpdateCurrentPageTransparentBackColor(true);
         }
 
         #region cmsFileBtn
@@ -370,7 +383,7 @@ namespace ImageViewer
             using(ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
             {
                 f.Owner = this;
-                f.TopMost = true;
+                f.TopMost = this.TopMost;
                 f.StartPosition = FormStartPosition.CenterScreen;
                 if (InternalSettings.Parent_Follow_Child) 
                     f.LocationChanged += ParentFollowChild;
@@ -476,7 +489,7 @@ namespace ImageViewer
             using (FillTransparentForm f = new FillTransparentForm())
             {
                 f.Owner = this;
-                f.TopMost = true;
+                f.TopMost = this.TopMost;
                 f.StartPosition = FormStartPosition.CenterScreen;
                 if (InternalSettings.Parent_Follow_Child) 
                     f.LocationChanged += ParentFollowChild;
@@ -500,13 +513,13 @@ namespace ImageViewer
                 return;
 
             Point p = Location;
-            bool collectGarbage = false;
+            
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
 
             using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
             {
                 df.Owner = this;
-                df.TopMost = true;
+                df.TopMost = this.TopMost;
                 df.StartPosition = FormStartPosition.CenterScreen;
 
                 if(InternalSettings.Parent_Follow_Child)
@@ -615,10 +628,7 @@ namespace ImageViewer
 
             InternalSettings.Show_Pixel_Grid = btn.Checked;
 
-            if(currentPage != null)
-            {
-                currentPage.ibMain.ShowPixelGrid = btn.Checked;
-            }
+            UpdatePixelGrid();
         }
 
         private void GirdColor1Only_Click(object sender, EventArgs e)
@@ -656,13 +666,17 @@ namespace ImageViewer
 
         private void Settings_Click(object sender, EventArgs e)
         {
+            Point p = this.Location;
+
             SettingsForm f = new SettingsForm();
             f.Owner = this;
-            f.TopMost = true;
+            f.TopMost = this.TopMost;
             f.StartPosition = FormStartPosition.CenterScreen;
             if (InternalSettings.Parent_Follow_Child)
                 f.LocationChanged += ParentFollowChild;
             f.ShowDialog();
+
+            this.Location = p;
         }
 
         private void tsbMain_Settings_MouseUp(object sender, MouseEventArgs e)
@@ -697,8 +711,7 @@ namespace ImageViewer
 
             preventOverflow = true;
 
-            //currentPage.idMain.ExternZoomChange = true;
-            //currentPage.idMain.ZoomFactor = (double)nudTopMain_ZoomPercentage.Value / 100d;
+
             currentPage.ibMain.Zoom = (int)nudTopMain_ZoomPercentage.Value;
 
             preventOverflow = false;
@@ -709,6 +722,11 @@ namespace ImageViewer
             CloseCurrentTabPage();
         }
 
+        private void InterpolationMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            InternalSettings.Default_Interpolation_Mode = (InterpolationMode)cbInterpolationMode.SelectedItem;
+            UpdateInterpolationMode();
+        }
 
         #endregion
 
@@ -743,7 +761,7 @@ namespace ImageViewer
                     continue;
 
                 DragDropFiles.Add(new FileInfo(data[i]).FullName);
-                Console.WriteLine(DragDropFiles[i]);
+                //Console.WriteLine(DragDropFiles[i]);
             }
         }
 
@@ -768,9 +786,13 @@ namespace ImageViewer
         private void _TabPage_ImageLoadChanged(bool imageLoaded)
         {
             UpdateZoomNumericUpDown();
-            UpdatePixelGrid();
-            UpdateCurrentPageTransparentBackColor();
+            UpdateInterpolationMode(true);
+            UpdatePixelGrid(true);
+            UpdateCurrentPageTransparentBackColor(true);
             UpdateBottomInfoLabel();
+
+            if (currentPage != null)
+                currentPage.ibMain.Invalidate();
 
             if (imageLoaded)
             {
@@ -780,7 +802,7 @@ namespace ImageViewer
 
         private void _TabPage_ImageChanged()
         {
-            Console.WriteLine("image changed");
+            //Console.WriteLine("image changed");
             _TabPage_ImageLoadChanged(true);
         }
 
@@ -860,6 +882,18 @@ namespace ImageViewer
             this.Location = f.Location;
         }
 
+        private void PreviousImage_Click(object sender, EventArgs e)
+        {
+            PreviousImage();
+        }
+
+        private void NextImage_Click(object sender, EventArgs e)
+        {
+            NextImage();
+        }
+
+        
+
         #endregion
 
         #region private helpers
@@ -890,7 +924,6 @@ namespace ImageViewer
             {
                 tsslImageSize.Text = "Nil";
                 tsslImageFileSize.Text = "Nil";
-                tsslPathToImage.Text = "Nil";
                 return;
             }
 
@@ -903,9 +936,8 @@ namespace ImageViewer
 
             tsslImageSize.Text = string.Format("({0} x {1})", currentPage.Image.Size.Width, currentPage.Image.Size.Height);
             tsslImageFileSize.Text = string.Format("{0}", Helpers.Helper.SizeSuffix(size));
-            tsslPathToImage.Text = string.Format("{0}", currentPage.ImagePath.FullName);
 
-            Text = tsslPathToImage.Text;
+            Text = string.Format("{0}", currentPage.ImagePath.FullName);
         }
 
         private Color AskChooseColor()
@@ -924,7 +956,7 @@ namespace ImageViewer
             using (ColorPickerForm f = new ColorPickerForm())
             {
                 f.Owner = this;
-                f.TopMost = true;
+                f.TopMost = this.TopMost;
                 f.StartPosition = FormStartPosition.CenterScreen;
                 if (InternalSettings.Parent_Follow_Child) 
                     f.LocationChanged += ParentFollowChild;
@@ -1068,7 +1100,7 @@ namespace ImageViewer
             currentPage.ibMain.Invalidate();
         }
 
-        public void UpdateCurrentPageTransparentBackColor()
+        public void UpdateCurrentPageTransparentBackColor(bool suppressRedraw = false)
         {
             if (currentPage == null)
                 return;
@@ -1083,7 +1115,8 @@ namespace ImageViewer
             {
                 currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
                 currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
-                currentPage.ibMain.Invalidate();
+                if(!suppressRedraw)
+                    currentPage.ibMain.Invalidate();
                 return;
             }
 
@@ -1091,22 +1124,28 @@ namespace ImageViewer
             {
                 currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
                 currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color;
-                currentPage.ibMain.Invalidate();
+                if (!suppressRedraw)
+                    currentPage.ibMain.Invalidate();
                 return;
 
             }
 
             currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
             currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
-            currentPage.ibMain.Invalidate();
+            if (!suppressRedraw)
+                currentPage.ibMain.Invalidate();
         }
 
-        public void UpdatePixelGrid()
+        public void UpdatePixelGrid(bool suppressRedraw = false)
         {
             if (currentPage == null)
                 return;
 
             CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
+            
+            if (suppressRedraw)
+                return;
+            currentPage.ibMain.Invalidate();
         }
 
         public void UpdateZoomNumericUpDown()
@@ -1133,6 +1172,18 @@ namespace ImageViewer
                 CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
                 CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
             }
+        }
+
+        public void UpdateInterpolationMode(bool suppressRedraw = false)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.InterpolationMode = InternalSettings.Default_Interpolation_Mode;
+
+            if (suppressRedraw)
+                return;
+            currentPage.ibMain.Invalidate();
         }
 
         public void NextImage()
@@ -1178,6 +1229,12 @@ namespace ImageViewer
         #endregion
 
         #region Overrides
+
+        protected override void OnLoad(EventArgs e)
+        {
+            this.IsReady = true;
+            base.OnLoad(e);
+        }
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
@@ -1225,7 +1282,7 @@ namespace ImageViewer
                     if (!Clipboard.ContainsImage())
                         return;
 
-                    using(Image im = Clipboard.GetImage())
+                    using(Image im = ClipboardHelper.GetImage())
                     {
                         NewPageFromImage(im);
                     }
@@ -1256,6 +1313,8 @@ namespace ImageViewer
                     break;
             }
         }
+
+
 
 
         #endregion

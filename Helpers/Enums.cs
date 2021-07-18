@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using ImageViewer.Settings;
 namespace ImageViewer.Helpers
 {
     public enum HashType
@@ -69,6 +70,7 @@ namespace ImageViewer.Helpers
         bmp,
         gif,
         webp,
+        [Browsable(false)]
         nil
     }
 
@@ -85,5 +87,11 @@ namespace ImageViewer.Helpers
     {
         Version1 = 1,
         Version2
+    }
+
+    public enum ImageCopyMode
+    {
+        VisibleImage,
+        DefaultImage,
     }
 }
