@@ -402,7 +402,7 @@ namespace ImageViewer.Helpers
         /// <returns> The Size of the image, or Size.Empty if failed to load / not valid image. </returns>
         public static Size GetImageDimensionsFile(string imagePath)
         {
-            if (!File.Exists(imagePath))
+            if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
                 return Size.Empty;
 
             Size s = ImageDimensionReader.GetDimensions(imagePath);

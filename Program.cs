@@ -30,8 +30,8 @@ namespace ImageViewer
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                SettingsLoader.Load();
                 InternalSettings.EnableWebPIfPossible();
+                SettingsLoader.Load();
 
                 mainForm = new MainForm(args);
                 Application.Run(mainForm);

@@ -103,7 +103,9 @@ namespace ImageViewer.Helpers.UndoRedo
         {
             ClearRedos();
             undos.Push(change);
+#if DEBUG
             PrintUndos();
+#endif
             switch (change)
             {
                 // need to track history data
@@ -154,7 +156,9 @@ namespace ImageViewer.Helpers.UndoRedo
 
             BitmapChanges change = redos.Pop();
             undos.Push(change);
+#if DEBUG
             PrintUndos();
+#endif
             Bitmap bmp;
             switch (change)
             {
@@ -244,7 +248,9 @@ namespace ImageViewer.Helpers.UndoRedo
 
             BitmapChanges change = undos.Pop();
             redos.Push(change);
+#if DEBUG
             PrintUndos();
+#endif
             Bitmap bmp;
             switch (change)
             {

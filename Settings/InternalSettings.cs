@@ -441,7 +441,23 @@ namespace ImageViewer.Settings
 
         [XmlIgnore]
         [Description("The default image format."), DisplayName("Default Image Format")]
-        public ImgFormat Default_Image_Format { get; set; } = ImgFormat.png;
+        public ImgFormat Default_Image_Format
+        {
+            get { return default_Image_Format; }
+            set
+            {
+                if (value == ImgFormat.webp && !InternalSettings.WebP_Plugin_Exists)
+                {
+                    MessageBox.Show("The webp plugin dll needed to support webp images do not exist visit https://www.dll-files.com/libwebp.dll.html to download the dll, it must be places in \\plugins\\ as libwebp_x64.dll or libwebp_x86.dll depending on your application version");
+                    return;
+                }
+
+                default_Image_Format = value;
+            }
+        }
+        [XmlIgnore]
+        [Browsable(false)]
+        private ImgFormat default_Image_Format = ImgFormat.png;
 
 
         [XmlIgnore]
@@ -454,7 +470,7 @@ namespace ImageViewer.Settings
         public int WebpQuality_DefaultAsInt
         {
             get { return (int)Default_Image_Format; }
-            set { Default_Image_Format = (ImgFormat)value; }
+            set { Default_Image_Format = (ImgFormat)value.Clamp(0,5); }
         }
 
 

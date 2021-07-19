@@ -37,6 +37,7 @@
             this.tsbMain_Settings = new System.Windows.Forms.ToolStripButton();
             this.tsbMain_CurrentDirectory = new System.Windows.Forms.ToolStripButton();
             this.pnlTopMain = new System.Windows.Forms.Panel();
+            this.cbInterpolationMode = new System.Windows.Forms.ComboBox();
             this.nudTopMain_ZoomPercentage = new System.Windows.Forms.NumericUpDown();
             this.btnTopMain_Save = new System.Windows.Forms.Button();
             this.btnTopMain_Open = new System.Windows.Forms.Button();
@@ -84,7 +85,6 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.cbInterpolationMode = new System.Windows.Forms.ComboBox();
             this.tsMain.SuspendLayout();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
@@ -171,6 +171,16 @@
             this.pnlTopMain.Name = "pnlTopMain";
             this.pnlTopMain.Size = new System.Drawing.Size(800, 28);
             this.pnlTopMain.TabIndex = 1;
+            // 
+            // cbInterpolationMode
+            // 
+            this.cbInterpolationMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbInterpolationMode.FormattingEnabled = true;
+            this.cbInterpolationMode.Location = new System.Drawing.Point(141, 3);
+            this.cbInterpolationMode.Name = "cbInterpolationMode";
+            this.cbInterpolationMode.Size = new System.Drawing.Size(121, 21);
+            this.cbInterpolationMode.TabIndex = 4;
+            this.cbInterpolationMode.SelectedIndexChanged += new System.EventHandler(this.InterpolationMode_SelectedIndexChanged);
             // 
             // nudTopMain_ZoomPercentage
             // 
@@ -608,16 +618,6 @@
             this.toolStripDropDownButton2.ToolTipText = "Next Image";
             this.toolStripDropDownButton2.Click += new System.EventHandler(this.NextImage_Click);
             // 
-            // cbInterpolationMode
-            // 
-            this.cbInterpolationMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbInterpolationMode.FormattingEnabled = true;
-            this.cbInterpolationMode.Location = new System.Drawing.Point(141, 3);
-            this.cbInterpolationMode.Name = "cbInterpolationMode";
-            this.cbInterpolationMode.Size = new System.Drawing.Size(121, 21);
-            this.cbInterpolationMode.TabIndex = 4;
-            this.cbInterpolationMode.SelectedIndexChanged += new System.EventHandler(this.InterpolationMode_SelectedIndexChanged);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -627,6 +627,7 @@
             this.Controls.Add(this.tcMain);
             this.Controls.Add(this.pnlTopMain);
             this.Controls.Add(this.tsMain);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(280, 220);
             this.Name = "MainForm";
             this.Text = "NULL";
