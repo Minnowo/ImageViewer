@@ -19,20 +19,69 @@ namespace ImageViewer.Settings
     public static class InternalSettings
     {
         public const string User_Settings_Path = "usrConfig.xml";
-
-        public const string All_Files_File_Dialog = "All Files (*.*)|*.";
-        public static string FolderSelectDialog_Title_Select_a_folder = "Select a folder";
-
-
-        public static string Color_Palette_File_Dialog = "Color Palettes (*.aco, *.lbm, *bbm, *.txt)|*.aco;*lbm;*bbm;*.txt| ACO (*.aco)|*.aco| LBM (*.lbm)|*.lbm| BBM (*.bmm)|*.bbm| TXT (*.txt)|*.txt";
-
-        public static string Save_File_Dialog_Default = "PNG (*.png)|*.png|JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif|GIF (*.gif)|*.gif|BMP (*.bmp)|*.bmp|TIFF (*.tif, *.tiff)|*.tif;*.tiff";
-
-        public static string WebP_File_Dialog_Option = "WebP (*.webp)|*.webp";
-
         public static string Temp_Image_Folder = Path.Combine(AppContext.BaseDirectory, "tmp");
 
-        public static List<string> Open_All_Image_Files_File_Dialog_Options = new List<string> { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff" };
+
+        public static List<string> Readable_Image_Formats_Dialog_Options = new List<string>
+        { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff" };
+
+        public static List<string> Readable_Image_Formats = new List<string>()
+        { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff" };
+
+        public static List<string> Readable_Color_Palette_Dialog_Options = new List<string>
+        { "*.aco", "*.lbm", "*.bmm", "*.txt" };
+
+
+        public const string Folder_Select_Dialog_Title = "Select a folder";
+        public const string Image_Select_Dialog_Title = "Select an image";
+        public const string Save_File_Dialog_Title = "Save Item";
+        public const string Move_File_Dialog_Title = "Move Item";
+
+        public const string All_Files_File_Dialog = "All Files (*.*)|*.";
+
+        public static string All_Image_Files_File_Dialog = string.Format(
+            "Graphic Types ({0})|{1}",
+            string.Join(", ", Readable_Image_Formats_Dialog_Options),
+            string.Join(";", Readable_Image_Formats_Dialog_Options));
+
+        public static string All_Palette_Files_File_Dialog = string.Format(
+           "Color Palettes ({0})|{1}",
+           string.Join(", ", Readable_Color_Palette_Dialog_Options),
+           string.Join(";", Readable_Color_Palette_Dialog_Options));
+
+        // image formats
+        public const string PNG_File_Dialog = "PNG (*.png)|*.png";
+        public const string BMP_File_Dialog = "BMP (*.bmp)|*.bmp";
+        public const string GIF_File_Dialog = "GIF (*.gif)|*.gif";
+        public const string WEBP_File_Dialog = "WEBP (*.webp)|*.webp";
+        public const string TIFF_File_Dialog = "TIFF (*.tif, *.tiff)|*.tif;*.tiff";
+        public const string JPEG_File_Dialog = "JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif";
+
+        // color palettes
+        public const string ACO_File_Dialog = "ACO (*.aco)|*.aco";
+        public const string LBM_File_Dialog = "LBM (*.lbm)|*.lbm";
+        public const string BBM_File_Dialog = "BBM (*.bmm)|*.bbm";
+        public const string TXT_File_Dialog = "TXT (*.txt)|*.txt";
+
+
+        public static string Image_Dialog_Filters = string.Join("|",
+            new string[]
+            {
+                PNG_File_Dialog,
+                JPEG_File_Dialog,
+                BMP_File_Dialog,
+                TIFF_File_Dialog,
+                GIF_File_Dialog
+            });
+
+        public static string Color_Palette_Dialog_Filters = string.Join("|",
+            new string[]
+            {
+                ACO_File_Dialog,
+                LBM_File_Dialog,
+                BBM_File_Dialog,
+                TXT_File_Dialog,
+            });
 
         #region message box 
 
@@ -79,27 +128,25 @@ namespace ImageViewer.Settings
 
         #endregion
 
-        public static List<string> Readable_File_Formats = new List<string>() { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff" };
 
         public static Font CloseButtonFont = new Font(new Font("Consolas", 10), FontStyle.Bold);
 
         public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3};
 
+        public static Size TSMI_Generated_Icon_Size = new Size(16, 16);
+
         public static int Fill_Alpha_Less_Than
         {
-            get
-            {
-                return fill_Alpha_Less_Than;
-            }
-            set
-            {
-                fill_Alpha_Less_Than = value.Clamp(0, 255);
-            }
+            get { return fill_Alpha_Less_Than; }
+            set { fill_Alpha_Less_Than = value.Clamp(0, 255); }
         }
         private static int fill_Alpha_Less_Than = 128;
 
-        public static Color Image_Box_Back_Color { get; set; } = Color.Black;
-        public static Size TSMI_Generated_Icon_Size = new Size(16, 16);
+        public static Color Image_Box_Back_Color
+        {
+            get { return CurrentUserSettings.Image_Box_Back_Color; }
+            set { CurrentUserSettings.Image_Box_Back_Color = value; }
+        }
 
         public static ImgFormat Default_Image_Format
         {
@@ -182,6 +229,12 @@ namespace ImageViewer.Settings
         {
             get { return CurrentUserSettings.Fit_Image_On_Resize; }
             set { CurrentUserSettings.Fit_Image_On_Resize = value; }
+        }
+
+        public static bool Lock_Selection_To_Image
+        {
+            get { return CurrentUserSettings.Lock_Selection_To_Image; }
+            set { CurrentUserSettings.Lock_Selection_To_Image = value; }
         }
 
         public static bool CenterChild_When_Parent_Following_Child
@@ -267,12 +320,27 @@ namespace ImageViewer.Settings
         public static UserControlledSettings CurrentUserSettings = new UserControlledSettings();
         public static SettingsProfiles SettingProfiles = new SettingsProfiles();
 
-        /*public static Cursor Drag_Cursor = GetDragCursor();
 
-        public static Cursor GetDragCursor()
+        public static void UpdateDialogFilters()
         {
-            return new Cursor(new MemoryStream(Properties.Resources.drag));
-        }*/
+           All_Image_Files_File_Dialog = string.Format(
+            "Graphic types ({0})|{1}",
+            string.Join(", ", Readable_Image_Formats_Dialog_Options),
+            string.Join(";", Readable_Image_Formats_Dialog_Options));
+
+            Image_Dialog_Filters = string.Join("|",
+                new string[]
+                {
+                    PNG_File_Dialog,
+                    JPEG_File_Dialog,
+                    BMP_File_Dialog,
+                    TIFF_File_Dialog,
+                    GIF_File_Dialog,
+                });
+
+            if (WebP_Plugin_Exists)
+                Image_Dialog_Filters += "|" + WEBP_File_Dialog;
+        }
 
         public static void EnableWebPIfPossible()
         {
@@ -281,8 +349,9 @@ namespace ImageViewer.Settings
                 if (File.Exists(libwebP_x64))
                 {
                     WebP_Plugin_Exists = true;
-                    Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
-                    Readable_File_Formats.Add("webp");
+                    Readable_Image_Formats_Dialog_Options.Add("*.webp");
+                    Readable_Image_Formats.Add("webp");
+                    UpdateDialogFilters();
                 }
             }
             else
@@ -290,8 +359,9 @@ namespace ImageViewer.Settings
                 if (File.Exists(libwebP_x86))
                 {
                     WebP_Plugin_Exists = true;
-                    Open_All_Image_Files_File_Dialog_Options.Add("*.webp");
-                    Readable_File_Formats.Add("webp");
+                    Readable_Image_Formats_Dialog_Options.Add("*.webp");
+                    Readable_Image_Formats.Add("webp");
+                    UpdateDialogFilters();
                 }
             }
             
@@ -374,6 +444,10 @@ namespace ImageViewer.Settings
 
         [Description("Should the current image be fit to the screen when the window is resized."), DisplayName("Fit Image To Screen On Window Resize")]
         public bool Fit_Image_On_Resize { get; set; } = true;
+
+
+        [Description("Should the selection region be able to leave the image."), DisplayName("Lock Selection To Image")]
+        public bool Lock_Selection_To_Image { get; set; } = true;
 
 
 

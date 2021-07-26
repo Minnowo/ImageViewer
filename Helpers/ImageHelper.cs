@@ -232,11 +232,9 @@ namespace ImageViewer.Helpers
         {
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
-                sfd.Filter = InternalSettings.Save_File_Dialog_Default;
+                sfd.Title = InternalSettings.Save_File_Dialog_Title;
+                sfd.Filter = InternalSettings.Image_Dialog_Filters;
                 sfd.DefaultExt = "png";
-
-                if (InternalSettings.WebP_Plugin_Exists)
-                    sfd.Filter += "|" + InternalSettings.WebP_File_Dialog_Option;
 
                 if (!string.IsNullOrEmpty(filePath))
                 {
@@ -301,7 +299,11 @@ namespace ImageViewer.Helpers
             try
             {
                 using (WebP webp = new WebP())
-                    return webp.Load(path);
+                {
+                    Bitmap image = webp.Load(path);
+                    image.Tag = GetImageFormat(path);
+                    return image;
+                }
             }
             catch (Exception e)
             {
@@ -327,7 +329,9 @@ namespace ImageViewer.Helpers
 
             try
             {
-                return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+                Image image = Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+                image.Tag = GetImageFormat(path);
+                return (Bitmap)image;
             }
             catch (Exception e)
             {
@@ -352,10 +356,7 @@ namespace ImageViewer.Helpers
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
-                ofd.Filter = "Image files (" + string.Join(", ", InternalSettings.Open_All_Image_Files_File_Dialog_Options) + ")|" + string.Join(";", InternalSettings.Open_All_Image_Files_File_Dialog_Options);
-
-                if (InternalSettings.WebP_Plugin_Exists)
-                    ofd.Filter += "|" + InternalSettings.WebP_File_Dialog_Option;
+                ofd.Filter = string.Format("{0}|{1}", InternalSettings.All_Image_Files_File_Dialog, InternalSettings.Image_Dialog_Filters);
 
                 ofd.Multiselect = multiselect;
 
@@ -383,6 +384,9 @@ namespace ImageViewer.Helpers
         public static string GetMimeType(Image image)
         {
             // https://stackoverflow.com/a/6336453
+
+            if ((ImgFormat)image.Tag == ImgFormat.webp)
+                return "image/webp";
 
             Guid imgguid = image.RawFormat.Guid;
             foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
@@ -1097,7 +1101,7 @@ namespace ImageViewer.Helpers
                 switch (ReadInt32LE(binaryReader))
                 {
                     case 540561494: // 'VP8 ' : lossy
-                                    // skip stuff we don't need
+                        // skip stuff we don't need
                         binaryReader.ReadBytes(7);
 
                         if (ReadInt24LE(binaryReader) != 2752925) // invalid webp file
@@ -1106,7 +1110,7 @@ namespace ImageViewer.Helpers
                         return new Size(ReadInt16LE(binaryReader), ReadInt16LE(binaryReader));
 
                     case 1278758998:// 'VP8L' : lossless
-                                    // skip stuff we don't need
+                        // skip stuff we don't need
                         binaryReader.ReadBytes(4);
 
                         if (binaryReader.ReadByte() != 47)// 0x2f : 47 1 byte signature
@@ -1122,7 +1126,7 @@ namespace ImageViewer.Helpers
                     //  1 + (((wh[3] & 0xF) << 10) | (wh[2] << 2) | ((wh[1] & 0xC0) >> 6))
 
                     case 1480085590:// 'VP8X' : extended
-                                    // skip stuff we don't need
+                        // skip stuff we don't need
                         binaryReader.ReadBytes(8);
                         return new Size(1 + ReadInt24LE(binaryReader), 1 + ReadInt24LE(binaryReader));
                 }

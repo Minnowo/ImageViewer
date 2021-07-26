@@ -323,7 +323,8 @@ namespace ImageViewer
 
         private void LoadColorPalette_Clicked(object sender, EventArgs e)
         {
-            string[] files = Helper.AskOpenFile("", this, InternalSettings.Color_Palette_File_Dialog);
+            string[] files = Helper.AskOpenFile("", this, 
+                string.Format("{0}|{1}", InternalSettings.All_Palette_Files_File_Dialog, InternalSettings.Color_Palette_Dialog_Filters));
 
             if (files == null || files.Length < 1)
                 return;

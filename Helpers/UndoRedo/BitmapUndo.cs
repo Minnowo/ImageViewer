@@ -68,24 +68,10 @@ namespace ImageViewer.Helpers.UndoRedo
             CurrentBitmap = bmp;
         }
 
-        public void PrintUndos()
-        {
-            Console.Clear();
-            Console.WriteLine("UNDOS [ ");
-            foreach(BitmapChanges c in undos)
-            {
-                Console.Write($"{c} ");
-            }
-            Console.WriteLine("]");
-
-            Console.WriteLine("REDOS [ ");
-            foreach (BitmapChanges c in redos)
-            {
-                Console.Write($"{c} ");
-            }
-            Console.WriteLine("]");
-        }
-
+        /// <summary>
+        /// Dispose of the CurrentBitmap and replace it with the given bitmap.
+        /// </summary>
+        /// <param name="bmp">The new bitmap.</param>
         public void ReplaceBitmap(Bitmap bmp)
         {
             if (CurrentBitmap != null)
@@ -94,18 +80,25 @@ namespace ImageViewer.Helpers.UndoRedo
             CurrentBitmap = bmp;
         }
 
+        /// <summary>
+        /// Sets the CurrentBitmap and does not dispose of the last bitmap.
+        /// </summary>
+        /// <param name="bmp">The new bitmap.</param>
         public void UpdateBitmapReferance(Bitmap bmp)
         {
             CurrentBitmap = bmp;
         }
 
+        /// <summary>
+        /// Tracks a change done to the bitmap. Depending on the change the CurrentBitmap will be copied and saved in the history.
+        /// <para>This should be called BEFORE the change is applied to the bitmap. If the change has been tracked but not be applied the DisposeLastUndo or DisposeLastRedo should be called.</para>
+        /// </summary>
+        /// <param name="change">The change that is going to occure to the bitmap.</param>
         public void TrackChange(BitmapChanges change)
         {
             ClearRedos();
             undos.Push(change);
-#if DEBUG
-            PrintUndos();
-#endif
+
             switch (change)
             {
                 // need to track history data
@@ -127,6 +120,9 @@ namespace ImageViewer.Helpers.UndoRedo
             }
         }
 
+        /// <summary>
+        /// Removes all history of Redos and disposes any bitmap history used for redos.
+        /// </summary>
         public void ClearRedos()
         {
             redos.Clear();
@@ -136,19 +132,34 @@ namespace ImageViewer.Helpers.UndoRedo
             }
         }
 
+        /// <summary>
+        /// Removes the last redo and disposes of any data with it.
+        /// </summary>
         public void DisposeLastRedo()
         {
-            if (undos.Count < 1)
+            if (redos.Count < 1)
                 return;
 
-            redos.Pop();
+            BitmapChanges change = redos.Pop();
 
-            if (bitmapRedoHistoryData.Count < 1)
-                return;
+            // if the change being removed had any bitmap data stored dispose it
+            switch (change)
+            {
+                case BitmapChanges.Cropped:
+                case BitmapChanges.Resized:
+                case BitmapChanges.SetGray:
+                case BitmapChanges.TransparentFilled:
+                    if (bitmapRedoHistoryData.Count < 1)
+                        return;
 
-            bitmapUndoHistoryData.Pop().Dispose();
+                    bitmapRedoHistoryData.Pop().Dispose();
+                    break;
+            }
         }
 
+        /// <summary>
+        /// Redoes the last undo.
+        /// </summary>
         public void Redo()
         {
             if (redos.Count < 1)
@@ -156,9 +167,7 @@ namespace ImageViewer.Helpers.UndoRedo
 
             BitmapChanges change = redos.Pop();
             undos.Push(change);
-#if DEBUG
-            PrintUndos();
-#endif
+
             Bitmap bmp;
             switch (change)
             {
@@ -219,6 +228,9 @@ namespace ImageViewer.Helpers.UndoRedo
             OnRedo(change);
         }
 
+        /// <summary>
+        /// Clears all the undos and disposes of any bitmap history kept.
+        /// </summary>
         public void ClearUndos()
         {
             undos.Clear();
@@ -228,19 +240,34 @@ namespace ImageViewer.Helpers.UndoRedo
             }
         }
 
+        /// <summary>
+        /// Removes and disposes the last undo.
+        /// </summary>
         public void DisposeLastUndo()
         {
             if (undos.Count < 1)
                 return;
 
-            undos.Pop();
+            BitmapChanges change = undos.Pop();
 
-            if (bitmapUndoHistoryData.Count < 1)
-                return;
+            // if the change being removed had any bitmap data stored dispose it
+            switch (change)
+            {
+                case BitmapChanges.Cropped:
+                case BitmapChanges.Resized:
+                case BitmapChanges.SetGray:
+                case BitmapChanges.TransparentFilled:
+                    if (bitmapUndoHistoryData.Count < 1)
+                        return;
 
-            bitmapUndoHistoryData.Pop().Dispose();
+                    bitmapUndoHistoryData.Pop().Dispose();
+                    break;
+            }
         }
 
+        /// <summary>
+        /// Undoes the last tracked change.
+        /// </summary>
         public void Undo()
         {
             if (undos.Count < 1)
@@ -248,9 +275,7 @@ namespace ImageViewer.Helpers.UndoRedo
 
             BitmapChanges change = undos.Pop();
             redos.Push(change);
-#if DEBUG
-            PrintUndos();
-#endif
+
             Bitmap bmp;
             switch (change)
             {
@@ -311,22 +336,18 @@ namespace ImageViewer.Helpers.UndoRedo
             OnUndo(change);
         }
 
+        /// <summary>
+        /// Clears and disposes of both the undos and redos.
+        /// </summary>
         public void ClearHistory()
         {
-            undos.Clear();
-            redos.Clear();
-
-            for(int i = 0; i < bitmapUndoHistoryData.Count; i++)
-            {
-                bitmapUndoHistoryData.Pop().Dispose();
-            }
-
-            for (int i = 0; i < bitmapRedoHistoryData.Count; i++)
-            {
-                bitmapRedoHistoryData.Pop().Dispose();
-            }
+            ClearUndos();
+            ClearRedos();
         }
 
+        /// <summary>
+        /// Dispose of the undos, redos, and the current bitmap.
+        /// </summary>
         public void Dispose()
         {
             ClearHistory();

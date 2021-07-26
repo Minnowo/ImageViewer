@@ -73,7 +73,7 @@ namespace ImageViewer.Misc
         private void SetFiles(string path)
         {
             files = Directory.EnumerateFiles(path).OrderByNatural(e => e).
-                Where(e => InternalSettings.Readable_File_Formats.Contains(Helper.GetFilenameExtension(e))).ToList();
+                Where(e => InternalSettings.Readable_Image_Formats.Contains(Helper.GetFilenameExtension(e))).ToList();
         }
 
         public void RefreshAllFiles()
@@ -84,7 +84,7 @@ namespace ImageViewer.Misc
 
         private void CreateWatchers(string path, bool enabled = true)
         {
-            foreach (string f in InternalSettings.Open_All_Image_Files_File_Dialog_Options)
+            foreach (string f in InternalSettings.Readable_Image_Formats_Dialog_Options)
             {
                 FileSystemWatcher w = new FileSystemWatcher();
                 w.Path = path;

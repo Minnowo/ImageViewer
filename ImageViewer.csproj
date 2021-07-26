@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E2B27B28-955B-4BD0-BB36-2C2D6CC32A65}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>ImageViewer</RootNamespace>
     <AssemblyName>imview</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -40,6 +40,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\imview.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -91,6 +94,9 @@
     </Compile>
     <Compile Include="Controls\CyotekImageBox\ZoomLevelCollection.cs" />
     <Compile Include="Controls\CyotekImageBox\ZoomLevelCollectionConverter.cs" />
+    <Compile Include="Controls\ToolStripClickThrough.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Forms\FillTransparentForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -207,6 +213,7 @@
     </Compile>
     <Compile Include="Misc\InstanceManager.cs" />
     <Compile Include="Misc\ValueTypeConverter.cs" />
+    <Compile Include="Native\NativeConstants.cs" />
     <Compile Include="Settings\SettingsLoader.cs" />
     <Compile Include="Structs\Structs.cs" />
     <Compile Include="Forms\MainForm.cs">
@@ -309,7 +316,7 @@
     <None Include="Resources\Save.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\drag.cur" />
+    <Content Include="Resources\imview.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

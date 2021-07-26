@@ -947,7 +947,7 @@ namespace Cyotek.Windows.Forms
         public override Color BackColor
         {
             get { return base.BackColor; }
-            set { base.BackColor = value; }
+            set { base.BackColor = Color.FromArgb(255,value); }
         }
 
         /// <summary>

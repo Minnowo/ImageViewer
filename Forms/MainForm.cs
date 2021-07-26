@@ -67,7 +67,6 @@ namespace ImageViewer
         {
             InitializeComponent();
             KeyPreview = true;
-            saveToolStripMenuItem.Enabled = false;
 
             tsmiImageBackColor1.Name = TSMI_IMAGE_BACK_COLOR_1_NAME;
             tsmiImageBackColor2.Name = TSMI_IMAGE_BACK_COLOR_2_NAME;
@@ -91,6 +90,8 @@ namespace ImageViewer
             }
             cbInterpolationMode.SelectedItem = InternalSettings.Default_Interpolation_Mode;
 
+            tsMain.ClickThrough = true;
+
             if (InternalSettings.Watch_Directory)
                 CurrentFolder = new FolderWatcher("");
 
@@ -103,821 +104,137 @@ namespace ImageViewer
             UpdateCurrentPageTransparentBackColor(true);
         }
 
-        #region cmsFileBtn
-        private void cmsFileBtn_Opening(object sender, CancelEventArgs e)
-        {
-            if (currentPage == null)
-            {
-                saveToolStripMenuItem.Enabled = false;
-                saveAsToolStripMenuItem.Enabled = false;
-                moveToToolStripMenuItem.Enabled = false;
-                renameToolStripMenuItem.Enabled = false;
-                deleteToolStripMenuItem.Enabled = false;
-                imagePropertiesToolStripMenuItem.Enabled = false;
-            }
-            else if (File.Exists(currentPage.ImagePath.FullName))
-            {
-                saveToolStripMenuItem.Enabled = true;
-                saveAsToolStripMenuItem.Enabled = true;
-                moveToToolStripMenuItem.Enabled = true;
-                renameToolStripMenuItem.Enabled = true;
-                deleteToolStripMenuItem.Enabled = true;
-                imagePropertiesToolStripMenuItem.Enabled = true;
-            }
-            // if the path doesn't exist, but the current tab is loaded
-            // the image is still in memory and can be re-saved
-            else
-            {
-                saveToolStripMenuItem.Enabled = false;
-                saveAsToolStripMenuItem.Enabled = true;
-                moveToToolStripMenuItem.Enabled = false;
-                renameToolStripMenuItem.Enabled = false;
-                deleteToolStripMenuItem.Enabled = false;
-                imagePropertiesToolStripMenuItem.Enabled = false;
-            }
-        }
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string[] openImages = ImageHelper.OpenImageFileDialog(true, this);
-            LoadItems(openImages);
-        }
+        #region public helpers
 
-
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void saveUnscaledImageToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            string path = ImageHelper.SaveImageFileDialog(currentPage.Image);
-            if (InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
-            {
-                Helper.OpenExplorerAtLocation(path);
-            }
-        }
-
-        private void saveScaledImageToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            using (Image img = currentPage.ibMain.VisibleImage)
-            {
-                string path = ImageHelper.SaveImageFileDialog(img);
-                
-                if(InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
-                {
-                    Helper.OpenExplorerAtLocation(path);
-                }
-            }
-        }
-
-        private void moveToToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            string moveTo;
-
-            if (!currentPage.ImagePath.Exists)
-            {
-                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Delete_Item_Messagebox_Title, MessageBoxButtons.OK);
-                return;
-            }
-
-            // passing null will use the save file dialog, but won't save anything
-            // so it can just be used to get the new path / name
-            moveTo = ImageHelper.SaveImageFileDialog(null, currentPage.ImagePath.FullName);
-
-            if (string.IsNullOrEmpty(moveTo))
-                return;
-
-            // delete any files with the new path name
-            // since the user is using the file select dialog
-            // it will ask them if they want to override files
-            // so they will be aware it will delete files
-            PathHelper.DeleteFileOrPath(moveTo);
-
-            File.Move(currentPage.ImagePath.FullName, moveTo);
-            currentPage.ImagePath = new FileInfo(moveTo);
-        }
-
-        private void renameToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            if (!File.Exists(currentPage.ImagePath.FullName))
-            {
-                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            
-            if(MessageBox.Show(this, 
-                InternalSettings.Delete_Item_Messagebox_Message + currentPage.ImagePath.FullName, 
-                InternalSettings.Delete_Item_Messagebox_Title, 
-                MessageBoxButtons.YesNo, 
-                MessageBoxIcon.None) == DialogResult.Yes)
-            {
-                PathHelper.DeleteFileOrPath(currentPage.ImagePath.FullName);
-            }
-        }
-
-        private void imagePropertiesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            ImagePropertiesForm f = new ImagePropertiesForm();
-
-            f.Owner = this;
-            f.StartPosition = FormStartPosition.CenterScreen;
-
-            f.Show();
- 
-            f.UpdateImageInfo(currentPage.ImagePath.FullName);
-        }
-
-
-        private void ExportGifFrames_Click(object sender, EventArgs e)
-        {
-            if (CurrentPage == null)
-                return;
-
-            if (!currentPage.ibMain.HasAnimationFrames)
-            {
-                MessageBox.Show(this,
-                        InternalSettings.No_Animation_Frames_Found_Message,
-                        InternalSettings.No_Animation_Frames_Found_Title,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                return;
-            }
-
-            using(FolderSelectDialog dialog = new FolderSelectDialog())
-            {
-                dialog.Title = "Select a folder to export frames";
-                
-                if(dialog.ShowDialog() && !string.IsNullOrEmpty(dialog.FileName))
-                {
-                    string dir = dialog.FileName;
-                    int totalFrames = 0;
-                    int framesSaved = 0;
-
-                    using(Gif g = new Gif((Bitmap)currentPage.Image))
-                    {
-                        totalFrames = g.Count;
-                        for (int i = 0; i < g.Count; i++)
-                        {
-                            if (ImageHelper.SaveImage(g[i], string.Format("{0}\\{1}.{2}", dir, i, InternalSettings.Default_Image_Format), false))
-                                framesSaved++;
-                        }
-                    }
-
-                    if (InternalSettings.Open_Explorer_After_Export)
-                    {
-                        Helper.OpenExplorerAtLocation(dir);
-                    }
-
-                    if (InternalSettings.Garbage_Collect_After_Gif_Export)
-                    {
-                        GC.Collect();
-                    }
-                }
-            }
-
-        }
-
-        #endregion
-
-        #region cmsEditBtn
-
-        private void cmsEditBtn_Opening(object sender, CancelEventArgs e)
-        {
-            if (currentPage == null)
-            {
-                fillTransparentToolStripMenuItem.Enabled = false;
-                rotateLeftToolStripMenuItem.Enabled = false;
-                rotateRightToolStripMenuItem.Enabled = false;
-                flipHorizontallyToolStripMenuItem.Enabled = false;
-                flipVerticallyToolStripMenuItem.Enabled = false;
-                resizeToolStripMenuItem.Enabled = false;
-                cropToolStripMenuItem.Enabled = false;
-                grayScaleToolStripMenuItem.Enabled = false;
-                invertColorToolStripMenuItem.Enabled = false;
-                ditherToolStripMenuItem.Enabled = false;
-            }
-            else 
-            {
-                fillTransparentToolStripMenuItem.Enabled = true;
-                rotateLeftToolStripMenuItem.Enabled = true;
-                rotateRightToolStripMenuItem.Enabled = true;
-                flipHorizontallyToolStripMenuItem.Enabled = true;
-                flipVerticallyToolStripMenuItem.Enabled = true;
-                resizeToolStripMenuItem.Enabled = true;
-                cropToolStripMenuItem.Enabled = currentPage.ibMain.SelectionBoxVisible;
-                grayScaleToolStripMenuItem.Enabled = true;
-                invertColorToolStripMenuItem.Enabled = true;
-                ditherToolStripMenuItem.Enabled = true;
-            }
-        }
-
-        private void rotateLeftToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedLeft);
-            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void rotateRightToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
-            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            //currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void flipHorizontallyToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
-            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void flipVerticallyToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
-            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            using(ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
-            {
-                f.Owner = this;
-                f.TopMost = this.TopMost;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                if (InternalSettings.Parent_Follow_Child) 
-                    f.LocationChanged += ParentFollowChild;
-                f.ShowDialog();
-
-                ResizeImageFormReturn r = f.GetReturnSize();
-
-                if (r.Result == ResizeImageResult.Cancel)
-                    return;
-                
-                using(Image tmp = currentPage.Image)
-                {
-                    currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
-                    currentPage.BitmapChangeTracker.ReplaceBitmap(ImageHelper.ResizeImage(tmp, r.NewImage));
-                    currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                }
-                UpdateBottomInfoLabel();
-            }
-        }
-
-        private void cropToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null || !currentPage.ibMain.SelectionBoxVisible)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Cropped);
-            currentPage.ibMain.CropImageToSelection();
-            currentPage.BitmapChangeTracker.ReplaceBitmap((Bitmap)currentPage.Image);
-        }
-
-        private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            if (currentPage.ibMain.HasAnimationFrames)
-            {
-                Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)currentPage.Image);
-
-                if (newBmp == null)
-                {
-                    MessageBox.Show(this,
-                        InternalSettings.Unable_To_Convert_To_Grey_Image_Message,
-                        InternalSettings.Unable_To_Convert_To_Grey_Image_Title,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
-                }
-
-
-                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
-                currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
-                currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                currentPage.ibMain.Invalidate();
-                return;
-            }
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
-            ImageHelper.GrayscaleBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            if (currentPage.ibMain.HasAnimationFrames)
-            {
-                Bitmap newBmp = ImageHelper.InvertGif((Bitmap)currentPage.Image);
-
-                if (newBmp == null)
-                {
-                    MessageBox.Show(this,
-                        InternalSettings.Unable_To_Invert_Image_Message,
-                        InternalSettings.Unable_To_Invert_Image_Title,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
-                }
-
-                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
-                currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
-                currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                currentPage.ibMain.Invalidate();
-                return;
-            }
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
-            //currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
-            ImageHelper.InvertBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
-            currentPage.ibMain.Invalidate();
-        }
-
-
-        private void FillTransparent_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            Point p = Location;
-
-            using (FillTransparentForm f = new FillTransparentForm())
-            {
-                f.Owner = this;
-                f.TopMost = this.TopMost;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                if (InternalSettings.Parent_Follow_Child) 
-                    f.LocationChanged += ParentFollowChild;
-
-                f.ShowDialog();
-
-                if(f.result == SimpleDialogResult.Success)
-                {
-                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
-                    currentPage.ibMain.Invalidate();
-                }
-            }
-
-            Location = p;
-        }
-
-
-        private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            Point p = Location;
-            
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
-
-            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
-            {
-                df.Owner = this;
-                df.TopMost = this.TopMost;
-                df.StartPosition = FormStartPosition.CenterScreen;
-
-                if(InternalSettings.Parent_Follow_Child)
-                    df.LocationChanged += ParentFollowChild;
-
-                df.ShowDialog();
-
-                // since we track the change before it happens if the dither was canceled dispose of the kept change and 
-                // remove it from the undos list
-                if (df.Canceled)
-                {
-                    currentPage.BitmapChangeTracker.DisposeLastUndo();
-                }
-
-                currentPage.ibMain.Invalidate();
-            }
-
-            Location = p;
-
-            if (InternalSettings.Garbage_Collect_On_Dither_Form_Cancel) { }
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-        }
-        #endregion
-
-        #region cmsViewBtn
-
-        private void cmsViewBtn_Opening(object sender, CancelEventArgs e)
-        {
-        }
-
-        private void ViewFullscreen_Click(object sender, EventArgs e)
-        {
-            currentPage.ibMain.ShowFullScreen();
-        }
-
-        private void ViewSlideShow_Click(object sender, EventArgs e)
-        {
-            if (CurrentPage == null)
-                return;
-        }
-
-        private void ViewActualImageSize_Click(object sender, EventArgs e)
-        {
-            if (CurrentPage == null)
-                return;
-
-            preventOverflow = true;
-
-            currentPage.ibMain.Zoom = 100;
-            nudTopMain_ZoomPercentage.Value = 100;
-
-            preventOverflow = false;
-
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void FitImageToScreen_Click(object sender, EventArgs e)
-        {
-            if (currentPage == null)
-                return;
-
-            currentPage.ibMain.ZoomToFit();
-            currentPage.ibMain.Invalidate();
-        }
-
-        private void ImageBackingColors_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem btn = sender as ToolStripMenuItem;
-
-            if (btn == null)
-                return;
-
-            switch (btn.Name)
-            {
-                case TSMI_IMAGE_BACK_COLOR_1_NAME:
-                    InternalSettings.Current_Transparent_Grid_Color = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color);
-                    break;
-
-                case TSMI_IMAGE_BACK_COLOR_2_NAME:
-                    InternalSettings.Current_Transparent_Grid_Color_Alternate = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color_Alternate);
-                    break;
-            }
-
-            UpdateCurrentPageTransparentBackColor();
-        }
-
-        private void ResetImageBacking_Click(object sender, EventArgs e)
-        {
-            if (tsmiShowDefaultTransparentGridColors.Checked)
-            {
-                tsmiShowTransparentColor1Only.Checked = false; 
-                InternalSettings.Only_Show_Transparent_Color_1 = false;
-            }
-
-            InternalSettings.Show_Default_Transparent_Colors = tsmiShowDefaultTransparentGridColors.Checked;
-
-            UpdateCurrentPageTransparentBackColor();
-        }
-
-        private void ViewPixelGrid_Clicked(object sender, EventArgs e)
-        {
-            ToolStripMenuItem btn = sender as ToolStripMenuItem;
-
-            if (btn == null)
-                return;
-
-            InternalSettings.Show_Pixel_Grid = btn.Checked;
-
-            UpdatePixelGrid();
-        }
-
-        private void GirdColor1Only_Click(object sender, EventArgs e)
-        {
-            if (tsmiShowTransparentColor1Only.Checked)
-            {
-                tsmiShowDefaultTransparentGridColors.Checked = false;
-                InternalSettings.Show_Default_Transparent_Colors = false;
-            }
-
-            InternalSettings.Only_Show_Transparent_Color_1 = tsmiShowTransparentColor1Only.Checked;
-            UpdateCurrentPageTransparentBackColor();
-        }
-
-        #endregion
-
-
-        #region ToolStripMain Buttons
-
-        private void tsbMain_File_MouseUp(object sender, MouseEventArgs e)
-        {
-            cmsFileBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_File.Name)));
-        }
-
-        private void tsbMain_Edit_MouseUp(object sender, MouseEventArgs e)
-        {
-
-            cmsEditBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_Edit.Name)));
-        }
-
-        private void tsbMain_View_MouseUp(object sender, MouseEventArgs e)
-        {
-            cmsViewBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_View.Name)));
-        }
-
-        private void Settings_Click(object sender, EventArgs e)
-        {
-            Point p = this.Location;
-
-            SettingsForm f = new SettingsForm();
-            f.Owner = this;
-            f.TopMost = this.TopMost;
-            f.StartPosition = FormStartPosition.CenterScreen;
-            if (InternalSettings.Parent_Follow_Child)
-                f.LocationChanged += ParentFollowChild;
-            f.ShowDialog();
-
-            this.Location = p;
-        }
-
-        private void tsbMain_Settings_MouseUp(object sender, MouseEventArgs e)
-        {
-
-        }
-
-        private void tsbMain_CurrentDirectory_MouseUp(object sender, MouseEventArgs e)
-        {
-
-        }
-
-        #endregion
-
-
-        #region PanelTopMain Items
-
-        private void btnTopMain_Open_Click(object sender, EventArgs e)
-        {
-            openToolStripMenuItem_Click(null, EventArgs.Empty);
-        }
-
-        private void btnTopMain_Save_Click(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void nudTopMain_ZoomPercentage_ValueChanged(object sender, EventArgs e)
-        {
-            if (preventOverflow || currentPage == null)
-                return;
-
-            preventOverflow = true;
-
-
-            currentPage.ibMain.Zoom = (int)nudTopMain_ZoomPercentage.Value;
-
-            preventOverflow = false;
-        }
-
-        public void btnTopMain_CloseTab_Click(object sender, EventArgs e)
-        {
-            CloseCurrentTabPage();
-        }
-
-        private void InterpolationMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            InternalSettings.Default_Interpolation_Mode = (InterpolationMode)cbInterpolationMode.SelectedItem;
-            UpdateInterpolationMode();
-        }
-
-        #endregion
-
-
-        #region TabControlMain
-
-        private void TabControl_DragEnter(object sender, DragEventArgs e)
-        {
-            string[] data = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-            if (data == null)
-            {
-                isValidDrop = false;
-                e.Effect = DragDropEffects.None;
-
-                string text = (string)e.Data.GetData(DataFormats.UnicodeText);
-
-                if (string.IsNullOrEmpty(text) || !Helper.IsValidFilePath(text) || !File.Exists(text))
-                    return;
-
-                data = new string[1] { text };
-            }
-
-            isValidDrop = true;
-            e.Effect = DragDropEffects.Move;
-
-            DragDropFiles.Clear();
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                if (string.IsNullOrEmpty(data[i]) || !Helper.IsValidFilePath(data[i]) || !File.Exists(data[i]))
-                    continue;
-
-                DragDropFiles.Add(new FileInfo(data[i]).FullName);
-                //Console.WriteLine(DragDropFiles[i]);
-            }
-        }
-
-        private void TabControl_DragDrop(object sender, DragEventArgs e)
-        {
-            if (!isValidDrop || DragDropFiles.Count < 1)
-                return;
-
-            string[] files = DragDropFiles.ToArray();
-
-            DragDropFiles.Clear();
-            isValidDrop = false;
-
-            LoadItems(files);
-        }
-
-        private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            CurrentPage = (_TabPage)tcMain.SelectedTab;
-        }
-
-        private void _TabPage_ImageLoadChanged(bool imageLoaded)
+        public void UpdateAll(bool updateWatcherIndex = false)
         {
             UpdateZoomNumericUpDown();
             UpdateInterpolationMode(true);
             UpdatePixelGrid(true);
             UpdateCurrentPageTransparentBackColor(true);
+            UpdateImageBoxBackColor(true);
             UpdateBottomInfoLabel();
 
             if (currentPage != null)
                 currentPage.ibMain.Invalidate();
 
-            if (imageLoaded)
+            if (updateWatcherIndex)
             {
                 UpdateWatcherIndex();
             }
         }
 
-        private void _TabPage_ImageChanged()
+        public void UpdateCurrentPageTransparentBackColor(bool suppressRedraw = false)
         {
-            //Console.WriteLine("image changed");
-            _TabPage_ImageLoadChanged(true);
-        }
-
-        #endregion
+            if (currentPage == null)
+                return;
 
 
-        #region Other event callbacks
+            tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(
+                    InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color);
+            tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(
+                InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color_Alternate);
 
-        private void MainWindow_Resize(object sender, EventArgs e)
-        {
-            switch (WindowState)
+            if (InternalSettings.Show_Default_Transparent_Colors)
             {
-                case FormWindowState.Maximized:
-                    isMaximized = true;
-                    if (InternalSettings.Fit_Image_When_Maximized)
-                        FitCurrentToScreen();
-                    break;
-
-                case FormWindowState.Minimized:
-                    break;
-
-                case FormWindowState.Normal:
-                    if(isMaximized && InternalSettings.Fit_Image_When_Unmaximized)
-                        FitCurrentToScreen();
-                    else if (InternalSettings.Fit_Image_On_Resize)
-                        FitCurrentToScreen();
-
-                    isMaximized = false;
-                    break;
+                currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
+                currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+                if (!suppressRedraw)
+                    currentPage.ibMain.Invalidate();
+                return;
             }
+
+            if (InternalSettings.Only_Show_Transparent_Color_1)
+            {
+                currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+                currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color;
+                if (!suppressRedraw)
+                    currentPage.ibMain.Invalidate();
+                return;
+
+            }
+
+            currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+            currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
+            if (!suppressRedraw)
+                currentPage.ibMain.Invalidate();
         }
 
-        private void IdMain_ZoomChangedEvent(object sender, ImageBoxZoomEventArgs e)
+        public void UpdatePixelGrid(bool suppressRedraw = false)
         {
-            if (preventOverflow || currentPage == null)
+            if (currentPage == null)
+                return;
+
+            CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
+
+            if (suppressRedraw)
+                return;
+            currentPage.ibMain.Invalidate();
+        }
+
+        public void UpdateZoomNumericUpDown()
+        {
+            if (currentPage == null)
                 return;
 
             preventOverflow = true;
 
-            nudTopMain_ZoomPercentage.Value = e.NewZoom;
+            nudTopMain_ZoomPercentage.Value = currentPage.ibMain.Zoom;
 
             preventOverflow = false;
         }
 
-        private void ParentFollowChild(object sender, EventArgs e)
+        public void UpdateWatcherIndex()
         {
-            Form f = sender as Form;
+            if (InternalSettings.Watch_Directory)
+            {
+                if (currentPage == null)
+                {
+                    CurrentFolder.UpdateIndex("<>");
+                    return;
+                }
+                CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
+                CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
+            }
+        }
 
-            if (f == null)
+        public void UpdateInterpolationMode(bool suppressRedraw = false)
+        {
+            if (currentPage == null)
                 return;
 
-            if (InternalSettings.CenterChild_When_Parent_Following_Child)
-            {
-                Point p = f.Location;
+            currentPage.ibMain.InterpolationMode = InternalSettings.Default_Interpolation_Mode;
 
-                if (f.Width < Width)
-                {
-                    p.X -= Math.Abs(Width - f.Width) >> 1;
-                }
-                else
-                {
-                    p.X += Math.Abs(Width - f.Width) >> 1;
-                }
-
-                if (f.Height < Height)
-                {
-                    p.Y -= Math.Abs(Height - f.Height) >> 1;
-                }
-                else
-                {
-                    p.Y += Math.Abs(Height - f.Height) >> 1;
-                }
-
-                this.Location = p;
+            if (suppressRedraw)
                 return;
-            }
-            this.Location = f.Location;
+            currentPage.ibMain.Invalidate();
         }
 
-        private void PreviousImage_Click(object sender, EventArgs e)
+        public void UpdateSelectionLock(bool suppressRedraw = false)
         {
-            PreviousImage();
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.LimitSelectionToImage = InternalSettings.Lock_Selection_To_Image;
+
+            if (suppressRedraw)
+                return;
+            currentPage.ibMain.Invalidate();
         }
 
-        private void NextImage_Click(object sender, EventArgs e)
+        public void UpdateImageBoxBackColor(bool suppressRedraw = false)
         {
-            NextImage();
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
+
+            if (suppressRedraw)
+                return;
+            currentPage.ibMain.Invalidate();
         }
 
-        
-
-        #endregion
-
-        #region private helpers
-
-        private Point GetTsmiButtonPos(string name)
-        {
-            // Show context menu at button X position
-            Point p = new Point(
-                tsMain.Location.X,
-                tsMain.Location.Y + tsMain.Height);
-
-            // Since we can't grab the X position of the buttons
-            // Loop through all the buttons adding their width
-            foreach (ToolStripButton btn in tsMain.Items)
-            {
-                if (btn.Name == name)
-                    break;
-
-                p.X += btn.Width;
-            }
-
-            return p;
-        }
-        
         private void UpdateBottomInfoLabel()
         {
             if (currentPage == null || currentPage.Image == null)
@@ -939,42 +256,6 @@ namespace ImageViewer
 
             Text = string.Format("{0}", currentPage.ImagePath.FullName);
         }
-
-        private Color AskChooseColor()
-        {
-            return AskChooseColor(Color.Empty);
-        }
-
-        private Color AskChooseColor(Color initColor)
-        {
-            Color c;
-            Point p;
-
-            c = initColor;
-            p = Location;
-
-            using (ColorPickerForm f = new ColorPickerForm())
-            {
-                f.Owner = this;
-                f.TopMost = this.TopMost;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                if (InternalSettings.Parent_Follow_Child) 
-                    f.LocationChanged += ParentFollowChild;
-
-                f.UpdateColors(c);
-                f.ShowDialog();
-
-                c = f.GetCurrentColor();
-            }
-
-            Location = p;
-
-            return c;
-        }
-
-        #endregion
-
-        #region public helpers
 
         public void CloseCurrentTabPage()
         {
@@ -1098,93 +379,7 @@ namespace ImageViewer
 
             currentPage.ibMain.ZoomToFit();
             currentPage.ibMain.Invalidate();
-        }
-
-        public void UpdateCurrentPageTransparentBackColor(bool suppressRedraw = false)
-        {
-            if (currentPage == null)
-                return;
-
-
-            tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(
-                    InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color);
-            tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(
-                InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color_Alternate);
-
-            if (InternalSettings.Show_Default_Transparent_Colors)
-            {
-                currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
-                currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
-                if(!suppressRedraw)
-                    currentPage.ibMain.Invalidate();
-                return;
-            }
-
-            if (InternalSettings.Only_Show_Transparent_Color_1)
-            {
-                currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
-                currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color;
-                if (!suppressRedraw)
-                    currentPage.ibMain.Invalidate();
-                return;
-
-            }
-
-            currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
-            currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
-            if (!suppressRedraw)
-                currentPage.ibMain.Invalidate();
-        }
-
-        public void UpdatePixelGrid(bool suppressRedraw = false)
-        {
-            if (currentPage == null)
-                return;
-
-            CurrentPage.ibMain.ShowPixelGrid = InternalSettings.Show_Pixel_Grid;
-            
-            if (suppressRedraw)
-                return;
-            currentPage.ibMain.Invalidate();
-        }
-
-        public void UpdateZoomNumericUpDown()
-        {
-            if (currentPage == null)
-                return;
-
-            preventOverflow = true;
-
-            nudTopMain_ZoomPercentage.Value = currentPage.ibMain.Zoom;
-
-            preventOverflow = false;
-        }
-
-        public void UpdateWatcherIndex()
-        {
-            if (InternalSettings.Watch_Directory)
-            {
-                if (currentPage == null)
-                {
-                    CurrentFolder.UpdateIndex("<>");
-                    return;
-                }
-                CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
-                CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
-            }
-        }
-
-        public void UpdateInterpolationMode(bool suppressRedraw = false)
-        {
-            if (currentPage == null)
-                return;
-
-            currentPage.ibMain.InterpolationMode = InternalSettings.Default_Interpolation_Mode;
-
-            if (suppressRedraw)
-                return;
-            currentPage.ibMain.Invalidate();
-        }
+        }  
 
         public void NextImage()
         {
@@ -1212,21 +407,146 @@ namespace ImageViewer
             currentPage.ImagePath = new FileInfo(newPath);
         }
 
-        public void FullscreenKeyUpCallback(KeyEventArgs e)
+        public void SaveUnscaledImage()
         {
-            switch (e.KeyData)
-            {
-                case (Keys.Right | Keys.Control):
-                    NextImage();
-                    break;
+            if (currentPage == null)
+                return;
 
-                case (Keys.Left | Keys.Control):
-                    PreviousImage();
-                    break;
+            string path = ImageHelper.SaveImageFileDialog(currentPage.Image);
+
+            if (InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
+            {
+                Helper.OpenExplorerAtLocation(path);
             }
         }
 
+        public void SaveVisibleImage()
+        {
+            if (currentPage == null)
+                return;
+
+            using (Image img = currentPage.ibMain.VisibleImage)
+            {
+                string path = ImageHelper.SaveImageFileDialog(img);
+
+                if (InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
+                {
+                    Helper.OpenExplorerAtLocation(path);
+                }
+            }
+        }
+
+        public void MoveImage()
+        {
+            if (currentPage == null)
+                return;
+
+            string moveTo;
+
+            if (!File.Exists(currentPage.ImagePath.FullName))
+            {
+                MessageBox.Show(this, 
+                    InternalSettings.Item_Does_Not_Exist_Message, 
+                    InternalSettings.Delete_Item_Messagebox_Title, 
+                    MessageBoxButtons.OK);
+                return;
+            }
+
+            moveTo = Helper.MoveFileDialog(currentPage.ImagePath.FullName);
+
+            if (string.IsNullOrEmpty(moveTo))
+                return;
+
+            currentPage.ImagePath = new FileInfo(moveTo);
+        }
+
+        public void DeleteImage()
+        {
+            if (currentPage == null)
+                return;
+
+            if (!File.Exists(currentPage.ImagePath.FullName))
+            {
+                MessageBox.Show(this,
+                    InternalSettings.Item_Does_Not_Exist_Message,
+                    InternalSettings.Item_Does_Not_Exist_Title,
+                    MessageBoxButtons.OK);
+                return;
+            }
+
+            if (MessageBox.Show(this,
+                InternalSettings.Delete_Item_Messagebox_Message + currentPage.ImagePath.FullName,
+                InternalSettings.Delete_Item_Messagebox_Title,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.None) == DialogResult.Yes)
+            {
+                PathHelper.DeleteFileOrPath(currentPage.ImagePath.FullName);
+            }
+        }
+
+        public void ToggleTopMost()
+        {
+            this.TopMost = !this.TopMost;
+            if (this.TopMost)
+                tsbAlwaysOnTop.BackColor = SystemColors.ScrollBar;
+            else
+                tsbAlwaysOnTop.BackColor = SystemColors.Control;
+        }
+
         #endregion
+
+
+        #region private helpers
+
+        private Point GetTsmiButtonPos(string name)
+        {
+            // Show context menu at button X position
+            Point p = new Point(
+                tsMain.Location.X,
+                tsMain.Location.Y + tsMain.Height);
+
+            // Since we can't grab the X position of the buttons
+            // Loop through all the buttons adding their width
+            foreach (ToolStripButton btn in tsMain.Items)
+            {
+                if (btn.Name == name)
+                    break;
+
+                p.X += btn.Width;
+            }
+
+            return p;
+        }
+
+        private Color AskChooseColor(Color initColor)
+        {
+            Color c;
+            Point p;
+
+            c = initColor;
+            p = Location;
+
+            using (ColorPickerForm f = new ColorPickerForm())
+            {
+                f.Owner = this;
+                f.TopMost = this.TopMost;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                if (InternalSettings.Parent_Follow_Child)
+                    f.LocationChanged += ParentFollowChild;
+
+                f.UpdateColors(c);
+                f.ShowDialog();
+
+                c = f.GetCurrentColor();
+            }
+
+            Location = p;
+
+            return c;
+        }
+
+        #endregion
+
 
         #region Overrides
 
@@ -1314,6 +634,753 @@ namespace ImageViewer
             }
         }
 
+
+
+
+
+        #endregion
+
+
+        #region Event callbacks
+
+        // Top Panel
+        private void btnTopMain_Open_Click(object sender, EventArgs e)
+        {
+            openToolStripMenuItem_Click(null, EventArgs.Empty);
+        }
+
+        private void btnTopMain_Save_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void nudTopMain_ZoomPercentage_ValueChanged(object sender, EventArgs e)
+        {
+            if (preventOverflow || currentPage == null)
+                return;
+
+            preventOverflow = true;
+
+
+            currentPage.ibMain.Zoom = (int)nudTopMain_ZoomPercentage.Value;
+
+            preventOverflow = false;
+        }
+
+        private void btnTopMain_CloseTab_Click(object sender, EventArgs e)
+        {
+            CloseCurrentTabPage();
+        }
+
+        private void InterpolationMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            InternalSettings.Default_Interpolation_Mode = (InterpolationMode)cbInterpolationMode.SelectedItem;
+            UpdateInterpolationMode();
+        }
+
+
+
+        // Toolstrip Main
+        private void tsbMain_File_MouseUp(object sender, MouseEventArgs e)
+        {
+            cmsFileBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_File.Name)));
+        }
+
+        private void tsbMain_Edit_MouseUp(object sender, MouseEventArgs e)
+        {
+
+            cmsEditBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_Edit.Name)));
+        }
+
+        private void tsbMain_View_MouseUp(object sender, MouseEventArgs e)
+        {
+            cmsViewBtn.Show(PointToScreen(GetTsmiButtonPos(tsbMain_View.Name)));
+        }
+
+        private void Settings_Click(object sender, EventArgs e)
+        {
+            Point p = this.Location;
+
+            SettingsForm f = new SettingsForm();
+            f.Owner = this;
+            f.TopMost = this.TopMost;
+            f.StartPosition = FormStartPosition.CenterScreen;
+            if (InternalSettings.Parent_Follow_Child)
+                f.LocationChanged += ParentFollowChild;
+            f.ShowDialog();
+
+            this.Location = p;
+
+            UpdateAll();
+        }
+
+        private void tsbMain_Settings_MouseUp(object sender, MouseEventArgs e)
+        {
+
+        }
+
+
+        private void AlwaysOnTop_Click(object sender, EventArgs e)
+        {
+            ToggleTopMost();
+        }
+
+
+        // Tab Control / Tab Pages
+        private void TabControl_DragEnter(object sender, DragEventArgs e)
+        {
+            string[] data = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            if (data == null)
+            {
+                isValidDrop = false;
+                e.Effect = DragDropEffects.None;
+
+                string text = (string)e.Data.GetData(DataFormats.UnicodeText);
+
+                if (string.IsNullOrEmpty(text) || !Helper.IsValidFilePath(text) || !File.Exists(text))
+                    return;
+
+                data = new string[1] { text };
+            }
+
+            isValidDrop = true;
+            e.Effect = DragDropEffects.Move;
+
+            DragDropFiles.Clear();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (string.IsNullOrEmpty(data[i]) || !Helper.IsValidFilePath(data[i]) || !File.Exists(data[i]))
+                    continue;
+
+                DragDropFiles.Add(new FileInfo(data[i]).FullName);
+                //Console.WriteLine(DragDropFiles[i]);
+            }
+        }
+
+        private void TabControl_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!isValidDrop || DragDropFiles.Count < 1)
+                return;
+
+            string[] files = DragDropFiles.ToArray();
+
+            DragDropFiles.Clear();
+            isValidDrop = false;
+
+            LoadItems(files);
+        }
+
+        private void tcMain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CurrentPage = (_TabPage)tcMain.SelectedTab;
+        }
+
+        private void _TabPage_ImageLoadChanged(bool imageLoaded)
+        {
+            UpdateAll(imageLoaded);
+        }
+
+        private void _TabPage_ImageChanged()
+        {
+            //Console.WriteLine("image changed");
+            _TabPage_ImageLoadChanged(true);
+        }
+
+
+
+        // Context Menu Strips
+        #region cmsFileBtn
+
+        private void cmsFileBtn_Opening(object sender, CancelEventArgs e)
+        {
+            if (currentPage == null)
+            {
+                saveAsToolStripMenuItem.Enabled = false;
+                moveToToolStripMenuItem.Enabled = false;
+                renameToolStripMenuItem.Enabled = false;
+                deleteToolStripMenuItem.Enabled = false;
+                imagePropertiesToolStripMenuItem.Enabled = false;
+            }
+            else if (File.Exists(currentPage.ImagePath.FullName))
+            {
+                saveAsToolStripMenuItem.Enabled = true;
+                moveToToolStripMenuItem.Enabled = true;
+                renameToolStripMenuItem.Enabled = true;
+                deleteToolStripMenuItem.Enabled = true;
+                imagePropertiesToolStripMenuItem.Enabled = true;
+            }
+            // if the path doesn't exist, but the current tab is loaded
+            // the image is still in memory and can be re-saved
+            else
+            {
+                saveAsToolStripMenuItem.Enabled = true;
+                moveToToolStripMenuItem.Enabled = false;
+                renameToolStripMenuItem.Enabled = false;
+                deleteToolStripMenuItem.Enabled = false;
+                imagePropertiesToolStripMenuItem.Enabled = false;
+            }
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string[] openImages = ImageHelper.OpenImageFileDialog(true, this);
+            LoadItems(openImages);
+        }
+
+        private void saveUnscaledImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveUnscaledImage();
+        }
+
+        private void saveScaledImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveVisibleImage();
+        }
+
+        private void moveToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MoveImage();
+        }
+
+        private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DeleteImage();
+        }
+
+        private void imagePropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            ImagePropertiesForm f = new ImagePropertiesForm();
+
+            f.Owner = this;
+            f.StartPosition = FormStartPosition.CenterScreen;
+
+            f.Show();
+
+            f.UpdateImageInfo(currentPage.ImagePath.FullName);
+        }
+
+        private void ExportGifFrames_Click(object sender, EventArgs e)
+        {
+            if (CurrentPage == null)
+                return;
+
+            if (!currentPage.ibMain.HasAnimationFrames)
+            {
+                MessageBox.Show(this,
+                        InternalSettings.No_Animation_Frames_Found_Message,
+                        InternalSettings.No_Animation_Frames_Found_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                return;
+            }
+
+            using (FolderSelectDialog dialog = new FolderSelectDialog())
+            {
+                dialog.Title = "Select a folder to export frames";
+
+                if (dialog.ShowDialog() && !string.IsNullOrEmpty(dialog.FileName))
+                {
+                    string dir = dialog.FileName;
+                    int totalFrames = 0;
+                    int framesSaved = 0;
+
+                    using (Gif g = new Gif((Bitmap)currentPage.Image))
+                    {
+                        totalFrames = g.Count;
+                        for (int i = 0; i < g.Count; i++)
+                        {
+                            if (ImageHelper.SaveImage(g[i], string.Format("{0}\\{1}.{2}", dir, i, InternalSettings.Default_Image_Format), false))
+                                framesSaved++;
+                        }
+                    }
+
+                    if (InternalSettings.Open_Explorer_After_Export)
+                    {
+                        Helper.OpenExplorerAtLocation(dir);
+                    }
+
+                    if (InternalSettings.Garbage_Collect_After_Gif_Export)
+                    {
+                        GC.Collect();
+                    }
+                }
+            }
+
+        }
+
+        #endregion
+
+        #region cmsEditBtn
+
+        private void cmsEditBtn_Opening(object sender, CancelEventArgs e)
+        {
+            if (currentPage == null)
+            {
+                fillTransparentToolStripMenuItem.Enabled = false;
+                rotateLeftToolStripMenuItem.Enabled = false;
+                rotateRightToolStripMenuItem.Enabled = false;
+                flipHorizontallyToolStripMenuItem.Enabled = false;
+                flipVerticallyToolStripMenuItem.Enabled = false;
+                resizeToolStripMenuItem.Enabled = false;
+                cropToolStripMenuItem.Enabled = false;
+                grayScaleToolStripMenuItem.Enabled = false;
+                invertColorToolStripMenuItem.Enabled = false;
+                ditherToolStripMenuItem.Enabled = false;
+            }
+            else
+            {
+                fillTransparentToolStripMenuItem.Enabled = true;
+                rotateLeftToolStripMenuItem.Enabled = true;
+                rotateRightToolStripMenuItem.Enabled = true;
+                flipHorizontallyToolStripMenuItem.Enabled = true;
+                flipVerticallyToolStripMenuItem.Enabled = true;
+                resizeToolStripMenuItem.Enabled = true;
+                cropToolStripMenuItem.Enabled = currentPage.ibMain.SelectionBoxVisible;
+                grayScaleToolStripMenuItem.Enabled = true;
+                invertColorToolStripMenuItem.Enabled = true;
+                ditherToolStripMenuItem.Enabled = true;
+            }
+        }
+
+        private void rotateLeftToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedLeft);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void rotateRightToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            //currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void flipHorizontallyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void flipVerticallyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            using (ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
+            {
+                f.Owner = this;
+                f.TopMost = this.TopMost;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                if (InternalSettings.Parent_Follow_Child)
+                    f.LocationChanged += ParentFollowChild;
+                f.ShowDialog();
+
+                ResizeImageFormReturn r = f.GetReturnSize();
+
+                if (r.Result == ResizeImageResult.Cancel)
+                    return;
+
+                using (Image tmp = currentPage.Image)
+                {
+                    currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
+                    currentPage.BitmapChangeTracker.ReplaceBitmap(ImageHelper.ResizeImage(tmp, r.NewImage));
+                    currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
+                }
+                UpdateBottomInfoLabel();
+            }
+        }
+
+        private void cropToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null || !currentPage.ibMain.SelectionBoxVisible)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Cropped);
+            currentPage.ibMain.CropImageToSelection();
+            currentPage.BitmapChangeTracker.ReplaceBitmap((Bitmap)currentPage.Image);
+        }
+
+        private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            if (currentPage.ibMain.HasAnimationFrames)
+            {
+                Bitmap newBmp = ImageHelper.GrayscaleGif((Bitmap)currentPage.Image);
+
+                if (newBmp == null)
+                {
+                    MessageBox.Show(this,
+                        InternalSettings.Unable_To_Convert_To_Grey_Image_Message,
+                        InternalSettings.Unable_To_Convert_To_Grey_Image_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+
+                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
+                currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
+                currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
+                currentPage.ibMain.Invalidate();
+                return;
+            }
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
+            ImageHelper.GrayscaleBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            if (currentPage.ibMain.HasAnimationFrames)
+            {
+                Bitmap newBmp = ImageHelper.InvertGif((Bitmap)currentPage.Image);
+
+                if (newBmp == null)
+                {
+                    MessageBox.Show(this,
+                        InternalSettings.Unable_To_Invert_Image_Message,
+                        InternalSettings.Unable_To_Invert_Image_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
+                currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
+                currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
+                currentPage.ibMain.Invalidate();
+                return;
+            }
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
+            //currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
+            ImageHelper.InvertBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
+            currentPage.ibMain.Invalidate();
+        }
+
+
+        private void FillTransparent_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            Point p = Location;
+
+            using (FillTransparentForm f = new FillTransparentForm())
+            {
+                f.Owner = this;
+                f.TopMost = this.TopMost;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                if (InternalSettings.Parent_Follow_Child)
+                    f.LocationChanged += ParentFollowChild;
+
+                f.ShowDialog();
+
+                if (f.result == SimpleDialogResult.Success)
+                {
+                    ImageHelper.FillTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
+                    currentPage.ibMain.Invalidate();
+                }
+            }
+
+            Location = p;
+        }
+
+
+        private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            Point p = Location;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
+
+            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
+            {
+                df.Owner = this;
+                df.TopMost = this.TopMost;
+                df.StartPosition = FormStartPosition.CenterScreen;
+
+                if (InternalSettings.Parent_Follow_Child)
+                    df.LocationChanged += ParentFollowChild;
+
+                df.ShowDialog();
+
+                // since we track the change before it happens if the dither was canceled dispose of the kept change and 
+                // remove it from the undos list
+                if (df.Canceled)
+                {
+                    currentPage.BitmapChangeTracker.DisposeLastUndo();
+                }
+
+                currentPage.ibMain.Invalidate();
+            }
+
+            Location = p;
+
+            if (InternalSettings.Garbage_Collect_On_Dither_Form_Cancel) { }
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+        #endregion
+
+        #region cmsViewBtn
+
+        private void cmsViewBtn_Opening(object sender, CancelEventArgs e)
+        {
+        }
+
+        private void ViewFullscreen_Click(object sender, EventArgs e)
+        {
+            currentPage.ibMain.ShowFullScreen();
+        }
+
+        private void ViewSlideShow_Click(object sender, EventArgs e)
+        {
+            if (CurrentPage == null)
+                return;
+        }
+
+        private void ViewActualImageSize_Click(object sender, EventArgs e)
+        {
+            if (CurrentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            currentPage.ibMain.Zoom = 100;
+            nudTopMain_ZoomPercentage.Value = 100;
+
+            preventOverflow = false;
+
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void FitImageToScreen_Click(object sender, EventArgs e)
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.ZoomToFit();
+            currentPage.ibMain.Invalidate();
+        }
+
+        private void ImageBackingColors_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem btn = sender as ToolStripMenuItem;
+
+            if (btn == null)
+                return;
+
+            switch (btn.Name)
+            {
+                case TSMI_IMAGE_BACK_COLOR_1_NAME:
+                    InternalSettings.Current_Transparent_Grid_Color = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color);
+                    break;
+
+                case TSMI_IMAGE_BACK_COLOR_2_NAME:
+                    InternalSettings.Current_Transparent_Grid_Color_Alternate = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color_Alternate);
+                    break;
+            }
+
+            UpdateCurrentPageTransparentBackColor();
+        }
+
+        private void ResetImageBacking_Click(object sender, EventArgs e)
+        {
+            if (tsmiShowDefaultTransparentGridColors.Checked)
+            {
+                tsmiShowTransparentColor1Only.Checked = false;
+                InternalSettings.Only_Show_Transparent_Color_1 = false;
+            }
+
+            InternalSettings.Show_Default_Transparent_Colors = tsmiShowDefaultTransparentGridColors.Checked;
+
+            UpdateCurrentPageTransparentBackColor();
+        }
+
+        private void ViewPixelGrid_Clicked(object sender, EventArgs e)
+        {
+            ToolStripMenuItem btn = sender as ToolStripMenuItem;
+
+            if (btn == null)
+                return;
+
+            InternalSettings.Show_Pixel_Grid = btn.Checked;
+
+            UpdatePixelGrid();
+        }
+
+        private void GirdColor1Only_Click(object sender, EventArgs e)
+        {
+            if (tsmiShowTransparentColor1Only.Checked)
+            {
+                tsmiShowDefaultTransparentGridColors.Checked = false;
+                InternalSettings.Show_Default_Transparent_Colors = false;
+            }
+
+            InternalSettings.Only_Show_Transparent_Color_1 = tsmiShowTransparentColor1Only.Checked;
+            UpdateCurrentPageTransparentBackColor();
+        }
+
+        #endregion
+
+
+
+        // other
+        private void LockSelectionToImage_CheckChanged(object sender, EventArgs e)
+        {
+            InternalSettings.Lock_Selection_To_Image = cbLockSelectionToImage.Checked;
+            UpdateSelectionLock();
+        }
+
+        private void MainWindow_Resize(object sender, EventArgs e)
+        {
+            switch (WindowState)
+            {
+                case FormWindowState.Maximized:
+                    isMaximized = true;
+                    if (InternalSettings.Fit_Image_When_Maximized)
+                        FitCurrentToScreen();
+                    break;
+
+                case FormWindowState.Minimized:
+                    break;
+
+                case FormWindowState.Normal:
+                    if (isMaximized && InternalSettings.Fit_Image_When_Unmaximized)
+                        FitCurrentToScreen();
+                    else if (InternalSettings.Fit_Image_On_Resize)
+                        FitCurrentToScreen();
+
+                    isMaximized = false;
+                    break;
+            }
+        }
+
+        private void MainForm_Activated(object sender, EventArgs e)
+        {
+/*            Point p = PointToClient(Cursor.Position);
+            Control btn;
+            if ((btn = GetChildAtPoint(p)) != null)
+            {
+                if (btn.Name == tsbAlwaysOnTop.Name)
+                {
+                    Console.WriteLine("nyah");
+                }
+            }*/
+        }
+
+        private void IdMain_ZoomChangedEvent(object sender, ImageBoxZoomEventArgs e)
+        {
+            if (preventOverflow || currentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            nudTopMain_ZoomPercentage.Value = e.NewZoom;
+
+            preventOverflow = false;
+        }
+
+        private void ParentFollowChild(object sender, EventArgs e)
+        {
+            Form f = sender as Form;
+
+            if (f == null)
+                return;
+
+            if (InternalSettings.CenterChild_When_Parent_Following_Child)
+            {
+                Point p = f.Location;
+
+                if (f.Width < Width)
+                {
+                    p.X -= Math.Abs(Width - f.Width) >> 1;
+                }
+                else
+                {
+                    p.X += Math.Abs(Width - f.Width) >> 1;
+                }
+
+                if (f.Height < Height)
+                {
+                    p.Y -= Math.Abs(Height - f.Height) >> 1;
+                }
+                else
+                {
+                    p.Y += Math.Abs(Height - f.Height) >> 1;
+                }
+
+                this.Location = p;
+                return;
+            }
+            this.Location = f.Location;
+        }
+
+        private void PreviousImage_Click(object sender, EventArgs e)
+        {
+            PreviousImage();
+        }
+
+        private void NextImage_Click(object sender, EventArgs e)
+        {
+            NextImage();
+        }
+
+        public void FullscreenKeyUpCallback(KeyEventArgs e)
+        {
+            switch (e.KeyData)
+            {
+                case (Keys.Right | Keys.Control):
+                    NextImage();
+                    break;
+
+                case (Keys.Left | Keys.Control):
+                    PreviousImage();
+                    break;
+            }
+        }
 
 
 

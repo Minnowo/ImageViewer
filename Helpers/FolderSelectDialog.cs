@@ -60,7 +60,7 @@ namespace ImageViewer.Helpers
                 }
                 set
                 {
-                    ofd.Title = string.IsNullOrEmpty(value) ? InternalSettings.FolderSelectDialog_Title_Select_a_folder : value;
+                    ofd.Title = string.IsNullOrEmpty(value) ? InternalSettings.Folder_Select_Dialog_Title : value;
                 }
             }
 

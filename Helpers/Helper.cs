@@ -94,6 +94,31 @@ namespace ImageViewer.Helpers
         }
 
         /// <summary>
+        /// Opens a save file dialog that doesn't save anything, but instead moves the file.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string MoveFileDialog(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return string.Empty;
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Title = InternalSettings.Move_File_Dialog_Title;
+                sfd.FileName = Path.GetFileName(filePath);
+
+                if (sfd.ShowDialog() == DialogResult.OK && !string.IsNullOrEmpty(sfd.FileName))
+                {
+                    PathHelper.DeleteFileOrPath(sfd.FileName);  // delete any existing file
+                    File.Move(filePath, sfd.FileName);          // move the file.
+                    return sfd.FileName;
+                }
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Read a string from the given stream.
         /// </summary>
         /// <param name="stream">The stream to read the data from.</param>
