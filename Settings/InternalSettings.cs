@@ -312,6 +312,12 @@ namespace ImageViewer.Settings
             get { return CurrentUserSettings.Replace_Transparency_On_Copy; }
             set { CurrentUserSettings.Replace_Transparency_On_Copy = value; }
         }
+        
+        public static bool Always_On_Top
+        {
+            get { return CurrentUserSettings.Always_On_Top; }
+            set { CurrentUserSettings.Always_On_Top = value; }
+        }
 
         public static bool WebP_Plugin_Exists = false;
 
@@ -415,6 +421,9 @@ namespace ImageViewer.Settings
         [Description("Should the tmp directory be deleted when the application closes."), DisplayName("Delete Temp Dir On Exit")]
         public bool Delete_Temp_Directory_On_Close { get; set; } = true;
 
+
+        [Description("Should the mainform be a topmost window."), DisplayName("Always On Top")]
+        public bool Always_On_Top { get; set; } = false;
 
 
         [Description("Should the image backing only show the default colors."), DisplayName("Show Default Image Backing")]

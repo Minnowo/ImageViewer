@@ -96,6 +96,7 @@
             // 
             // tsMain
             // 
+            this.tsMain.ClickThrough = false;
             this.tsMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbMain_File,
@@ -635,7 +636,6 @@
             this.MinimumSize = new System.Drawing.Size(280, 220);
             this.Name = "MainForm";
             this.Text = "NULL";
-            this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.Resize += new System.EventHandler(this.MainWindow_Resize);
             this.tsMain.ResumeLayout(false);
             this.tsMain.PerformLayout();

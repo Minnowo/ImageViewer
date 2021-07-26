@@ -92,6 +92,16 @@ namespace ImageViewer
 
             tsMain.ClickThrough = true;
 
+            TopMost = InternalSettings.Always_On_Top;
+            if (this.TopMost)
+            {
+                tsbAlwaysOnTop.BackColor = SystemColors.ScrollBar;
+            }
+            else
+            {
+                tsbAlwaysOnTop.BackColor = SystemColors.Control;
+            }
+
             if (InternalSettings.Watch_Directory)
                 CurrentFolder = new FolderWatcher("");
 
@@ -487,10 +497,16 @@ namespace ImageViewer
         public void ToggleTopMost()
         {
             this.TopMost = !this.TopMost;
+            InternalSettings.Always_On_Top = this.TopMost;
+
             if (this.TopMost)
+            {
                 tsbAlwaysOnTop.BackColor = SystemColors.ScrollBar;
+            }
             else
+            {
                 tsbAlwaysOnTop.BackColor = SystemColors.Control;
+            }
         }
 
         #endregion
@@ -718,7 +734,6 @@ namespace ImageViewer
         {
 
         }
-
 
         private void AlwaysOnTop_Click(object sender, EventArgs e)
         {
@@ -1298,19 +1313,6 @@ namespace ImageViewer
             }
         }
 
-        private void MainForm_Activated(object sender, EventArgs e)
-        {
-/*            Point p = PointToClient(Cursor.Position);
-            Control btn;
-            if ((btn = GetChildAtPoint(p)) != null)
-            {
-                if (btn.Name == tsbAlwaysOnTop.Name)
-                {
-                    Console.WriteLine("nyah");
-                }
-            }*/
-        }
-
         private void IdMain_ZoomChangedEvent(object sender, ImageBoxZoomEventArgs e)
         {
             if (preventOverflow || currentPage == null)
@@ -1384,8 +1386,7 @@ namespace ImageViewer
 
 
 
-        #endregion
 
-        
+        #endregion
     }
 }
