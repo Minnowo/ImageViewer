@@ -15,6 +15,8 @@ namespace Cyotek.Windows.Forms
     {
         #region Instance Fields
 
+        private bool _lockImageToCanvas;
+
         private bool _autoScroll;
 
         private Size _autoScrollMargin;
@@ -36,6 +38,7 @@ namespace Cyotek.Windows.Forms
             this.AutoScrollMinSize = Size.Empty;
             this.AutoScrollPosition = Point.Empty;
             this.AutoScroll = true;
+            this._lockImageToCanvas = true;
 
             base.SetStyle(ControlStyles.ContainerControl, true);
         }
@@ -43,6 +46,12 @@ namespace Cyotek.Windows.Forms
         #endregion
 
         #region Events
+
+        /// <summary>
+        ///   Occurs when the AutoScroll property value changes 
+        /// </summary>
+        [Category("Property Changed")]
+        public event EventHandler ImageLockChanged;
 
         /// <summary>
         ///   Occurs when the AutoScroll property value changes
@@ -159,6 +168,28 @@ namespace Cyotek.Windows.Forms
         #endregion
 
         #region Public Properties
+
+        /// <summary>
+        ///   Gets or sets a value indicating whether the container allows the image to be drawn/dragged anywhere on the canvas regardless of zoom level.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the container should prevent dragging of the image while not zoomed in, <c>false</c>.
+        /// </value>
+        [Category("Layout")]
+        [DefaultValue(true)]
+        public virtual bool LockImage
+        {
+            get { return _lockImageToCanvas; }
+            set
+            {
+                if (this._lockImageToCanvas != value)
+                {
+                    _lockImageToCanvas = value;
+
+                    this.OnImageLockChanged(EventArgs.Empty);
+                }
+            }
+        }
 
         /// <summary>
         ///   Gets or sets a value indicating whether the container enables the user to scroll to any controls placed outside of its visible boundaries.
@@ -339,27 +370,48 @@ namespace Cyotek.Windows.Forms
             x = position.X;
             y = position.Y;
 
-            if (x < -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width))
+            if (this.LockImage)
             {
-                x = -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width);
+                if (x < -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width))
+                {
+                    x = -(this.AutoScrollMinSize.Width - this.ClientRectangle.Width);
+                }
+
+                if (y < -(this.AutoScrollMinSize.Height - this.ClientRectangle.Height))
+                {
+                    y = -(this.AutoScrollMinSize.Height - base.ClientRectangle.Height);
+                }
+
+                if (x > 0)
+                {
+                    x = 0;
+                }
+
+                if (y > 0)
+                {
+                    y = 0;
+                }
             }
 
-            if (y < -(this.AutoScrollMinSize.Height - this.ClientRectangle.Height))
-            {
-                y = -(this.AutoScrollMinSize.Height - base.ClientRectangle.Height);
-            }
+            return new Point(x, y); 
+        }
 
-            if (x > 0)
-            {
-                x = 0;
-            }
+        /// <summary>
+        ///   Raises the <see cref="ImageLockChanged" /> event.
+        /// </summary>
+        /// <param name="e">
+        ///   The <see cref="EventArgs" /> instance containing the event data.
+        /// </param>
+        protected virtual void OnImageLockChanged(EventArgs e)
+        {
+            EventHandler handler;
 
-            if (y > 0)
-            {
-                y = 0;
-            }
+            handler = this.ImageLockChanged;
 
-            return new Point(x, y);
+            if (handler != null)
+            {
+                handler(this, e);
+            }
         }
 
         /// <summary>
@@ -486,21 +538,22 @@ namespace Cyotek.Windows.Forms
         /// <param name="offset">The offset.</param>
         private void ScrollByOffset(Size offset)
         {
-            if (!offset.IsEmpty)
+            if (offset.IsEmpty)
+                return;
+            
+            this.SuspendLayout();
+            foreach (Control child in Controls)
             {
-                this.SuspendLayout();
-                foreach (Control child in Controls)
-                {
-                    child.Location -= offset;
-                }
-
-                _autoScrollPosition = new Point(_autoScrollPosition.X - offset.Width, _autoScrollPosition.Y - offset.Height);
-                this.ScrollTo(-_autoScrollPosition.X, -_autoScrollPosition.Y);
-
-                this.ResumeLayout();
-
-                this.Invalidate();
+                child.Location -= offset;
             }
+
+            _autoScrollPosition = new Point(_autoScrollPosition.X - offset.Width, _autoScrollPosition.Y - offset.Height);
+
+            this.ScrollTo(-_autoScrollPosition.X, -_autoScrollPosition.Y);
+
+            this.ResumeLayout();
+
+            this.Invalidate();
         }
 
         #endregion

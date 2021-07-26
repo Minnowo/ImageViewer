@@ -1037,6 +1037,23 @@ namespace ImageViewer.Helpers
     {
         public static int decimalPlaces { get; set; } = 2;
 
+        public static Color AskChooseColor()
+        {
+            return AskChooseColor(Color.Empty);
+        }
+
+        public static Color AskChooseColor(Color initColor)
+        {
+            using (ColorPickerForm f = new ColorPickerForm())
+            {
+                f.TopMost = true;
+                f.UpdateColors(initColor);
+                f.ShowDialog();
+
+                return f.GetCurrentColor();
+            }
+        }
+
         public static string ColorToHex(Color color, ColorFormat format = ColorFormat.RGB)
         {
             return ColorToHex(color.R, color.G, color.B, color.A, format);
@@ -1235,11 +1252,11 @@ namespace ImageViewer.Helpers
             return number.Clamp<byte>(0, 255);
         }
 
-        public static List<ARGB> ReadPlainTextColorPalette(string fileName)
+        public static List<Color> ReadPlainTextColorPalette(string fileName)
         {
-            List<ARGB> colorPalette;
+            List<Color> colorPalette;
 
-            colorPalette = new List<ARGB>();
+            colorPalette = new List<Color>();
 
             const Int32 BufferSize = 128;
             using (var fileStream = File.OpenRead(fileName))
@@ -1261,11 +1278,11 @@ namespace ImageViewer.Helpers
         }
 
         // https://www.cyotek.com/blog/loading-the-color-palette-from-a-bbm-lbm-image-file-using-csharp#files
-        public static List<ARGB> ReadColorMap(string fileName)
+        public static List<Color> ReadColorMap(string fileName)
         {
-            List<ARGB> colorPalette;
+            List<Color> colorPalette;
 
-            colorPalette = new List<ARGB>();
+            colorPalette = new List<Color>();
 
             using (FileStream stream = File.OpenRead(fileName))
             {
@@ -1281,7 +1298,7 @@ namespace ImageViewer.Helpers
                 // the next value is the size of all the data in the FORM chunk
                 // We don't actually need this value, but we have to read it
                 // regardless to advance the stream
-                Helper.ReadInt(stream);
+                Helper.ReadInt32(stream);
 
                 // read either the PBM or ILBM header that identifies this document as an image file
                 stream.Read(buffer, 0, buffer.Length);
@@ -1293,7 +1310,7 @@ namespace ImageViewer.Helpers
                 {
                     int chunkLength;
 
-                    chunkLength = Helper.ReadInt(stream);
+                    chunkLength = Helper.ReadInt32(stream);
 
                     if (Encoding.ASCII.GetString(buffer) != "CMAP")
                     {
@@ -1337,9 +1354,9 @@ namespace ImageViewer.Helpers
         }
 
         // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
-        public static List<ARGB> ReadPhotoShopSwatchFile(string fileName)
+        public static List<Color> ReadPhotoShopSwatchFile(string fileName)
         {
-            List<ARGB> colorPalette;
+            List<Color> colorPalette;
 
             using (Stream stream = File.OpenRead(fileName))
             {
@@ -1371,12 +1388,12 @@ namespace ImageViewer.Helpers
 
 
         // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
-        private static List<ARGB> ReadSwatches(Stream stream, FileVersion version)
+        private static List<Color> ReadSwatches(Stream stream, FileVersion version)
         {
             int colorCount;
-            List<ARGB> results;
+            List<Color> results;
 
-            results = new List<ARGB>();
+            results = new List<Color>();
 
             // read the number of colors, which also occupies two bytes
             colorCount = Helper.ReadInt16(stream);

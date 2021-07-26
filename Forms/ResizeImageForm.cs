@@ -14,12 +14,12 @@ namespace ImageViewer
 
         private ResizeImageResult result;
         private bool preventUpdate = false;
+
         public ResizeImageForm(Size curSize)
         {
             InitializeComponent();
             currentImageSize = curSize;
             
-            // add enum values to both combo boxes
             foreach(InterpolationMode im in Enum.GetValues(typeof(InterpolationMode)))
             {
                 if(im != InterpolationMode.Invalid)
@@ -52,6 +52,12 @@ namespace ImageViewer
                 Size newSize = new Size((int)numericUpDown1.Value, (int)numericUpDown2.Value);
                 newSize = MathHelper.ResizeWidthKeepAspectRatio(newSize, currentImageSize);
 
+                if (newSize.Width < numericUpDown1.Minimum || newSize.Height < numericUpDown2.Minimum)
+                {
+                    preventUpdate = false;
+                    return;
+                }
+
                 numericUpDown1.Value = newSize.Width;
                 numericUpDown2.Value = newSize.Height;
 
@@ -71,6 +77,12 @@ namespace ImageViewer
                 Size newSize = new Size((int)numericUpDown1.Value, (int)numericUpDown2.Value);
                 newSize = MathHelper.ResizeHeightKeepAspectRatio(newSize, currentImageSize);
 
+                if (newSize.Width < numericUpDown1.Minimum || newSize.Height < numericUpDown2.Minimum)
+                {
+                    preventUpdate = false;
+                    return;
+                }
+
                 numericUpDown1.Value = newSize.Width;
                 numericUpDown2.Value = newSize.Height;
 
@@ -78,7 +90,7 @@ namespace ImageViewer
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Resize_Click(object sender, EventArgs e)
         {
             Size newImSize = new Size((int)numericUpDown1.Value, (int)numericUpDown2.Value);
 
@@ -97,7 +109,7 @@ namespace ImageViewer
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void Cancel_Click(object sender, EventArgs e)
         {
             result = ResizeImageResult.Cancel;
             Close();
@@ -118,7 +130,7 @@ namespace ImageViewer
             return result;
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void ResetSize_Click(object sender, EventArgs e)
         {
             numericUpDown1.Value = currentImageSize.Width;
             numericUpDown2.Value = currentImageSize.Height; 

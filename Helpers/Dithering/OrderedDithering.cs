@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 // ReSharper disable once CheckNamespace
 
@@ -79,7 +80,7 @@ namespace ImageViewer.Helpers.Dithering
 
     #region IErrorDiffusion Interface
 
-    void IErrorDiffusion.Diffuse(ARGB[] data, ARGB original, ARGB transformed, int x, int y, int width, int height)
+    void IErrorDiffusion.Diffuse(Color[] data, Color original, Color transformed, int x, int y, int width, int height)
     {
       int row;
       int col;
@@ -100,7 +101,7 @@ namespace ImageViewer.Helpers.Dithering
         g = Clamp(transformed.G + threshold);
         b = Clamp(transformed.B + threshold);
 
-        data[y * width + x] = ARGB.FromArgb(original.A, r, g, b);
+        data[y * width + x] = Color.FromArgb(original.A, r, g, b);
       }
     }
 

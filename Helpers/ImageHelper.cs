@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ImageViewer.Settings;
@@ -16,159 +13,503 @@ namespace ImageViewer.Helpers
 {
     public static class ImageHelper
     {
-        public static readonly ImgFormat DEFAULT_IMAGE_FORMAT = ImgFormat.png;
-
-        public static ColorMatrix NegativeColorMatrix = new ColorMatrix(new float[][]
-                {
-        new float[] {-1, 0, 0, 0, 0},
-        new float[] {0, -1, 0, 0, 0},
-        new float[] {0, 0, -1, 0, 0},
-        new float[] {0, 0, 0, 1, 0},
-        new float[] {1, 1, 1, 0, 1}
-                });
-        public static ColorMatrix GreyScaleColorMatrix = new ColorMatrix(
-                   new float[][]
-                   {
-         new float[] {.3f, .3f, .3f, 0, 0},
-         new float[] {.59f, .59f, .59f, 0, 0},
-         new float[] {.11f, .11f, .11f, 0, 0},
-         new float[] {0, 0, 0, 1, 0},
-         new float[] {0, 0, 0, 0, 1}
-                   });
-
-
-    
-
-        public static ARGB[] GetPixelsFrom32BitArgbImage(this Bitmap bitmap)
+        /// <summary>
+		/// A value from 0-1 which is used to convert a color to grayscale.
+		/// <para>Default: 0.3</para>
+		/// <para>Gray = (Red * GrayscaleRedMultiplier) + (Green * GrayscaleGreenMultiplier) + (Blue * GrayscaleBlueMultiplier)</para> 
+		/// </summary>
+		public static double GrayscaleRedMultiplier
         {
-            int width;
-            int height;
-            BitmapData bitmapData;
-            ARGB[] results;
+            get { return gsrm; }
+            set { gsrm = value.Clamp(0, 1); }
+        }
+        private static double gsrm = 0.3; // 0.21
 
-            // NOTE: As the name should give a hint, it only supports 32bit ARGB images.
-            // Don't rely on this for production, it needs expanding to support multiple other types
+        /// <summary>
+        /// A value from 0-1 which is used to convert a color to grayscale.
+        /// <para>Default: 0.59</para>
+        /// <para>Gray = (Red * GrayscaleRedMultiplier) + (Green * GrayscaleGreenMultiplier) + (Blue * GrayscaleBlueMultiplier)</para> 
+        /// </summary>
+        public static double GrayscaleGreenMultiplier
+        {
+            get { return gsgm; }
+            set { gsgm = value.Clamp(0, 1); }
+        }
+        private static double gsgm = 0.59; // 0.71
 
-            width = bitmap.Width;
-            height = bitmap.Height;
-            results = new ARGB[width * height];
-            bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+        /// <summary>
+        /// A value from 0-1 which is used to convert a color to grayscale.
+        /// <para>Default: 0.11</para>
+        /// <para>Gray = (Red * GrayscaleRedMultiplier) + (Green * GrayscaleGreenMultiplier) + (Blue * GrayscaleBlueMultiplier)</para> 
+        /// </summary>
+        public static double GrayscaleBlueMultiplier
+        {
+            get { return gsbm; }
+            set { gsbm = value.Clamp(0, 1); }
+        }
+        private static double gsbm = 0.11; // 0.071
 
-            unsafe
+
+
+        /// <summary>
+        /// Gets the image format from the file extension.
+        /// </summary>
+        /// <param name="filePath"> The path to the file. </param>
+        /// <returns> Enum type representing the image format. </returns>
+        public static ImgFormat GetImageFormat(string filePath)
+        {
+            string ext = Helper.GetFilenameExtension(filePath);
+
+            if (string.IsNullOrEmpty(ext))
+                return InternalSettings.Default_Image_Format;
+
+            switch (ext)
             {
-                ARGB* pixel;
+                case "png":
+                    return ImgFormat.png;
+                case "jpg":
+                case "jpeg":
+                case "jpe":
+                case "jfif":
+                    return ImgFormat.jpg;
+                case "gif":
+                    return ImgFormat.gif;
+                case "bmp":
+                    return ImgFormat.bmp;
+                case "tif":
+                case "tiff":
+                    return ImgFormat.tif;
+                case "webp":
+                    return ImgFormat.webp;
+            }
+            return ImgFormat.nil;
+        }
 
-                pixel = (ARGB*)bitmapData.Scan0;
 
-                for (int row = 0; row < height; row++)
+
+        /// <summary>
+        /// Save a bitmap as a webp file. (Requires the libwebp_x64.dll or libwebp_x86.dll)
+        /// </summary>
+        /// <param name="img"> The bitmap to encode. </param>
+        /// <param name="filePath"> The path to save the bitmap. </param>
+        /// <param name="q"> The webp quality args. </param>
+        /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
+        /// <returns> true if the bitmap was saved successfully, else false </returns>
+        public static bool SaveWebp(Bitmap img, string filePath, WebPQuality q, bool collectGarbage = true)
+        {
+            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(filePath) || img == null)
+                return false;
+
+            if (q == WebPQuality.empty)
+                q = InternalSettings.WebpQuality_Default;
+
+            try
+            {
+                using (WebP webp = new WebP())
                 {
-                    for (int col = 0; col < width; col++)
-                    {
-                        results[row * width + col] = *pixel;
+                    byte[] rawWebP;
 
-                        pixel++;
+                    switch (q.Format)
+                    {
+                        default:
+                        case WebpEncodingFormat.EncodeLossless:
+                            rawWebP = webp.EncodeLossless(img, q.Speed);
+                            break;
+                        case WebpEncodingFormat.EncodeNearLossless:
+                            rawWebP = webp.EncodeNearLossless(img, q.Quality, q.Speed);
+                            break;
+                        case WebpEncodingFormat.EncodeLossy:
+                            rawWebP = webp.EncodeLossy(img, q.Quality, q.Speed);
+                            break;
                     }
+
+                    File.WriteAllBytes(filePath, rawWebP);
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                e.ShowError();
+                return false;
+            }
+            finally
+            {
+                if (collectGarbage)
+                {
+                    GC.Collect();
                 }
             }
-
-            bitmap.UnlockBits(bitmapData);
-
-            return results;
         }
 
         /// <summary>
-        /// update the data in memory of toUpdate and replace it with the data
-        /// from toReplaceIt, useful if you want to update an image passed into a function
+        /// Save an image as a webp file. (Requires the libwebp_x64.dll or libwebp_x86.dll)
         /// </summary>
-        /// <param name="toUpdate"></param>
-        /// <param name="toReplaceIt"></param>
-        public static void UpdateBitmap(Bitmap toUpdate, Bitmap toReplaceIt)
+        /// <param name="img"> The image to encode. </param>
+        /// <param name="filePath"> The path to save the image. </param>
+        /// <param name="q"> The webp quality args. </param>
+        /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
+        /// <returns> true if the image was saved successfully, else false </returns>
+        public static bool SaveWebp(Image img, string filePath, WebPQuality q, bool collectGarbage = true)
         {
-            BitmapData bmpData = toUpdate.LockBits(new Rectangle(0, 0, toUpdate.Width, toUpdate.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            ARGB[] data = toReplaceIt.GetPixelsFrom32BitArgbImage();
+            return SaveWebp((Bitmap)img, filePath, q, collectGarbage);
+        }
 
-            unsafe
+
+
+        /// <summary>
+        /// Saves an image.
+        /// </summary>
+        /// <param name="img"> The image to save. </param>
+        /// <param name="filePath"> The path to save the image. </param>
+        /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
+        /// <returns> true if the image was saved successfully, else false </returns>
+        public static bool SaveImage(Image img, string filePath, bool collectGarbage = true)
+        {
+            if (img == null || string.IsNullOrEmpty(filePath))
+                return false;
+
+            PathHelper.CreateDirectoryFromFilePath(filePath);
+            Program.mainForm.UseWaitCursor = true;
+            try
             {
-                ARGB* pixelPtr;
-
-                // Get a pointer to the beginning of the pixel data region
-                // The upper-left corner
-                pixelPtr = (ARGB*)bmpData.Scan0;
-
-                // Iterate through rows and columns
-                for (int row = 0; row < toUpdate.Height; row++)
+                switch (GetImageFormat(filePath))
                 {
-                    for (int col = 0; col < toUpdate.Width; col++)
+                    default:
+                    case ImgFormat.png:
+                        img.Save(filePath, ImageFormat.Png);
+                        return true;
+                    case ImgFormat.jpg:
+                        img.Save(filePath, ImageFormat.Jpeg);
+                        return true;
+                    case ImgFormat.bmp:
+                        img.Save(filePath, ImageFormat.Bmp);
+                        return true;
+                    case ImgFormat.gif:
+                        img.Save(filePath, ImageFormat.Gif);
+                        return true;
+                    case ImgFormat.tif:
+                        img.Save(filePath, ImageFormat.Tiff);
+                        return true;
+                    case ImgFormat.webp:
+                        return SaveWebp(img, filePath, InternalSettings.WebpQuality_Default);
+                }
+            }
+            catch (Exception e)
+            {
+                e.ShowError();
+                return false;
+            }
+            finally
+            {
+                Program.mainForm.UseWaitCursor = false;
+                if (collectGarbage)
+                {
+                    GC.Collect();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves an image.
+        /// </summary>
+        /// <param name="img"> The image to save. </param>
+        /// <param name="filePath"> The path to save the image. </param>
+        /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
+        /// <returns> true if the image was saved successfully, else false </returns>
+        public static bool SaveImage(Bitmap img, string filePath, bool collectGarbage = true)
+        {
+            return SaveImage((Image)img, filePath, collectGarbage);
+        }
+
+        /// <summary>
+        /// Opens a save file dialog asking where to save an image.
+        /// </summary>
+        /// <param name="img"> The image to save. </param>
+        /// <param name="filePath"> The path to open. </param>
+        /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
+        /// <returns> The filename of the saved image, null if failed to save or canceled. </returns>
+        public static string SaveImageFileDialog(Image img, string filePath = "", bool collectGarbage = true)
+        {
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Title = InternalSettings.Save_File_Dialog_Title;
+                sfd.Filter = InternalSettings.Image_Dialog_Filters;
+                sfd.DefaultExt = "png";
+
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    sfd.FileName = Path.GetFileName(filePath);
+
+                    ImgFormat fmt = GetImageFormat(filePath);
+
+                    if (fmt != ImgFormat.nil)
                     {
-                        int index;
-                        ARGB color;
-
-                        index = row * toUpdate.Width + col;
-                        color = data[index];
-
-                        // Set the pixel (fast!)
-                        *pixelPtr = color;
-
-                        // Update the pointer
-                        pixelPtr++;
+                        switch (fmt)
+                        {
+                            case ImgFormat.png:
+                                sfd.FilterIndex = 1;
+                                break;
+                            case ImgFormat.jpg:
+                                sfd.FilterIndex = 2;
+                                break;
+                            case ImgFormat.gif:
+                                sfd.FilterIndex = 3;
+                                break;
+                            case ImgFormat.bmp:
+                                sfd.FilterIndex = 4;
+                                break;
+                            case ImgFormat.tif:
+                                sfd.FilterIndex = 5;
+                                break;
+                            case ImgFormat.webp:
+                                if (InternalSettings.WebP_Plugin_Exists)
+                                {
+                                    sfd.FilterIndex = 6;
+                                    break;
+                                }
+                                sfd.FilterIndex = 2;
+                                break;
+                        }
                     }
+                }
+
+                if (sfd.ShowDialog() == DialogResult.OK && !string.IsNullOrEmpty(sfd.FileName))
+                {
+                    SaveImage(img, sfd.FileName, collectGarbage);
+                    return sfd.FileName;
                 }
             }
 
-            toUpdate.UnlockBits(bmpData);
+            return null;
         }
 
-        public static Bitmap ToBitmap(this ARGB[] data, Size size)
+
+
+
+        /// <summary>
+        /// Load a wemp image. (Requires the libwebp_x64.dll or libwebp_x86.dll)
+        /// </summary>
+        /// <param name="path"> The path to the image. </param>
+        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
+        public static Bitmap LoadWebP(string path, bool supressError = false)
         {
-            int height;
-            int width;
-            BitmapData bitmapData;
-            Bitmap result;
+            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
 
-            // Based on code from http://blog.biophysengr.net/2011/11/rapid-bitmap-access-using-unsafe-code.html
-
-            result = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
-            width = result.Width;
-            height = result.Height;
-
-            // Lock the entire bitmap
-            bitmapData = result.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-
-            //Enter unsafe mode so that we can use pointers
-            unsafe
+            try
             {
-                ARGB* pixelPtr;
-
-                // Get a pointer to the beginning of the pixel data region
-                // The upper-left corner
-                pixelPtr = (ARGB*)bitmapData.Scan0;
-
-                // Iterate through rows and columns
-                for (int row = 0; row < size.Height; row++)
+                using (WebP webp = new WebP())
                 {
-                    for (int col = 0; col < size.Width; col++)
-                    {
-                        int index;
-                        ARGB color;
+                    Bitmap image = webp.Load(path);
+                    image.Tag = GetImageFormat(path);
+                    return image;
+                }
+            }
+            catch (Exception e)
+            {
+                if (supressError)
+                    return null;
+                e.ShowError();
+            }
+            return null;
+        }
 
-                        index = row * size.Width + col;
-                        color = data[index];
+        /// <summary>
+        /// Loads an image.
+        /// </summary>
+        /// <param name="path"> The path to the image. </param>
+        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
+        public static Bitmap LoadImage(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
 
-                        // Set the pixel (fast!)
-                        *pixelPtr = color;
+            if (Path.GetExtension(path) == ".webp")
+                return LoadWebP(path);
 
-                        // Update the pointer
-                        pixelPtr++;
-                    }
+            try
+            {
+                Image image = Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+                image.Tag = GetImageFormat(path);
+                return (Bitmap)image;
+            }
+            catch (Exception e)
+            {
+                // in case the file doesn't have proper extension there is no harm in trying to load as webp
+                Bitmap tryLoadWebP;
+                if ((tryLoadWebP = LoadWebP(path, true)) != null)
+                    return tryLoadWebP;
+
+                e.ShowError();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Opens a file dialog to select an image.
+        /// </summary>
+        /// <param name="multiselect"> A bool indicating if multiple files should be allowed. </param>
+        /// <param name="form"> The form to be the owner of the dialog. </param>
+        /// <param name="initialDirectory"> The initial directory to open. </param>
+        /// <returns> A string[] containing the file paths of the images, null if cancel. </returns>
+        public static string[] OpenImageFileDialog(bool multiselect, Form form = null, string initialDirectory = null)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = string.Format("{0}|{1}", InternalSettings.All_Image_Files_File_Dialog, InternalSettings.Image_Dialog_Filters);
+
+                ofd.Multiselect = multiselect;
+
+                if (!string.IsNullOrEmpty(initialDirectory))
+                {
+                    ofd.InitialDirectory = initialDirectory;
+                }
+
+                if (ofd.ShowDialog(form) == DialogResult.OK)
+                {
+                    return ofd.FileNames;
                 }
             }
 
-            // Unlock the bitmap
-            result.UnlockBits(bitmapData);
-
-            return result;
+            return null;
         }
 
+
+
+        /// <summary>
+        /// Gets the mime type of the image.
+        /// </summary>
+        /// <param name="image"> The image. </param>
+        /// <returns> The mime type of the image. </returns>
+        public static string GetMimeType(Image image)
+        {
+            // https://stackoverflow.com/a/6336453
+
+            if ((ImgFormat)image.Tag == ImgFormat.webp)
+                return "image/webp";
+
+            Guid imgguid = image.RawFormat.Guid;
+            foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
+            {
+                if (codec.FormatID == imgguid)
+                    return codec.MimeType;
+            }
+            return "image/unknown";
+        }
+
+
+
+        /// <summary>
+        /// Gets the size of an image from a file.
+        /// </summary>
+        /// <param name="imagePath"> Path to the image. </param>
+        /// <returns> The Size of the image, or Size.Empty if failed to load / not valid image. </returns>
+        public static Size GetImageDimensionsFile(string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
+                return Size.Empty;
+
+            Size s = ImageDimensionReader.GetDimensions(imagePath);
+            if (s != Size.Empty)
+                return s;
+
+            try
+            {
+                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (Image image = Image.FromStream(fileStream, false, false))
+                {
+                    return new Size(image.Width, image.Height);
+                }
+            }
+            catch
+            {
+                return Size.Empty;
+            }
+        }
+
+
+
+        /// <summary>
+		/// Locks the given bitmap and return bitmap data with a pixel format of 32bppArgb.
+		/// </summary>
+		/// <param name="srcImg">The image to lock.</param>
+		/// <returns>32bppArgb bitmap data.</returns>
+		public static BitmapData Get32bppArgbBitmapData(Bitmap srcImg)
+        {
+            return srcImg.LockBits(
+                new Rectangle(0, 0, srcImg.Width, srcImg.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+        }
+
+
+
+        /// <summary>
+        /// Creates a solid color bitmap.
+        /// </summary>
+        /// <param name="bmpSize"> The size of the bitmap to create. </param>
+        /// <param name="fillColor"> The color to fill the bitmap. </param>
+        /// <returns> A bitmap object, the caller should be responsible for disposing of this. </returns>
+        public static Bitmap CreateSolidColorBitmap(Size bmpSize, Color fillColor)
+        {
+            Bitmap b = new Bitmap(bmpSize.Width, bmpSize.Height);
+
+            using (Graphics g = Graphics.FromImage(b))
+            using (SolidBrush brush = new SolidBrush(fillColor))
+            {
+                g.FillRectangle(brush, new Rectangle(0, 0, bmpSize.Width, bmpSize.Height));
+            }
+            return b;
+        }
+
+
+
+        /// <summary>
+        /// Copy the given image to a 32bppArgb image.
+        /// </summary>
+        /// <param name="image">Image to copy.</param>
+        /// <returns>A 32bppArgb copy.</returns>
+        public static Bitmap CopyTo32bppArgb(this Image image)
+        {
+            Bitmap copy;
+
+            copy = new Bitmap(image.Size.Width, image.Size.Height, PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(copy))
+            {
+                g.CompositingMode = CompositingMode.SourceCopy;
+                g.DrawImage(image, new Rectangle(Point.Empty, image.Size), new Rectangle(Point.Empty, image.Size), GraphicsUnit.Pixel);
+            }
+
+            return copy;
+        }
+
+
+
+        /// <summary>
+        /// Resizes the given image. This returns a new image and the caller should be responsible for disposing of the old image.
+        /// </summary>
+        /// <param name="im"> The image to resize. </param>
+        /// <param name="s"> The new size. </param>
+        /// <returns></returns>
+        public static Bitmap ResizeImage(Image im, Size s)
+        {
+            Bitmap newIm = new Bitmap(s.Width, s.Height);
+
+            using (Graphics g = Graphics.FromImage(newIm))
+            {
+                g.DrawImage(im,
+                    new Rectangle(new Point(0, 0), s),
+                    new Rectangle(0, 0, im.Width, im.Height),
+                    GraphicsUnit.Pixel);
+            }
+            return newIm;
+        }
+
+        /// <summary>
+        /// Resizes the given image. This returns a new image and the caller should be responsible for disposing of the old image.
+        /// </summary>
+        /// <param name="im"> The image to resize. </param>
+        /// <param name="ri"> The graphics settings and new image size data. </param>
+        /// <returns></returns>
         public static Bitmap ResizeImage(Image im, ResizeImage ri)
         {
             Bitmap newIm = new Bitmap(ri.NewSize.Width, ri.NewSize.Height);
@@ -189,516 +530,690 @@ namespace ImageViewer.Helpers
             return newIm;
         }
 
-        public static Bitmap LoadWebP(string path)
+
+
+        /// <summary>
+		/// Gets a array of ARGB colors from the given image.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <returns>An array of color.</returns>
+		public static Color[] GetBitmapColors(Image srcImg)
         {
-            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
-                return null;
-
-            try
-            {
-                using (WebP webp = new WebP())
-                    return webp.Load(path);
-            }
-            catch (Exception e)
-            {
-                e.ShowError();
-            }
-            return null;
-        }
-
-        public static Bitmap LoadImage(string path)
-        {
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                return null;
-
-            if (Path.GetExtension(path) == ".webp")
-                return LoadWebP(path);
-
-            try
-            {
-                return (Bitmap)Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
-            }
-            catch (Exception e)
-            {
-                // in case the file doesn't have proper extension there is no harm in trying to load as webp
-                Bitmap tryLoadWebP;
-                if ((tryLoadWebP = LoadWebP(path)) != null)
-                    return tryLoadWebP;
-
-                e.ShowError();
-            }
-            return null;
+            return GetBitmapColors((Bitmap)srcImg);
         }
 
         /// <summary>
-        /// 
-        /// this is slower, and takes more memory when loading the image in, but after its loaded it uses less memory
-        /// better if you have a really large image, and don't mind a little bit slower loading
-        /// 
+        /// Gets a array of ARGB colors from the given image.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static Bitmap LiteLoadImage(string path)
+        /// <param name="srcImg">The image.</param>
+        /// <returns>An array of color.</returns>
+        public static unsafe Color[] GetBitmapColors(Bitmap srcImg)
         {
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            Color[] result = new Color[srcImg.Width * srcImg.Height];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = Color.FromArgb(*(pDst + 3), *(pDst + 2), *(pDst + 1), *pDst);
+                pDst += 4;
+            }
+            srcImg.UnlockBits(dstBD);
+
+            return result;
+        }
+
+
+
+        /// <summary>
+		/// Convert an array of ARGB color to a bitmap of the given size.
+		/// </summary>
+		/// <param name="srcAry">The array of color.</param>
+		/// <param name="size">The dimensions of the bitmap.</param>
+		/// <returns>A bitmap of the given size, filled with colors from the given array. If the array is empty return null.</returns>
+		public static unsafe Bitmap GetBitmapFromArray(Color[] srcAry, Size size)
+        {
+            if (srcAry.Length < 1)
                 return null;
 
-            if (Path.GetExtension(path) == ".webp")
-                return LoadWebP(path);
+            Bitmap resultBmp = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb);
+            BitmapData dstBD = Get32bppArgbBitmapData(resultBmp);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < srcAry.Length; i++)
+            {
+                *(pDst++) = srcAry[i].B; // B
+                *(pDst++) = srcAry[i].G; // G
+                *(pDst++) = srcAry[i].R; // R
+                *(pDst++) = srcAry[i].A; // A		 
+            }
+            resultBmp.UnlockBits(dstBD);
+
+            return resultBmp;
+        }
+
+
+
+        /// <summary>
+        /// Updates a bitmap's pixel data using pointers.
+        /// </summary>
+        /// <param name="toUpdate"> The bitmap that is going to be written on. </param>
+        /// <param name="dataBitmap"> The bitmap that the data comes from. </param>
+        /// <returns></returns>
+        public static bool UpdateBitmapSafe(Bitmap toUpdate, Bitmap dataBitmap)
+        {
+            if (toUpdate.Width != dataBitmap.Width || toUpdate.Height != dataBitmap.Height)
+                return false;
 
             try
             {
-                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (Image image = Image.FromStream(fileStream, true, true))
-                {
-                    Bitmap bmp = new Bitmap(image.Width, image.Height);
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                        g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-                        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-                        g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-
-                        g.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height), new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
-                        return bmp;
-                    }
-                }
+                UpdateBitmap(toUpdate, dataBitmap);
+                return true;
             }
-            catch (Exception e)
+            catch
             {
-                // in case the file doesn't have proper extension there is no harm in trying to load as webp
-                Bitmap tryLoadWebP;
-                if ((tryLoadWebP = LoadWebP(path)) != null)
-                    return tryLoadWebP;
-
-                e.ShowError();
-                return null;
-            }
-            finally
-            {
-                GC.Collect();
+                return false;
             }
         }
 
-        public static Size GetImageDimensionsFile(string imagePath)
-        {
-            if (!File.Exists(imagePath))
-                return Size.Empty;
 
+        /// <summary>
+        /// Updates a bitmap pixel data using pointers.
+        /// </summary>
+        /// <param name="toUpdate"> The bitmap that is going to be written on. </param>
+        /// <param name="dataBitmap"> The bitmap that the data comes from. </param>
+        public static unsafe void UpdateBitmap(Bitmap toUpdate, Bitmap dataBitmap)
+        {
+            Color[] data = GetBitmapColors(dataBitmap);
+
+            BitmapData dstBD = Get32bppArgbBitmapData(toUpdate);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                *(pDst++) = data[i].B; // B
+                *(pDst++) = data[i].G; // G
+                *(pDst++) = data[i].R; // R
+                *(pDst++) = data[i].A; // A		 
+            }
+            toUpdate.UnlockBits(dstBD);
+        }
+
+
+
+        /// <summary>
+        /// Convert the colors of every frame of a Gif object to greyscale.
+        /// </summary>
+        /// <param name="g"> The gif object to convert. </param>
+        public static void GrayscaleGif(Gif g)
+        {
+            for (int i = 0; i < g.Count; i++)
+            {
+                GrayscaleBitmap((Bitmap)g[i]);
+            }
+        }
+
+        /// <summary>
+        /// Convert the colors of every frame of a Gif object  with animated frames to greyscale.
+        /// </summary>
+        /// <param name="bmp"> The bitmap to convert. </param>
+        /// <returns></returns>
+        public static Bitmap GrayscaleGif(Bitmap bmp)
+        {
             try
             {
-                using (FileStream fileStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (Image image = Image.FromStream(fileStream, false, false))
+                using (Gif g = new Gif(bmp))
                 {
-                    return new Size(image.Width, image.Height);
+                    GrayscaleGif(g);
+                    return g.ToBitmap();
                 }
             }
             catch
             {
-                return Size.Empty;
-            }
-            finally
-            {
-                // if you don't call collect lots of the memory used by loading the image is held
-                // when loading a 100mb image 9900 x 9900 without the collect it holds 100mb of memory
-                GC.Collect();
+                return null;
             }
         }
 
-        public static ImageFormat GetImageFormat(ImgFormat fmt)
+
+
+        /// <summary>
+        /// Invert the colors of every frame of a Gif object.
+        /// </summary>
+        /// <param name="g"> The gif object to invert. </param>
+        public static void InvertGif(Gif g)
         {
-            switch (fmt)
+            for (int i = 0; i < g.Count; i++)
             {
-                default:
-                case ImgFormat.png:
-                    return ImageFormat.Png;
-                case ImgFormat.jpg:
-                    return ImageFormat.Jpeg;
-                case ImgFormat.bmp:
-                    return ImageFormat.Bmp;
-                case ImgFormat.gif:
-                    return ImageFormat.Gif;
-                case ImgFormat.tif:
-                    return ImageFormat.Tiff;
-                case ImgFormat.webp:
-                    return null;
+                InvertBitmapSafe((Bitmap)g[i]);
             }
         }
 
-        public static ImgFormat GetImageFormat(string filePath)
+        /// <summary>
+        /// Invert the colors of every frame of a bitmap with animated frames.
+        /// </summary>
+        /// <param name="bmp"> The bitmap to invert. </param>
+        /// <returns></returns>
+        public static Bitmap InvertGif(Bitmap bmp)
         {
-            string ext = Helper.GetFilenameExtension(filePath);
-
-            if (string.IsNullOrEmpty(ext))
-                return DEFAULT_IMAGE_FORMAT;
-
-            switch (ext.Trim().ToLower())
+            try
             {
-                case "png":
-                default:
-                    return ImgFormat.png;
-                case "jpg":
-                case "jpeg":
-                case "jpe":
-                case "jfif":
-                    return ImgFormat.jpg;
-                case "gif":
-                    return ImgFormat.gif;
-                case "bmp":
-                    return ImgFormat.bmp;
-                case "tif":
-                case "tiff":
-                    return ImgFormat.tif;
-                case "webp":
-                    return ImgFormat.webp;
+                using (Gif g = new Gif(bmp))
+                {
+                    InvertGif(g);
+                    return g.ToBitmap();
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        public static bool SaveWebp(Bitmap img, string filePath, WebPQuality q)
+
+
+        /// <summary>
+        /// Inverts the colors of a bitmap.
+        /// </summary>
+        /// <param name="image"> The bitmap to invert </param>
+        /// <returns> true if the bitmap was inverted, else false </returns>
+        public static bool InvertBitmapSafe(Bitmap image)
         {
-            if (string.IsNullOrEmpty(filePath) || img == null)
+            if (image == null)
                 return false;
-
-            if (q == WebPQuality.empty)
-                q = InternalSettings.WebpQuality_Default;
-
-            byte[] rawWebP;
 
             try
             {
-                using (WebP webp = new WebP())
-                {
-                    switch (q.Format)
-                    {
-                        default:
-                        case Format.EncodeLossless:
-                            rawWebP = webp.EncodeLossless(img, q.Speed);
-                            break;
-                        case Format.EncodeNearLossless:
-                            rawWebP = webp.EncodeNearLossless(img, q.Quality, q.Speed);
-                            break;
-                        case Format.EncodeLossy:
-                            rawWebP = webp.EncodeLossy(img, q.Quality, q.Speed);
-                            break;
-                    }
-
-                    File.WriteAllBytes(filePath, rawWebP);
-                }
+                InvertBitmap(image);
                 return true;
             }
-            catch (Exception e)
+            catch 
             {
-                e.ShowError();
+                return false;
             }
-            finally
-            {
-                GC.Collect();
-            }
-            return false;
         }
 
-        public static bool SaveWebp(Image img, string filePath, WebPQuality q)
+        /// <summary>
+		/// Invert the color of the given image.
+		/// </summary>
+		/// <param name="srcImg">The image to invert.</param>
+		public static void InvertBitmap(Image srcImg)
         {
-            return SaveWebp((Bitmap)img, filePath, q);
+            InvertBitmap((Bitmap)srcImg);
         }
 
-        public static bool SaveImage(Image img, string filePath)
+        /// <summary>
+        /// Invert the color of the given image.
+        /// </summary>
+        /// <param name="srcImg">The image to invert.</param>
+        public static unsafe void InvertBitmap(Bitmap srcImg)
         {
-            PathHelper.CreateDirectoryFromFilePath(filePath);
-            ImageFormat imageFormat = GetImageFormat(GetImageFormat(filePath));
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
 
-            if (img == null || string.IsNullOrEmpty(filePath))
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
+            {
+                *pDst = (byte)(255 - *pDst); // invert B
+                pDst++;
+                *pDst = (byte)(255 - *pDst); // invert G
+                pDst++;
+                *pDst = (byte)(255 - *pDst); // invert R
+                pDst += 2; // skip alpha
+
+                //*pDst = (byte)(255 - *pDst); // invert A
+                //pDst++;						 
+            }
+            srcImg.UnlockBits(dstBD);
+        }
+
+
+
+        /// <summary>
+        /// Convert a bitmap to greyscale.
+        /// </summary>
+        /// <param name="image"> The bitmap to convert </param>
+        /// <returns> true if the bitmap was converted to greyscale, else false </returns>
+        public static bool GrayscaleBitmapSafe(Bitmap image)
+        {
+            if (image == null)
                 return false;
 
             try
             {
-                if (imageFormat == null)
-                {
-                    return SaveWebp(img, filePath, WebPQuality.empty);
-                }
-                else
-                {
-                    img.Save(filePath, imageFormat);
-                    return true;
-                }
+                GrayscaleBitmap(image);
+                return true;
             }
-            catch (Exception e)
+            catch 
             {
-                Console.WriteLine(e);
-                //e.ShowError();
+                return false;
             }
-
-            return false;
         }
 
-        public static string SaveImageFileDialog(Image img, string filePath = "", bool useLastDirectory = true)
+        /// <summary>
+		/// Convert the given image to grayscale.
+		/// </summary>
+		/// <param name="srcImg">The image to convert.</param>
+		public static void GrayscaleBitmap(Image srcImg)
         {
-            using (SaveFileDialog sfd = new SaveFileDialog())
+            GrayscaleBitmap((Bitmap)srcImg);
+        }
+
+        /// <summary>
+        /// Convert the given image to grayscale.
+        /// </summary>
+        /// <param name="srcImg">The image to convert.</param>
+        public static unsafe void GrayscaleBitmap(Bitmap srcImg)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
             {
-                sfd.Filter = InternalSettings.Save_File_Dialog_Default;
-                sfd.DefaultExt = "png";
+                byte gray = (byte)(
+                    (gsbm * *(pDst)) +      // B
+                    (gsgm * *(pDst + 1)) +  // G
+                    (gsrm * *(pDst + 2)));  // R
 
-                if (InternalSettings.WebP_Plugin_Exists)
-                    sfd.Filter += "|" + InternalSettings.WebP_File_Dialog_Option;
+                *pDst = gray; // B
+                pDst++;
+                *pDst = gray; // G
+                pDst++;
+                *pDst = gray; // R
+                pDst += 2;    // Skip alpha
 
-                if (!string.IsNullOrEmpty(filePath))
+                //*pDst = grey; // A
+                //pDst++;
+            }
+            srcImg.UnlockBits(dstBD);
+        }
+
+
+
+        /// <summary>
+		/// Fills all colors with an alpha value less than the given amount, with the specified color.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <param name="fill">The color to fill with.</param>
+		/// <param name="fillAlphaLessThan">The alpha value to fill colors less than.</param>
+        public static bool FillTransparentPixelsSafe(Bitmap bitmapImage, Color fill, byte alphaLessThan = 255)
+        {
+            if (bitmapImage == null)
+                return false;
+
+            try
+            {
+                FillTransparentPixelsOnBitmap(bitmapImage, fill, alphaLessThan);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+		/// Fills all colors with an alpha value less than the given amount, with the specified color.
+		/// </summary>
+		/// <param name="srcImg">The image.</param>
+		/// <param name="fill">The color to fill with.</param>
+		/// <param name="fillAlphaLessThan">The alpha value to fill colors less than.</param>
+		public static void FillTransparentPixelsOnBitmap(Image srcImg, Color fill, byte fillAlphaLessThan = 128)
+        {
+            FillTransparentPixelsOnBitmap((Bitmap)srcImg, fill, fillAlphaLessThan);
+        }
+
+        /// <summary>
+        /// Fills all colors with an alpha value less than the given amount, with the specified color.
+        /// </summary>
+        /// <param name="srcImg">The image.</param>
+        /// <param name="fill">The color to fill with.</param>
+        /// <param name="fillAlphaLessThan">The alpha value to fill colors less than.</param>
+        public static unsafe void FillTransparentPixelsOnBitmap(Bitmap srcImg, Color fill, byte fillAlphaLessThan = 128)
+        {
+            BitmapData dstBD = Get32bppArgbBitmapData(srcImg);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
+            {
+                if (*(pDst + 3) < fillAlphaLessThan)
                 {
-                    sfd.FileName = Path.GetFileName(filePath);
+                    *pDst = fill.B; // B
+                    pDst++;
+                    *pDst = fill.G; // G
+                    pDst++;
+                    *pDst = fill.R; // R
+                    pDst++;
+                    *pDst = fill.A; // A
+                    pDst++;
+                }
+            }
+            srcImg.UnlockBits(dstBD);
+        }
 
-                    string ext = Helper.GetFilenameExtension(filePath);
+        /// <summary>
+        /// A class used for reading the width and height of an image file using their headers.
+        /// </summary>
+        // Mod of https://stackoverflow.com/a/60667939
+        public static class ImageDimensionReader
+        {
+            const byte MAX_MAGIC_BYTE_LENGTH = 8;
 
-                    if (!string.IsNullOrEmpty(ext))
+            readonly static Dictionary<byte[], Func<BinaryReader, Size>> imageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, Size>>()
+        {
+            { new byte[] { 0x42, 0x4D }, DecodeBitmap },
+            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif },
+            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, DecodeGif },
+            { new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, DecodePng },
+            { new byte[] { 0xff, 0xd8 }, DecodeJfif },
+            { new byte[] { 0x52, 0x49, 0x46, 0x46 }, DecodeWebP },
+            { new byte[] { 0x49, 0x49, 0x2A },  DecodeTiffLE }, // little endian
+            { new byte[] { 0x4D, 0x4D, 0x00, 0x2A },  DecodeTiffBE }  // big endian
+        };
+
+            /// <summary>        
+            /// Gets the dimensions of an image.        
+            /// </summary>        
+            /// <param name="path">The path of the image to get the dimensions of.</param>        
+            /// <returns>The dimensions of the specified image.</returns>        
+            /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>            
+            public static Size GetDimensions(BinaryReader binaryReader)
+            {
+                byte[] magicBytes = new byte[MAX_MAGIC_BYTE_LENGTH];
+
+                for (int i = 0; i < MAX_MAGIC_BYTE_LENGTH; i += 1)
+                {
+                    magicBytes[i] = binaryReader.ReadByte();
+
+                    foreach (KeyValuePair<byte[], Func<BinaryReader, Size>> kvPair in imageFormatDecoders)
                     {
-                        ext = ext.ToLowerInvariant();
-
-                        switch (ext)
+                        if (StartsWith(magicBytes, kvPair.Key))
                         {
-                            case "png":
-                                sfd.FilterIndex = 1;
-                                break;
-                            case "jpg":
-                            case "jpeg":
-                            case "jpe":
-                            case "jfif":
-                                sfd.FilterIndex = 2;
-                                break;
-                            case "gif":
-                                sfd.FilterIndex = 3;
-                                break;
-                            case "bmp":
-                                sfd.FilterIndex = 4;
-                                break;
-                            case "tif":
-                            case "tiff":
-                                sfd.FilterIndex = 5;
-                                break;
+                            return kvPair.Value(binaryReader);
                         }
                     }
                 }
 
-                if (sfd.ShowDialog() == DialogResult.OK && !string.IsNullOrEmpty(sfd.FileName))
+                return Size.Empty;
+            }
+
+            /// <summary>
+            /// Gets the dimensions of an image.
+            /// </summary>
+            /// <param name="path">The path of the image to get the dimensions of.</param>
+            /// <returns>The dimensions of the specified image.</returns>
+            /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
+            public static Size GetDimensions(string path)
+            {
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (BinaryReader binaryReader = new BinaryReader(fileStream))
                 {
-                    SaveImage(img, sfd.FileName);
-                    return sfd.FileName;
+                    try
+                    {
+                        return GetDimensions(binaryReader);
+                    }
+                    catch
+                    {
+                        return Size.Empty;
+                    }
                 }
             }
 
-            return null;
-        }
 
-        public static string[] OpenImageFileDialog(bool multiselect, Form form = null, string initialDirectory = null)
-        {
-            using (OpenFileDialog ofd = new OpenFileDialog())
+            private static Size DecodeTiffLE(BinaryReader binaryReader)
             {
-                ofd.Filter = "Image files (" + string.Join(", ", InternalSettings.Open_All_Image_Files_File_Dialog_Options) + ")|" + string.Join(";", InternalSettings.Open_All_Image_Files_File_Dialog_Options);
+                if (binaryReader.ReadByte() != 0)
+                    return Size.Empty;
 
-                if (InternalSettings.WebP_Plugin_Exists)
-                    ofd.Filter += "|" + InternalSettings.WebP_File_Dialog_Option;
+                int idfStart = ReadInt32LE(binaryReader);
 
-                ofd.Multiselect = multiselect;
+                binaryReader.BaseStream.Seek(idfStart, SeekOrigin.Begin);
 
-                if (!string.IsNullOrEmpty(initialDirectory))
+                int numberOfIDF = ReadInt16LE(binaryReader);
+
+                int width = -1;
+                int height = -1;
+                for (int i = 0; i < numberOfIDF; i++)
                 {
-                    ofd.InitialDirectory = initialDirectory;
+                    short field = ReadInt16LE(binaryReader);
+
+                    switch (field)
+                    {
+                        // https://www.awaresystems.be/imaging/tiff/tifftags/baseline.html
+                        default:
+                            binaryReader.ReadBytes(10);
+                            break;
+                        case 256: // image width
+                            binaryReader.ReadBytes(6);
+                            width = ReadInt32LE(binaryReader);
+                            break;
+                        case 257: // image length
+                            binaryReader.ReadBytes(6);
+                            height = ReadInt32LE(binaryReader);
+                            break;
+                    }
+                    if (width != -1 && height != -1)
+                        return new Size(width, height);
+                }
+                return Size.Empty;
+            }
+
+            private static Size DecodeTiffBE(BinaryReader binaryReader)
+            {
+                int idfStart = ReadInt32BE(binaryReader);
+
+                binaryReader.BaseStream.Seek(idfStart, SeekOrigin.Begin);
+
+                int numberOfIDF = ReadInt16BE(binaryReader);
+
+                int width = -1;
+                int height = -1;
+                for (int i = 0; i < numberOfIDF; i++)
+                {
+                    short field = ReadInt16BE(binaryReader);
+
+                    switch (field)
+                    {
+                        // https://www.awaresystems.be/imaging/tiff/tifftags/baseline.html
+                        default:
+                            binaryReader.ReadBytes(10);
+                            break;
+                        case 256: // image width
+                            binaryReader.ReadBytes(6);
+                            width = ReadInt32BE(binaryReader);
+                            break;
+                        case 257: // image length
+                            binaryReader.ReadBytes(6);
+                            height = ReadInt32BE(binaryReader);
+                            break;
+                    }
+                    if (width != -1 && height != -1)
+                        return new Size(width, height);
+                }
+                return Size.Empty;
+            }
+
+            private static Size DecodeBitmap(BinaryReader binaryReader)
+            {
+                binaryReader.ReadBytes(16);
+                int width = binaryReader.ReadInt32();
+                int height = binaryReader.ReadInt32();
+                return new Size(width, height);
+            }
+
+            private static Size DecodeGif(BinaryReader binaryReader)
+            {
+                int width = binaryReader.ReadInt16();
+                int height = binaryReader.ReadInt16();
+                return new Size(width, height);
+            }
+
+            private static Size DecodePng(BinaryReader binaryReader)
+            {
+                binaryReader.ReadBytes(8);
+                int width = ReadInt32BE(binaryReader);
+                int height = ReadInt32BE(binaryReader);
+                return new Size(width, height);
+            }
+
+            private static Size DecodeJfif(BinaryReader binaryReader)
+            {
+                while (binaryReader.ReadByte() == 0xff)
+                {
+                    byte marker = binaryReader.ReadByte();
+                    short chunkLength = ReadInt16BE(binaryReader);
+                    if (marker == 0xc0 || marker == 0xc2) // c2: progressive
+                    {
+                        binaryReader.ReadByte();
+                        int height = ReadInt16BE(binaryReader);
+                        int width = ReadInt16BE(binaryReader);
+                        return new Size(width, height);
+                    }
+
+                    if (chunkLength < 0)
+                    {
+                        ushort uchunkLength = (ushort)chunkLength;
+                        binaryReader.ReadBytes(uchunkLength - 2);
+                    }
+                    else
+                    {
+                        binaryReader.ReadBytes(chunkLength - 2);
+                    }
                 }
 
-                if (ofd.ShowDialog(form) == DialogResult.OK)
+                return Size.Empty;
+            }
+
+            private static Size DecodeWebP(BinaryReader binaryReader)
+            {
+                // 'RIFF' already read   
+
+                binaryReader.ReadBytes(4);
+
+                if (ReadInt32LE(binaryReader) != 1346520407)// 1346520407 : 'WEBP'
+                    return Size.Empty;
+
+                switch (ReadInt32LE(binaryReader))
                 {
-                    return ofd.FileNames;
+                    case 540561494: // 'VP8 ' : lossy
+                        // skip stuff we don't need
+                        binaryReader.ReadBytes(7);
+
+                        if (ReadInt24LE(binaryReader) != 2752925) // invalid webp file
+                            return Size.Empty;
+
+                        return new Size(ReadInt16LE(binaryReader), ReadInt16LE(binaryReader));
+
+                    case 1278758998:// 'VP8L' : lossless
+                        // skip stuff we don't need
+                        binaryReader.ReadBytes(4);
+
+                        if (binaryReader.ReadByte() != 47)// 0x2f : 47 1 byte signature
+                            return Size.Empty;
+
+                        byte[] b = binaryReader.ReadBytes(4);
+
+                        return new Size(
+                            1 + (((b[1] & 0x3F) << 8) | b[0]),
+                            1 + ((b[3] << 10) | (b[2] << 2) | ((b[1] & 0xC0) >> 6)));
+                    // if something breaks put in the '& 0xF' but & oxf should do nothing in theory
+                    // because inclusive & with 1111 will leave the binary untouched
+                    //  1 + (((wh[3] & 0xF) << 10) | (wh[2] << 2) | ((wh[1] & 0xC0) >> 6))
+
+                    case 1480085590:// 'VP8X' : extended
+                        // skip stuff we don't need
+                        binaryReader.ReadBytes(8);
+                        return new Size(1 + ReadInt24LE(binaryReader), 1 + ReadInt24LE(binaryReader));
                 }
+
+                return Size.Empty;
             }
 
-            return null;
-        }
-
-        // https://stackoverflow.com/a/6336453
-        public static string GetMimeType(Image i)
-        {
-            var imgguid = i.RawFormat.Guid;
-            foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
+            private static bool StartsWith(byte[] thisBytes, byte[] thatBytes)
             {
-                if (codec.FormatID == imgguid)
-                    return codec.MimeType;
+                for (int i = 0; i < thatBytes.Length; i += 1)
+                    if (thisBytes[i] != thatBytes[i])
+                        return false;
+
+                return true;
             }
-            return "image/unknown";
-        }
 
-        public static Bitmap CreateSolidColorBitmap(Size bmpSize, Color fillColor)
-        {
-            Bitmap b = new Bitmap(bmpSize.Width, bmpSize.Height);
+            #region Endians
 
-            using (Graphics g = Graphics.FromImage(b))
-            using (SolidBrush brush = new SolidBrush(fillColor))
+            /// <summary>
+            /// Reads a 16 bit int from the stream in the Little Endian format.
+            /// </summary>
+            /// <param name="binaryReader">The binary reader to read</param>
+            /// <returns></returns>
+            private static short ReadInt16LE(BinaryReader binaryReader)
             {
-                g.FillRectangle(brush, new Rectangle(0, 0, bmpSize.Width, bmpSize.Height));
+                byte[] bytes = binaryReader.ReadBytes(2);
+                return (short)((bytes[0]) | (bytes[1] << 8));
             }
-            return b;
-        }
 
-
-        /// <summary>
-        /// https://stackoverflow.com/a/11781561
-        /// slower 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        private static Bitmap InvertColors(Bitmap source)
-        {
-            Bitmap newBitmap = new Bitmap(source.Width, source.Height);
-
-            using (Graphics g = Graphics.FromImage(newBitmap))
-            using (ImageAttributes attributes = new ImageAttributes())
+            /// <summary>
+            /// Reads a 24 bit int from the stream in the Little Endian format.
+            /// </summary>
+            /// <param name="binaryReader">The binary reader to read</param>
+            /// <returns></returns>
+            private static int ReadInt24LE(BinaryReader binaryReader)
             {
-                attributes.SetColorMatrix(NegativeColorMatrix);
-
-                g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height),
-                            0, 0, source.Width, source.Height, GraphicsUnit.Pixel, attributes);
-
+                byte[] bytes = binaryReader.ReadBytes(3);
+                return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16));
             }
-            return newBitmap;
-        }
 
-        public static void FastInvertColorsSafe(Bitmap image, bool collectGarbage = true)
-        {
-            if (image == null)
-                return;
-
-            try
+            /// <summary>
+            /// Reads a 32 bit int from the stream in the Little Endian format.
+            /// </summary>
+            /// <param name="binaryReader">The binary reader to read</param>
+            /// <returns></returns>
+            private static int ReadInt32LE(BinaryReader binaryReader)
             {
-                ImageHelper.FastInvertColors(image);
+                byte[] bytes = binaryReader.ReadBytes(4);
+                return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24));
             }
-            catch { }
-            finally
+
+
+
+            /// <summary>
+            /// Reads a 32 bit int from the stream in the Big Endian format.
+            /// </summary>
+            /// <param name="binaryReader">The binary reader to read</param>
+            /// <returns></returns>
+            private static int ReadInt32BE(BinaryReader binaryReader)
             {
-                if(collectGarbage)
-                    GC.Collect();
+                byte[] bytes = binaryReader.ReadBytes(4);
+                return ((bytes[3]) | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24));
             }
-        }
 
-        /// <summary>
-        /// https://stackoverflow.com/a/24376274
-        /// this is faster than using a color matrix, but also requires 
-        /// a GC.Collect() otherwise it holds memory
-        /// </summary>
-        /// <param name="bitmapImage"></param>
-        public static void FastInvertColors(Bitmap bitmapImage)
-        {
-            BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
-            byte[] bitmapBGRA = new byte[bitmapLength];
-
-            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
-            bitmapImage.UnlockBits(bitmapRead);
-
-            for (int i = 0; i < bitmapLength; i += 4)
+            /// <summary>
+            /// Reads a 24 bit int from the stream in the Big Endian format.
+            /// </summary>
+            /// <param name="binaryReader">The binary reader to read</param>
+            /// <returns></returns>
+            private static int ReadInt24BE(BinaryReader binaryReader)
             {
-                bitmapBGRA[i] = (byte)(255 - bitmapBGRA[i]);
-                bitmapBGRA[i + 1] = (byte)(255 - bitmapBGRA[i + 1]);
-                bitmapBGRA[i + 2] = (byte)(255 - bitmapBGRA[i + 2]);
-                //        [i + 3] = ALPHA.
+                byte[] bytes = binaryReader.ReadBytes(3);
+                return ((bytes[2]) | (bytes[1] << 8) | (bytes[0] << 16));
             }
 
-            BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
-            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
-            bitmapImage.UnlockBits(bitmapWrite);
-        }
-
-        /// <summary>
-        /// https://web.archive.org/web/20130111215043/http://www.switchonthecode.com/tutorials/csharp-tutorial-convert-a-color-image-to-grayscale
-        /// </summary>
-        /// <param name="original"></param>
-        /// <returns></returns>
-        public static Bitmap MakeGrayscale(Bitmap original)
-        {
-            //create a blank bitmap the same size as original
-            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
-
-            using (Graphics g = Graphics.FromImage(newBitmap))
-            using (ImageAttributes attributes = new ImageAttributes())
+            /// <summary>
+            /// Reads a 16 bit int from the stream in the Big Endian format.
+            /// </summary>
+            /// <param name="binaryReader">The binary reader to read</param>
+            /// <returns></returns>
+            private static short ReadInt16BE(BinaryReader binaryReader)
             {
-                attributes.SetColorMatrix(GreyScaleColorMatrix);
-
-                g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
-                   0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
-
-            }
-            return newBitmap;
-        }
-
-        public static void FastGreyScaleColorsSafe(Bitmap image, bool collectGarbage = true)
-        {
-            if (image == null)
-                return;
-
-            try
-            {
-                ImageHelper.FastGreyScale(image);
-            }
-            catch { }
-            finally
-            {
-                if (collectGarbage)
-                    GC.Collect();
-            }
-        }
-
-
-        /// <summary>
-        /// this is an edited version of FastInvertColors where i used the greyscale formula from 
-        /// https://web.archive.org/web/20130111215043/http://www.switchonthecode.com/tutorials/csharp-tutorial-convert-a-color-image-to-grayscale
-        /// and stuck that into this better optimized loop
-        /// </summary>
-        /// <param name="bitmapImage"></param>
-        public static void FastGreyScale(Bitmap bitmapImage, double bm = 0.11, double gm = 0.59, double rm = 0.3)
-        {
-            BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
-            byte[] bitmapBGRA = new byte[bitmapLength];
-
-            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
-            bitmapImage.UnlockBits(bitmapRead);
-
-            for (int i = 0; i < bitmapLength; i += 4)
-            {
-                byte grayScale = (byte)((bitmapBGRA[i] * bm) + //B
-                                (bitmapBGRA[i + 1] * gm) +  //G
-                                (bitmapBGRA[i + 2] * rm)); //R
-
-                bitmapBGRA[i] = grayScale;      // B
-                bitmapBGRA[i + 1] = grayScale;  // G
-                bitmapBGRA[i + 2] = grayScale;  // R
-                //        [i + 3] = ALPHA.
+                byte[] bytes = binaryReader.ReadBytes(2);
+                return (short)((bytes[1]) | (bytes[0] << 8));
             }
 
-            BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
-            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
-            bitmapImage.UnlockBits(bitmapWrite);
-        }
-
-        public static void FillTransparent(Bitmap bitmapImage, Color fill, int alphaLessThan = 255)
-        {
-            BitmapData bitmapRead = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppPArgb);
-            int bitmapLength = bitmapRead.Stride * bitmapRead.Height;
-            byte[] bitmapBGRA = new byte[bitmapLength];
-
-            Marshal.Copy(bitmapRead.Scan0, bitmapBGRA, 0, bitmapLength);
-            bitmapImage.UnlockBits(bitmapRead);
-
-            for (int i = 0; i < bitmapLength; i += 4)
-            {
-                if (bitmapBGRA[i + 3] < alphaLessThan)
-                {
-                    bitmapBGRA[i] = fill.B;      // B
-                    bitmapBGRA[i + 1] = fill.G;  // G
-                    bitmapBGRA[i + 2] = fill.R;  // R
-                    bitmapBGRA[i + 3] = fill.A;  // alpha
-                }
-            }
-
-            BitmapData bitmapWrite = bitmapImage.LockBits(new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
-            Marshal.Copy(bitmapBGRA, 0, bitmapWrite.Scan0, bitmapLength);
-            bitmapImage.UnlockBits(bitmapWrite);
+            #endregion
         }
     }
 }

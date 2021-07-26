@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using ImageViewer.Settings;
 namespace ImageViewer.Helpers
 {
     public enum HashType
@@ -19,6 +20,12 @@ namespace ImageViewer.Helpers
     {
         Cancel,
         Resized
+    }
+
+    public enum SimpleDialogResult
+    {
+        Cancel,
+        Success
     }
 
     public enum ToolTipLocation
@@ -62,7 +69,9 @@ namespace ImageViewer.Helpers
         tif,
         bmp,
         gif,
-        webp
+        webp,
+        [Browsable(false)]
+        nil
     }
 
     public enum ColorSpace
@@ -78,5 +87,11 @@ namespace ImageViewer.Helpers
     {
         Version1 = 1,
         Version2
+    }
+
+    public enum ImageCopyMode
+    {
+        VisibleImage,
+        DefaultImage,
     }
 }

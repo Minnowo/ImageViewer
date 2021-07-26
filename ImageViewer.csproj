@@ -41,9 +41,14 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\imview.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -57,6 +62,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\CyotekImageBoxEx\DragHandle.cs" />
+    <Compile Include="Controls\CyotekImageBoxEx\DragHandleAnchor.cs" />
+    <Compile Include="Controls\CyotekImageBoxEx\DragHandleCollection.cs" />
+    <Compile Include="Controls\CyotekImageBoxEx\ImageBoxEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\CyotekImageBox\Enums.cs" />
     <Compile Include="Controls\CyotekImageBox\ImageBox.cs">
       <SubType>Component</SubType>
@@ -83,6 +94,15 @@
     </Compile>
     <Compile Include="Controls\CyotekImageBox\ZoomLevelCollection.cs" />
     <Compile Include="Controls\CyotekImageBox\ZoomLevelCollectionConverter.cs" />
+    <Compile Include="Controls\ToolStripClickThrough.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\FillTransparentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FillTransparentForm.Designer.cs">
+      <DependentUpon>FillTransparentForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\DitherForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -136,18 +156,6 @@
     <Compile Include="Controls\ColorPicker\ColorPickerSlider.Designer.cs">
       <DependentUpon>ColorPickerSlider.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ImageDisplay\DrawingBoard.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ImageDisplay\DrawingBoard.Designer.cs">
-      <DependentUpon>DrawingBoard.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ImageDisplay\ImageDisplay.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ImageDisplay\ImageDisplay.Designer.cs">
-      <DependentUpon>ImageDisplay.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\_TabControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -193,6 +201,20 @@
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform256.cs" />
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform8.cs" />
     <Compile Include="Helpers\Transforms\UserCustomColorPaletteTransform.cs" />
+    <Compile Include="Helpers\UndoRedo\BitmapUndo.cs" />
+    <Compile Include="Helpers\UndoRedo\IUndoable.cs" />
+    <Compile Include="Misc\FolderWatcher.cs" />
+    <Compile Include="Helpers\Gif.cs" />
+    <Compile Include="Forms\SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Misc\InstanceManager.cs" />
+    <Compile Include="Misc\ValueTypeConverter.cs" />
+    <Compile Include="Native\NativeConstants.cs" />
+    <Compile Include="Settings\SettingsLoader.cs" />
     <Compile Include="Structs\Structs.cs" />
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
@@ -217,7 +239,7 @@
       <DependentUpon>_TabPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\WebPHelper.cs" />
-    <Compile Include="Misc\WebPQuality.cs" />
+    <Compile Include="Structs\WebPQuality.cs" />
     <EmbeddedResource Include="Controls\ColorDisplay.resx">
       <DependentUpon>ColorDisplay.cs</DependentUpon>
     </EmbeddedResource>
@@ -230,11 +252,17 @@
     <EmbeddedResource Include="Forms\DitherForm.resx">
       <DependentUpon>DitherForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FillTransparentForm.resx">
+      <DependentUpon>FillTransparentForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ImagePropertiesForm.resx">
       <DependentUpon>ImagePropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SettingsForm.resx">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -265,6 +293,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\color-picker-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Copy and Append.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Copy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\image-resize-actual.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Open.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Paste.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\imview.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

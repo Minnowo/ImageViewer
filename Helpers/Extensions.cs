@@ -4,9 +4,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using System.IO;
 
 using ImageViewer.structs;
 namespace ImageViewer.Helpers
@@ -24,6 +25,22 @@ namespace ImageViewer.Helpers
             }
 
             return str;
+        }
+
+        public static string[] OnlyValidFiles(this string[] str)
+        {
+            if (str == null || str.Length < 1)
+                return null;
+            List<string> newA = str.ToList();
+
+            for(int i = 0; i < newA.Count; i++)
+            {
+                if (!Helper.IsValidFilePath(newA[i]) || !File.Exists(newA[i]))
+                    newA.RemoveAt(i);
+                else
+                    newA[i] = new FileInfo(newA[i]).FullName; // force absolute paths
+            }
+            return newA.ToArray();
         }
 
         #endregion
@@ -77,6 +94,17 @@ namespace ImageViewer.Helpers
 
         #endregion
 
+        public static IEnumerable<T> OrderByNatural<T>(this IEnumerable<T> items, Func<T, string> selector, StringComparer stringComparer = null)
+        {
+            Regex regex = new Regex(@"\d+", RegexOptions.Compiled);
+
+            int maxDigits = items
+                          .SelectMany(i => regex.Matches(selector(i)).Cast<Match>().Select(digitChunk => (int?)digitChunk.Value.Length))
+                          .Max() ?? 0;
+
+            return items.OrderBy(i => regex.Replace(selector(i), match => match.Value.PadLeft(maxDigits, '0')), stringComparer ?? StringComparer.CurrentCulture);
+        }
+
         public static byte ToByte(this int input)
         {
             return (byte)input.Clamp(0, 255);
@@ -84,7 +112,7 @@ namespace ImageViewer.Helpers
 
         public static void ShowError(this Exception e)
         {
-            MessageBox.Show(null ,e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(Program.mainForm ,e.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }        
 
         public static void ShowFullScreen(this Control ctl)
@@ -118,15 +146,56 @@ namespace ImageViewer.Helpers
                 form.Show();
             };
 
-            // Exit full screen with escape key
             host.KeyPreview = true;
-            host.KeyDown += (KeyEventHandler)((s, e) => {
+
+            // this line feels like cheating lmao bouta intercept some key up events
+            host.KeyUp += (KeyEventHandler)((s, e) => {
+                Program.mainForm.FullscreenKeyUpCallback(e);
+
+                // Exit full screen with escape key
                 if (e.KeyCode == Keys.Escape) host.Close();
             });
 
             // And go full screen
             host.Show();
             form.Hide();
+        }
+        public static void InvokeSafe(this Control control, Action action)
+        {
+            if (control != null && !control.IsDisposed)
+            {
+                if (control.InvokeRequired)
+                {
+                    control.Invoke(action);
+                }
+                else
+                {
+                    action();
+                }
+            }
+        }
+        public static void ForceActivate(this Form form)
+        {
+            if (!form.IsDisposed)
+            {
+                if (!form.Visible)
+                {
+                    form.Show();
+                }
+
+                if (form.WindowState == FormWindowState.Minimized)
+                {
+                    form.WindowState = FormWindowState.Normal;
+                }
+                bool alwayOnTop = form.TopMost;
+
+                form.TopMost = false;
+                form.TopMost = true;
+
+                form.TopMost = alwayOnTop;
+                form.BringToFront();
+                form.Activate();
+            }
         }
 
         public static bool Toggle(this bool input)
@@ -137,6 +206,16 @@ namespace ImageViewer.Helpers
         public static T Clamp<T>(this T input, T min, T max) where T : IComparable<T>
         {
             return MathHelper.Clamp(input, min, max);
+        }
+
+        public static T ClampMin<T>(this T input, T min) where T : IComparable<T>
+        {
+            return MathHelper.ClampMin(input, min);
+        }
+
+        public static T ClampMax<T>(this T input,T max) where T : IComparable<T>
+        {
+            return MathHelper.ClampMax(input, max);
         }
 
         public static T CloneSafe<T>(this T obj) where T : class, ICloneable
@@ -151,6 +230,16 @@ namespace ImageViewer.Helpers
             catch {}
 
             return null;
+        }
+
+        public static void Move<T>(this List<T> list, int oldIndex, int newIndex)
+        {
+            Helper.Move(list, oldIndex, newIndex);
+        }
+
+        public static void Move<T>(this List<T> list, T item, int newIndex)
+        {
+            Helper.Move(list, item, newIndex);
         }
     }
 }

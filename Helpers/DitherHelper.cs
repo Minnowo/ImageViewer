@@ -15,7 +15,7 @@ namespace ImageViewer.Helpers
     {
         public static Bitmap GetTransformedImage(WorkerData workerData)
         {
-            ARGB[] pixelData;
+            Color[] pixelData;
             Size size;
             IPixelTransform transform;
             IErrorDiffusion dither;
@@ -26,7 +26,7 @@ namespace ImageViewer.Helpers
             using (Bitmap image = workerData.Image)
             {
                 size = image.Size;
-                pixelData = image.GetPixelsFrom32BitArgbImage();
+                pixelData = ImageHelper.GetBitmapColors(image); //image.GetPixelsFrom32BitArgbImage();
             }
 
             if (dither != null && dither.Prescan)
@@ -42,14 +42,14 @@ namespace ImageViewer.Helpers
             ProcessPixels(pixelData, size, transform, dither, workerData);
 
             // create the final bitmap
-            return pixelData.ToBitmap(size);
+            return ImageHelper.GetBitmapFromArray(pixelData, size);//pixelData.ToBitmap(size);
         }
 
-        public static void ProcessPixels(ARGB[] pixelData, Size size, IPixelTransform pixelTransform, IErrorDiffusion dither, WorkerData bw = null)
+        public static void ProcessPixels(Color[] pixelData, Size size, IPixelTransform pixelTransform, IErrorDiffusion dither, WorkerData bw = null)
         {
-            ARGB current;
-            ARGB transformed;
-            int index;
+            Color current;
+            Color transformed;
+            int index = 0;
 
             for (int row = 0; row < size.Height; row++)
                 for (int col = 0; col < size.Width; col++)
@@ -60,25 +60,23 @@ namespace ImageViewer.Helpers
                         return;
                     }
 
-                    index = row * size.Width + col;
                     current = pixelData[index];
-
-                    // transform the pixel
+                    
                     if (pixelTransform != null)
                     {
-                        transformed = pixelTransform.Transform(pixelData, current, col, row, size.Width, size.Height);
+                        transformed = pixelTransform.Transform(current);
                         pixelData[index] = transformed;
                     }
                     else
                     {
                         transformed = current;
                     }
+                    index++;
 
                     // apply a dither algorithm to this pixel
                     // assuming it wasn't done before
                     dither?.Diffuse(pixelData, current, transformed, col, row, size.Width, size.Height);
                 }
-
         }
     }
 }

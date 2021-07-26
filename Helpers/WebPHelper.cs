@@ -7,12 +7,12 @@ using System.Security;
 using System.Windows.Forms;
 using ImageViewer.Settings;
 
-namespace ImageViewer
+namespace ImageViewer.Helpers
 {
     // https://github.com/JosePineiro/WebP-wrapper
     public sealed class WebP : IDisposable
     {
-        private const int WEBP_MAX_DIMENSION = 16383;
+        public const int WEBP_MAX_DIMENSION = 16383;
 
         #region | Public Decode Functions |
         /// <summary>Read a WebP file</summary>
@@ -721,11 +721,15 @@ namespace ImageViewer
                     throw new ArgumentException("Bitmap contains no data.", "bmp");
                 if (bmp.Width > WEBP_MAX_DIMENSION || bmp.Height > WEBP_MAX_DIMENSION)
                     throw new NotSupportedException("Bitmap's dimension is too large. Max is " + WEBP_MAX_DIMENSION + "x" + WEBP_MAX_DIMENSION + " pixels.");
+                PixelFormat fmt = bmp.PixelFormat;
+                /*if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
+                    throw new NotSupportedException("Only support Format24bppRgb and Format32bppArgb pixelFormat."); */
                 if (bmp.PixelFormat != PixelFormat.Format24bppRgb && bmp.PixelFormat != PixelFormat.Format32bppArgb)
-                    throw new NotSupportedException("Only support Format24bppRgb and Format32bppArgb pixelFormat.");
+                    fmt = PixelFormat.Format24bppRgb;
 
                 // Setup the input data, allocating a the bitmap, width and height
-                bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, bmp.PixelFormat);
+                bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, fmt);
+                //bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, bmp.PixelFormat);
                 if (UnsafeNativeMethods.WebPPictureInitInternal(ref wpic) != 1)
                     throw new Exception("Can´t init WebPPictureInit");
                 wpic.width = (int)bmp.Width;
@@ -903,7 +907,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPConfigInitInternal")]
         private static extern int WebPConfigInitInternal_x86(ref WebPConfig config, WebPPreset preset, float quality, int WEBP_DECODER_ABI_VERSION);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPConfigInitInternal")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPConfigInitInternal")]
         private static extern int WebPConfigInitInternal_x64(ref WebPConfig config, WebPPreset preset, float quality, int WEBP_DECODER_ABI_VERSION);
 
         /// <summary>Get info of WepP image</summary>
@@ -925,7 +929,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetFeaturesInternal")]
         private static extern VP8StatusCode WebPGetFeaturesInternal_x86([InAttribute()] IntPtr rawWebP, UIntPtr data_size, ref WebPBitstreamFeatures features, int WEBP_DECODER_ABI_VERSION);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetFeaturesInternal")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetFeaturesInternal")]
         private static extern VP8StatusCode WebPGetFeaturesInternal_x64([InAttribute()] IntPtr rawWebP, UIntPtr data_size, ref WebPBitstreamFeatures features, int WEBP_DECODER_ABI_VERSION);
 
         /// <summary>Activate the lossless compression mode with the desired efficiency.</summary>
@@ -946,7 +950,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPConfigLosslessPreset")]
         private static extern int WebPConfigLosslessPreset_x86(ref WebPConfig config, int level);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPConfigLosslessPreset")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPConfigLosslessPreset")]
         private static extern int WebPConfigLosslessPreset_x64(ref WebPConfig config, int level);
 
         /// <summary>Check that 'config' is non-NULL and all configuration parameters are within their valid ranges.</summary>
@@ -966,7 +970,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPValidateConfig")]
         private static extern int WebPValidateConfig_x86(ref WebPConfig config);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPValidateConfig")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPValidateConfig")]
         private static extern int WebPValidateConfig_x64(ref WebPConfig config);
 
         /// <summary>Init the struct WebPPicture ckecking the dll version</summary>
@@ -986,7 +990,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureInitInternal")]
         private static extern int WebPPictureInitInternal_x86(ref WebPPicture wpic, int WEBP_DECODER_ABI_VERSION);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureInitInternal")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureInitInternal")]
         private static extern int WebPPictureInitInternal_x64(ref WebPPicture wpic, int WEBP_DECODER_ABI_VERSION);
 
         /// <summary>Colorspace conversion function to import RGB samples.</summary>
@@ -1008,7 +1012,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGR")]
         private static extern int WebPPictureImportBGR_x86(ref WebPPicture wpic, IntPtr bgr, int stride);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGR")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGR")]
         private static extern int WebPPictureImportBGR_x64(ref WebPPicture wpic, IntPtr bgr, int stride);
 
         /// <summary>Colorspace conversion function to import RGB samples.</summary>
@@ -1030,7 +1034,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGRA")]
         private static extern int WebPPictureImportBGRA_x86(ref WebPPicture wpic, IntPtr bgra, int stride);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGRA")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGRA")]
         private static extern int WebPPictureImportBGRA_x64(ref WebPPicture wpic, IntPtr bgra, int stride);
 
         /// <summary>Colorspace conversion function to import RGB samples.</summary>
@@ -1052,7 +1056,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGRX")]
         private static extern int WebPPictureImportBGRX_x86(ref WebPPicture wpic, IntPtr bgr, int stride);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGRX")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureImportBGRX")]
         private static extern int WebPPictureImportBGRX_x64(ref WebPPicture wpic, IntPtr bgr, int stride);
 
         /// <summary>The writer type for output compress data</summary>
@@ -1082,7 +1086,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncode")]
         private static extern int WebPEncode_x86(ref WebPConfig config, ref WebPPicture picture);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncode")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncode")]
         private static extern int WebPEncode_x64(ref WebPConfig config, ref WebPPicture picture);
 
         /// <summary>Release the memory allocated by WebPPictureAlloc() or WebPPictureImport*()
@@ -1105,7 +1109,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureFree")]
         private static extern void WebPPictureFree_x86(ref WebPPicture wpic);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureFree")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureFree")]
         private static extern void WebPPictureFree_x64(ref WebPPicture wpic);
 
         /// <summary>Validate the WebP image header and retrieve the image height and width. Pointers *width and *height can be passed NULL if deemed irrelevant</summary>
@@ -1128,7 +1132,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetInfo")]
         private static extern int WebPGetInfo_x86([InAttribute()] IntPtr data, UIntPtr data_size, out int width, out int height);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetInfo")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetInfo")]
         private static extern int WebPGetInfo_x64([InAttribute()] IntPtr data, UIntPtr data_size, out int width, out int height);
 
         /// <summary>Decode WEBP image pointed to by *data and returns BGR samples into a pre-allocated buffer</summary>
@@ -1152,7 +1156,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRInto")]
         private static extern int WebPDecodeBGRInto_x86([InAttribute()] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRInto")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRInto")]
         private static extern int WebPDecodeBGRInto_x64([InAttribute()] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
 
         /// <summary>Decode WEBP image pointed to by *data and returns BGR samples into a pre-allocated buffer</summary>
@@ -1176,7 +1180,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRAInto")]
         private static extern int WebPDecodeBGRAInto_x86([InAttribute()] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRAInto")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecodeBGRAInto")]
         private static extern int WebPDecodeBGRAInto_x64([InAttribute()] IntPtr data, UIntPtr data_size, IntPtr output_buffer, int output_buffer_size, int output_stride);
 
         /// <summary>Initialize the configuration as empty. This function must always be called first, unless WebPGetFeatures() is to be called.</summary>
@@ -1196,7 +1200,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPInitDecoderConfigInternal")]
         private static extern int WebPInitDecoderConfigInternal_x86(ref WebPDecoderConfig webPDecoderConfig, int WEBP_DECODER_ABI_VERSION);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPInitDecoderConfigInternal")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPInitDecoderConfigInternal")]
         private static extern int WebPInitDecoderConfigInternal_x64(ref WebPDecoderConfig webPDecoderConfig, int WEBP_DECODER_ABI_VERSION);
 
         /// <summary>Decodes the full data at once, taking 'config' into account.</summary>
@@ -1218,7 +1222,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecode")]
         private static extern VP8StatusCode WebPDecode_x86(IntPtr data, UIntPtr data_size, ref WebPDecoderConfig config);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecode")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPDecode")]
         private static extern VP8StatusCode WebPDecode_x64(IntPtr data, UIntPtr data_size, ref WebPDecoderConfig config);
 
         /// <summary>Free any memory associated with the buffer. Must always be called last. Doesn't free the 'buffer' structure itself.</summary>
@@ -1239,7 +1243,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPFreeDecBuffer")]
         private static extern void WebPFreeDecBuffer_x86(ref WebPDecBuffer buffer);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPFreeDecBuffer")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPFreeDecBuffer")]
         private static extern void WebPFreeDecBuffer_x64(ref WebPDecBuffer buffer);
 
         /// <summary>Lossy encoding images</summary>
@@ -1264,7 +1268,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeBGR")]
         private static extern int WebPEncodeBGR_x86([InAttribute()] IntPtr bgr, int width, int height, int stride, float quality_factor, out IntPtr output);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeBGR")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeBGR")]
         private static extern int WebPEncodeBGR_x64([InAttribute()] IntPtr bgr, int width, int height, int stride, float quality_factor, out IntPtr output);
 
         /// <summary>Lossy encoding images</summary>
@@ -1289,7 +1293,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeBGRA")]
         private static extern int WebPEncodeBGRA_x86([InAttribute()] IntPtr bgra, int width, int height, int stride, float quality_factor, out IntPtr output);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeBGRA")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeBGRA")]
         private static extern int WebPEncodeBGRA_x64([InAttribute()] IntPtr bgra, int width, int height, int stride, float quality_factor, out IntPtr output);
 
         /// <summary>Lossless encoding images pointed to by *data in WebP format</summary>
@@ -1313,7 +1317,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeLosslessBGR")]
         private static extern int WebPEncodeLosslessBGR_x86([InAttribute()] IntPtr bgr, int width, int height, int stride, out IntPtr output);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeLosslessBGR")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeLosslessBGR")]
         private static extern int WebPEncodeLosslessBGR_x64([InAttribute()] IntPtr bgr, int width, int height, int stride, out IntPtr output);
 
         /// <summary>Lossless encoding images pointed to by *data in WebP format</summary>
@@ -1337,7 +1341,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeLosslessBGRA")]
         private static extern int WebPEncodeLosslessBGRA_x86([InAttribute()] IntPtr bgra, int width, int height, int stride, out IntPtr output);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeLosslessBGRA")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPEncodeLosslessBGRA")]
         private static extern int WebPEncodeLosslessBGRA_x64([InAttribute()] IntPtr bgra, int width, int height, int stride, out IntPtr output);
 
         /// <summary>Releases memory returned by the WebPEncode</summary>
@@ -1358,7 +1362,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPFree")]
         private static extern void WebPFree_x86(IntPtr p);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPFree")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPFree")]
         private static extern void WebPFree_x64(IntPtr p);
 
         /// <summary>Get the webp version library</summary>
@@ -1377,7 +1381,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetDecoderVersion")]
         private static extern int WebPGetDecoderVersion_x86();
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetDecoderVersion")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPGetDecoderVersion")]
         private static extern int WebPGetDecoderVersion_x64();
 
         /// <summary>Compute PSNR, SSIM or LSIM distortion metric between two pictures.</summary>
@@ -1400,7 +1404,7 @@ namespace ImageViewer
         }
         [DllImport(InternalSettings.libwebP_x86, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureDistortion")]
         private static extern int WebPPictureDistortion_x86(ref WebPPicture srcPicture, ref WebPPicture refPicture, int metric_type, IntPtr pResult);
-        [DllImport("plugins\\libwebp_x64.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureDistortion")]
+        [DllImport(InternalSettings.libwebP_x64, CallingConvention = CallingConvention.Cdecl, EntryPoint = "WebPPictureDistortion")]
         private static extern int WebPPictureDistortion_x64(ref WebPPicture srcPicture, ref WebPPicture refPicture, int metric_type, IntPtr pResult);
     }
     #endregion

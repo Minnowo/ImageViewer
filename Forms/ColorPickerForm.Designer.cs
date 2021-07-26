@@ -446,6 +446,7 @@
             this.tb_HexInput.Name = "tb_HexInput";
             this.tb_HexInput.Size = new System.Drawing.Size(79, 20);
             this.tb_HexInput.TabIndex = 11;
+            this.tb_HexInput.TextChanged += new System.EventHandler(this.HexValue_Changed);
             // 
             // tb_DecimalInput
             // 
@@ -455,6 +456,7 @@
             this.tb_DecimalInput.Name = "tb_DecimalInput";
             this.tb_DecimalInput.Size = new System.Drawing.Size(79, 20);
             this.tb_DecimalInput.TabIndex = 12;
+            this.tb_DecimalInput.TextChanged += new System.EventHandler(this.DecimalValue_Changed);
             // 
             // tb_YposInput
             // 

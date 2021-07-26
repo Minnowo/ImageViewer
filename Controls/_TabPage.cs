@@ -12,12 +12,25 @@ using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.structs;
 using ImageViewer.Settings;
+using ImageViewer.Helpers.UndoRedo;
 using Cyotek.Windows.Forms;
+
 
 namespace ImageViewer.Controls
 {
     public partial class _TabPage : TabPage
     {
+        public delegate void ImageLoadedEvent(bool imloaded);
+        public static event ImageLoadedEvent ImageLoaded;
+
+        public delegate void ImageUnloadedEvent(bool imloaded);
+        public static event ImageUnloadedEvent ImageUnloaded;
+
+        public delegate void ImageChangedEvent();
+        public static event ImageChangedEvent ImageChanged;
+
+        public BitmapUndo BitmapChangeTracker;
+
         public FileInfo ImagePath
         {
             get
@@ -27,11 +40,20 @@ namespace ImageViewer.Controls
             set
             {
                 imagePath = value;
+                this.Text = value.Name;
+
+                if (isCurrentPage)
+                {
+                    changingImagePath = true;
+                    preventLoadImage = false;
+                    LoadImage();
+                    changingImagePath = false;
+                }
             }
         }
         private FileInfo imagePath;
 
-        public bool ImageLoaded { get; private set; } = false;
+        public bool ImageShown { get; private set; } = false;
         public bool IsCurrentPage
         {
             get
@@ -42,10 +64,8 @@ namespace ImageViewer.Controls
             {
                 if(!value)
                 {
-                    //state = idMain.GetState();
-
                     UnloadImage();
-                    ImageLoaded = false;
+                    ImageShown = false;
                 }
                 isCurrentPage = value;
             }
@@ -72,29 +92,29 @@ namespace ImageViewer.Controls
                 // the image on the OnMouseDown event 
                 // rather than OnTabChanged event so that we can close the
                 // tab quickly if they are hitting the close button instead of just selecting the tab
-                if (!value && isCurrentPage && !ImageLoaded)
+                if (!value && isCurrentPage && !ImageShown)
                 {
                     LoadImage();
                 }                
             }
         }
         private bool preventLoadImage = false;
-        //public ImageDisplayState state { get; private set; }
+        private bool imageCached = false;
+        private bool changingImagePath = false;
 
-        public ImageDisplay idMain { get; private set; }
-        public ImageBox ibMain { get; private set; }
+
+        public ImageBoxEx ibMain { get; private set; }
         public Image ScaledImage
         {
             get
             {
-                return null;//idMain.ScaledImage;
+                return ibMain.VisibleImage;
             }
         }
         public Image Image
         {
             get
             {
-                //return idMain.Image;
                 return ibMain.Image;
             }
         }
@@ -109,21 +129,22 @@ namespace ImageViewer.Controls
 
             imagePath = new FileInfo(path);
 
-            ibMain = new ImageBox();
+            ibMain = new ImageBoxEx();
 
             ibMain.AllowClickZoom = false;
             ibMain.AllowDrop = false;
+            ibMain.LimitSelectionToImage = false;
 
-            ibMain.LimitSelectionToImage = true;
             ibMain.DisposeImageBeforeChange = true;
             ibMain.AutoCenter = true;
             ibMain.AutoPan = true;
+            //ibMain.LockImage = false;
             ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
 
             ibMain.BorderStyle = BorderStyle.None;
             ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
 
-            ibMain.SelectionMode = ImageBoxSelectionMode.Rectangle;
+            ibMain.SelectionMode =   ImageBoxSelectionMode.Rectangle;
             ibMain.SelectionButton = MouseButtons.Right;
             ibMain.PanButton =       MouseButtons.Left;
 
@@ -132,16 +153,18 @@ namespace ImageViewer.Controls
 
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
 
-
-            /*idMain = new ImageDisplay();
-            idMain.Location = new Point(0, 0);
-            idMain.Dock = DockStyle.Fill;
-            idMain.CenterOnLoad = true;*/
-
-            //state = ImageDisplayState.empty;
-
+            ibMain.ImageChanged += IbMain_ImageChanged;
+            /*ibMain.AutoScrollMinSize = new Size(5000,5000);*/
+            ibMain.AutoScroll = true;
             Controls.Add(ibMain);
+
+            BitmapChangeTracker = new BitmapUndo();
+
+            BitmapUndo.RedoHappened += OnUndoRedo;
+            BitmapUndo.UndoHappened += OnUndoRedo;
+            BitmapUndo.UpdateReferences += UpdateReference;
         }
+
 
         private void LoadImage()
         {
@@ -163,46 +186,117 @@ namespace ImageViewer.Controls
 
                 return;
             }
-            
-            if (InternalSettings.Use_Lite_Load_Image)
-            {
-                ibMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
-                //idMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
-            }
-            else
-            {
-                ibMain.Image = ImageHelper.LiteLoadImage(imagePath.FullName);
-                //idMain.Image = ImageHelper.LoadImage(imagePath.FullName);
-            }
 
-            if (InternalSettings.Fill_Transparent)
-            {
-                ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
-                ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
-                //idMain.FillAlphaLessThan = InternalSettings.Fill_Alpha_Less_Than;
-                //idMain.FillTransparentColor = InternalSettings.Fill_Transparent_Color;
-                //idMain.FillTransparent = true;
-            }
-            else
+            if (changingImagePath)
+                BitmapChangeTracker?.Dispose();
+            
+            if(BitmapChangeTracker.CurrentBitmap == null)
+                BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(imagePath.FullName);
+
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+            //BitmapChangeTracker.UpdateBitmapReferance((Bitmap)ibMain.Image);
+
+            if(InternalSettings.Show_Default_Transparent_Colors)
             {
                 ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
                 ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
             }
+            else
+            {
+                ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+                ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
+            }
 
-            /*if (state != ImageDisplayState.empty)
-                idMain.LoadState(state);*/
+            ImageShown = true;
 
-            //state = idMain.GetState();
-            ImageLoaded = true;
-
+            OnImageLoad();
             Invalidate();
         }
 
-        private void UnloadImage()
+        public void UnloadImage()
         {
-            //state = idMain.GetState();
-            //idMain.Image = null;
-            ibMain.Image = null;
+            imageCached = BitmapChangeTracker.UndoCount != 0;
+
+            if (!imageCached)
+            {
+                ibMain.Image = null;
+                BitmapChangeTracker.Dispose();
+            }
+            else
+            {
+                ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
+                ibMain.Image = null;
+                ibMain.DisposeImageBeforeChange = true;
+            }
+
+            ImageShown = false;
+            OnImageUnload();
+
+            if (InternalSettings.Garbage_Collect_On_Image_Unload)
+            {
+                GC.Collect();
+            }
+        }
+
+        private void IbMain_ImageChanged(object sender, EventArgs e)
+        {
+            OnImageChanged();
+        }
+
+        private void OnImageChanged()
+        {
+            if(ImageChanged != null)
+            {
+                ImageChanged();
+            }
+        }
+
+        private void OnImageLoad()
+        {
+            if (ImageLoaded != null) 
+            { 
+                ImageLoaded(ImageShown);
+            }
+        }
+
+        private void OnImageUnload()
+        {
+            if(ImageUnloaded != null)
+            {
+                ImageUnloaded(ImageShown);
+            }
+        }
+
+
+        private void OnUndoRedo(BitmapChanges change)
+        {
+            switch (change)
+            {
+                case BitmapChanges.Cropped:
+                case BitmapChanges.Dithered:
+                case BitmapChanges.Resized:
+                case BitmapChanges.SetGray:
+                case BitmapChanges.TransparentFilled:
+                    ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
+                    ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+                    ibMain.DisposeImageBeforeChange = true;
+                    break;
+                case BitmapChanges.Inverted:
+                case BitmapChanges.RotatedLeft:
+                case BitmapChanges.RotatedRight:
+                case BitmapChanges.FlippedHorizontal:
+                case BitmapChanges.FlippedVirtical:
+                    break;
+            }
+
+            ibMain.Invalidate();
+        }
+
+        private void UpdateReference()
+        {
+            ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+            ibMain.DisposeImageBeforeChange = true;
         }
     }
 }

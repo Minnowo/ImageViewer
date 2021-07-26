@@ -55,7 +55,7 @@
             this.rb_NoColor = new System.Windows.Forms.RadioButton();
             this.rb_MonochromeColor = new System.Windows.Forms.RadioButton();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.ibMain = new Cyotek.Windows.Forms.ImageBox();
+            this.ibMain = new Cyotek.Windows.Forms.ImageBoxEx();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nud_ColorThreshhold)).BeginInit();
             this.panel2.SuspendLayout();
@@ -500,7 +500,9 @@
             this.ClientSize = new System.Drawing.Size(800, 453);
             this.Controls.Add(this.ibMain);
             this.Controls.Add(this.panel1);
+            this.MinimumSize = new System.Drawing.Size(280, 220);
             this.Name = "DitherForm";
+            this.ShowIcon = false;
             this.Text = "DitherForm";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -547,6 +549,6 @@
         private System.Windows.Forms.RadioButton rb_UseCustomPalette;
         private System.Windows.Forms.Button btn_LoadCustomPalette;
         private System.Windows.Forms.Label lbl_BlacknWhiteThreshold;
-        private Cyotek.Windows.Forms.ImageBox ibMain;
+        private Cyotek.Windows.Forms.ImageBoxEx ibMain;
     }
 }

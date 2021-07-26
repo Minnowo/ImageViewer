@@ -22,8 +22,9 @@ namespace ImageViewer
     {
         public string CustomColorPalette { get; private set; } = "";
         public bool CanceledOnClosing = false;
+        public bool Canceled = false;
 
-        private ARGB[] customPalette;
+        private Color[] customPalette;
         private Bitmap originalImage;
         private Stopwatch fitToScreenLimiter = new Stopwatch();
         private System.Windows.Forms.Timer updateThresholdTimer = new System.Windows.Forms.Timer();
@@ -35,13 +36,19 @@ namespace ImageViewer
 
             InitializeComponent();
 
+            this.Resize += new System.EventHandler(this.MainWindow_Resize);
+
             ibMain.AllowClickZoom = false;
             ibMain.AllowDrop = false;
+            ibMain.LimitSelectionToImage = false;
 
-            ibMain.LimitSelectionToImage = true;
             ibMain.DisposeImageBeforeChange = true;
             ibMain.AutoCenter = true;
             ibMain.AutoPan = true;
+            ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
+
+            ibMain.BorderStyle = BorderStyle.None;
+            ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
 
             ibMain.SelectionMode = ImageBoxSelectionMode.Rectangle;
             ibMain.SelectionButton = MouseButtons.Right;
@@ -52,15 +59,15 @@ namespace ImageViewer
             ibMain.RemoveSelectionOnPan = InternalSettings.Remove_Selected_Area_On_Pan;
             ibMain.BackColor = InternalSettings.Image_Box_Back_Color;
 
-            if (InternalSettings.Fill_Transparent)
-            {
-                ibMain.GridColor = InternalSettings.Fill_Transparent_Color;
-                ibMain.GridColorAlternate = InternalSettings.Fill_Transparent_Color;
-            }
-            else
+            if (InternalSettings.Show_Default_Transparent_Colors)
             {
                 ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
                 ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
+            }
+            else
+            {
+                ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
+                ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
             }
 
             backgroundWorker.WorkerSupportsCancellation = true;
@@ -72,10 +79,9 @@ namespace ImageViewer
             rb_NoDither.Checked = true;
 
             originalImage = img;
-
+            
             RequestImageTransform();
         }
-
         
        
         private void RequestImageTransform()
@@ -90,7 +96,7 @@ namespace ImageViewer
 
             transform = GetPixelTransform();
             ditherer = GetDitheringInstance();
-            image = originalImage.CloneSafe();
+            image = originalImage.CloneSafe();//.CopyTo32bppArgb();
 
             if (image == null)
                 return;
@@ -115,7 +121,8 @@ namespace ImageViewer
             }
             else
             {
-                backgroundWorker_RunWorkerCompleted(backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
+                backgroundWorker_RunWorkerCompleted(
+                    backgroundWorker, new RunWorkerCompletedEventArgs(DitherHelper.GetTransformedImage(workerData), null, false));
             }
         }
 
@@ -284,13 +291,15 @@ namespace ImageViewer
                 MessageBox.Show(this, "cannot save while worker thread is running", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            ImageHelper.UpdateBitmap(originalImage, (Bitmap)ibMain.Image);
+            
+            ImageHelper.UpdateBitmapSafe(originalImage, (Bitmap)ibMain.Image);
             Close();
         }
 
         private void btn_Cancel_Click(object sender, EventArgs e)
         {
+            ibMain.Image = null;
+            Canceled = true;
             Close();
         }
 
@@ -314,7 +323,8 @@ namespace ImageViewer
 
         private void LoadColorPalette_Clicked(object sender, EventArgs e)
         {
-            string[] files = Helper.AskOpenFile("", this, InternalSettings.Color_Palette_File_Dialog);
+            string[] files = Helper.AskOpenFile("", this, 
+                string.Format("{0}|{1}", InternalSettings.All_Palette_Files_File_Dialog, InternalSettings.Color_Palette_Dialog_Filters));
 
             if (files == null || files.Length < 1)
                 return;
@@ -323,7 +333,7 @@ namespace ImageViewer
 
             string ext = Helper.GetFilenameExtension(CustomColorPalette).ToLower();
 
-            ARGB[] palette = null;
+            Color[] palette = null;
             switch (ext)
             {
                 case "txt":
@@ -375,6 +385,43 @@ namespace ImageViewer
             RequestImageTransform();
         }
 
+        private void FitImageToScreen()
+        {
+            if (ibMain.Image == null)
+                return;
+
+            if (InternalSettings.Fit_Image_On_Resize)
+            {
+                ibMain.ZoomToFit();
+                ibMain.Invalidate();
+            }
+        }
+
+        private void MainWindow_Resize(object sender, EventArgs e)
+        {
+            if (!fitToScreenLimiter.IsRunning)
+                fitToScreenLimiter.Start();
+
+            switch (WindowState)
+            {
+                case FormWindowState.Maximized:
+                    FitImageToScreen();
+                    break;
+
+                case FormWindowState.Minimized:
+                    break;
+
+
+                case FormWindowState.Normal:
+                    if (fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
+                    {
+                        FitImageToScreen();
+                        fitToScreenLimiter.Restart();
+                    }
+                    break;
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (backgroundWorker.IsBusy)
@@ -405,37 +452,6 @@ namespace ImageViewer
             base.Dispose(disposing);
         }
 
-
-        protected override void OnResize(EventArgs e)
-        {
-            if (!fitToScreenLimiter.IsRunning)
-                fitToScreenLimiter.Start();
-
-            switch (WindowState)
-            {
-                case FormWindowState.Maximized:
-                    if (InternalSettings.Fit_Image_On_Resize)
-                    {
-                        ibMain.ZoomToFit();
-                        ibMain.Invalidate();
-                    }
-                    break;
-
-                case FormWindowState.Minimized:
-                    break;
-
-                case FormWindowState.Normal:
-                    if (InternalSettings.Fit_Image_On_Resize && fitToScreenLimiter.ElapsedMilliseconds > InternalSettings.Fit_To_Screen_On_Resize_Limit)
-                    {
-                        ibMain.ZoomToFit();
-                        ibMain.Invalidate();
-                        fitToScreenLimiter.Restart();
-                    }
-                    break;
-            }
-
-            base.OnResize(e);
-        }
 
         protected override void OnResizeEnd(EventArgs e)
         {

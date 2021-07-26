@@ -13,11 +13,17 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            BitmapChangeTracker.Dispose();
             ibMain.Dispose();
 
             if (disposing && (components != null))
             {
                 components.Dispose();
+            }
+
+            if (ImageViewer.Settings.InternalSettings.Garbage_Collect_On_Image_Unload)
+            {
+                System.GC.Collect();
             }
             base.Dispose(disposing);
         }
