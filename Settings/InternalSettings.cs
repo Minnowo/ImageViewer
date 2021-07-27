@@ -23,10 +23,10 @@ namespace ImageViewer.Settings
 
 
         public static List<string> Readable_Image_Formats_Dialog_Options = new List<string>
-        { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff" };
+        { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff", "*.wrm" };
 
         public static List<string> Readable_Image_Formats = new List<string>()
-        { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff" };
+        { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff", "wrm" };
 
         public static List<string> Readable_Color_Palette_Dialog_Options = new List<string>
         { "*.aco", "*.lbm", "*.bmm", "*.txt" };
@@ -56,6 +56,7 @@ namespace ImageViewer.Settings
         public const string WEBP_File_Dialog = "WEBP (*.webp)|*.webp";
         public const string TIFF_File_Dialog = "TIFF (*.tif, *.tiff)|*.tif;*.tiff";
         public const string JPEG_File_Dialog = "JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif";
+        public const string WRM_File_Dialog = "WRM (*.wrm)|*.wrm";
 
         // color palettes
         public const string ACO_File_Dialog = "ACO (*.aco)|*.aco";
@@ -71,7 +72,8 @@ namespace ImageViewer.Settings
                 JPEG_File_Dialog,
                 BMP_File_Dialog,
                 TIFF_File_Dialog,
-                GIF_File_Dialog
+                GIF_File_Dialog,
+                WRM_File_Dialog
             });
 
         public static string Color_Palette_Dialog_Filters = string.Join("|",
@@ -342,6 +344,7 @@ namespace ImageViewer.Settings
                     BMP_File_Dialog,
                     TIFF_File_Dialog,
                     GIF_File_Dialog,
+                    WRM_File_Dialog
                 });
 
             if (WebP_Plugin_Exists)

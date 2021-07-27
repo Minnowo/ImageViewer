@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E2B27B28-955B-4BD0-BB36-2C2D6CC32A65}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>ImageViewer</RootNamespace>
     <AssemblyName>imview</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -203,6 +203,7 @@
     <Compile Include="Helpers\Transforms\UserCustomColorPaletteTransform.cs" />
     <Compile Include="Helpers\UndoRedo\BitmapUndo.cs" />
     <Compile Include="Helpers\UndoRedo\IUndoable.cs" />
+    <Compile Include="Helpers\WORM.cs" />
     <Compile Include="Misc\FolderWatcher.cs" />
     <Compile Include="Helpers\Gif.cs" />
     <Compile Include="Forms\SettingsForm.cs">
