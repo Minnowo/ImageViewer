@@ -79,6 +79,8 @@ namespace ImageViewer.Helpers
                 case "tif":
                 case "tiff":
                     return ImgFormat.tif;
+                case "wrm":
+                    return ImgFormat.wrm;
                 case "webp":
                     return ImgFormat.webp;
             }
@@ -155,6 +157,27 @@ namespace ImageViewer.Helpers
         }
 
 
+        /// <summary>
+        /// Save an image as a wrm file. (a custom image format i made)
+        /// </summary>
+        /// <param name="img">The image to encode.</param>
+        /// <param name="filePath">The path to save the image.</param>
+        /// <returns>True if the image was saved, else false.</returns>
+        public static bool SaveWrm(Image img, string filePath)
+        {
+            try
+            {
+                WORM wrm = new WORM(img);
+                wrm.Save(filePath);
+                return true;
+            }
+            catch(Exception e)
+            {
+                e.ShowError();
+            }
+            return false;
+        }
+
 
         /// <summary>
         /// Saves an image.
@@ -190,6 +213,8 @@ namespace ImageViewer.Helpers
                     case ImgFormat.tif:
                         img.Save(filePath, ImageFormat.Tiff);
                         return true;
+                    case ImgFormat.wrm:
+                        return SaveWrm(img, filePath);
                     case ImgFormat.webp:
                         return SaveWebp(img, filePath, InternalSettings.WebpQuality_Default);
                 }
@@ -252,19 +277,22 @@ namespace ImageViewer.Helpers
                             case ImgFormat.jpg:
                                 sfd.FilterIndex = 2;
                                 break;
-                            case ImgFormat.gif:
+                            case ImgFormat.bmp:
                                 sfd.FilterIndex = 3;
                                 break;
-                            case ImgFormat.bmp:
+                            case ImgFormat.tif:
                                 sfd.FilterIndex = 4;
                                 break;
-                            case ImgFormat.tif:
+                            case ImgFormat.gif:
                                 sfd.FilterIndex = 5;
+                                break;
+                            case ImgFormat.wrm:
+                                sfd.FilterIndex = 6;
                                 break;
                             case ImgFormat.webp:
                                 if (InternalSettings.WebP_Plugin_Exists)
                                 {
-                                    sfd.FilterIndex = 6;
+                                    sfd.FilterIndex = 7;
                                     break;
                                 }
                                 sfd.FilterIndex = 2;
@@ -315,6 +343,17 @@ namespace ImageViewer.Helpers
         }
 
         /// <summary>
+        /// Loads a wrm image.
+        /// </summary>
+        /// <param name="path">The path of the image.</param>
+        /// <returns>A bitmap.</returns>
+        public static Bitmap LoadWrm(string path)
+        {
+            return WORM.FromFileAsBitmap(path);
+        }
+
+
+        /// <summary>
         /// Loads an image.
         /// </summary>
         /// <param name="path"> The path to the image. </param>
@@ -324,22 +363,30 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
 
-            if (Path.GetExtension(path) == ".webp")
-                return LoadWebP(path);
-
             try
             {
-                Image image = Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
-                image.Tag = GetImageFormat(path);
-                return (Bitmap)image;
+                switch (GetImageFormat(path))
+                {
+                    case ImgFormat.png:
+                    case ImgFormat.bmp:
+                    case ImgFormat.gif:
+                    case ImgFormat.jpg:
+                    case ImgFormat.tif:
+                    default:
+                        Image image = Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+                        image.Tag = GetImageFormat(path);
+                        return (Bitmap)image;
+
+                    case ImgFormat.webp:
+                        return LoadWebP(path);
+
+                    case ImgFormat.wrm:
+                        return LoadWrm(path);
+                }
+                
             }
             catch (Exception e)
             {
-                // in case the file doesn't have proper extension there is no harm in trying to load as webp
-                Bitmap tryLoadWebP;
-                if ((tryLoadWebP = LoadWebP(path, true)) != null)
-                    return tryLoadWebP;
-
                 e.ShowError();
             }
             return null;
@@ -895,6 +942,36 @@ namespace ImageViewer.Helpers
             }
             srcImg.UnlockBits(dstBD);
         }
+
+        
+        /*public static unsafe void ConvertWORM(Bitmap srcImg)
+        {
+            BitmapData dstBD = srcImg.LockBits(new Rectangle(0, 0, srcImg.Width, srcImg.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+
+            byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
+            {
+                int Decimal = ColorHelper.ColorToDecimal(*(pDst + 2), *(pDst + 1), *(pDst));
+                ushort StorageValue = (ushort)Math.Round(ushort.MaxValue * (Decimal / 16777215d));
+                Color c = ColorHelper.DecimalToColor((int)(StorageValue * 256.00389d));
+
+                HSB s = new HSB(c);
+                s.Hue360 = Math.Abs(360 - (s.Hue360 + 60));
+                c = s.ToColor();
+                *pDst = (byte)c.B; // invert B
+                pDst++;
+                *pDst = (byte)c.G; // invert G
+                pDst++;
+                *pDst = (byte)c.R; // invert R
+                pDst += 2; // skip alpha
+
+                //*pDst = (byte)(255 - *pDst); // invert A
+                //pDst++;						 
+            }
+            srcImg.UnlockBits(dstBD);
+        }*/
+
 
         /// <summary>
         /// A class used for reading the width and height of an image file using their headers.

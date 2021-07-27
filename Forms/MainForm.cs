@@ -610,7 +610,7 @@ namespace ImageViewer
 
                 case (Keys.S | Keys.LControlKey):
                 case (Keys.S | Keys.Control):
-
+                    SaveUnscaledImage();
                     break;
 
                 case (Keys.V | Keys.LControlKey):
@@ -1388,5 +1388,14 @@ namespace ImageViewer
 
 
         #endregion
+
+        private void ConvertWORM_Click(object sender, EventArgs e)
+        {
+            /*if (currentPage == null)
+                return;
+
+            ImageHelper.ConvertWORM((Bitmap)currentPage.Image);
+            currentPage.ibMain.Invalidate();*/
+        }
     }
 }
