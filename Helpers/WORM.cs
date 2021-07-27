@@ -41,7 +41,7 @@ namespace ImageViewer.Helpers
 
         private const double MAX_DEC = 16777215d;
         private const double MAX_DEC_TO_USHORT = 256.00389d;
-        private const byte HUE_OFFSET = 60;
+        private const byte HUE_OFFSET = 60; // 60
 
         public WORM()
         {
@@ -92,14 +92,12 @@ namespace ImageViewer.Helpers
         {
             using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (BinaryReader binaryReader = new BinaryReader(fileStream))
+            using(GZipStream decompressor = new GZipStream(fileStream, CompressionMode.Decompress))
             {
                 WormFormat = GetWormFormat(binaryReader);
                 
                 if(WormFormat == WormFormat.nil)
                     throw new Exception("Invalid .wrm file cannot read.");
-
-                //if (Identifier[0] != 0x57 || Identifier[1] != 0x4F || Identifier[2] != 0x52 || Identifier[3] != 0x4D)
-                //    throw new Exception("Invalid .wrm file cannot read.");
 
                 Width = binaryReader.ReadUInt16();
                 Height = binaryReader.ReadUInt16();
@@ -108,7 +106,9 @@ namespace ImageViewer.Helpers
                 Image.Tag = ImgFormat.wrm;
 
                 BitmapData dstBD = null;
-                
+                byte[] decompressedData = new byte[Width * Height * 2];
+                decompressor.Read(decompressedData, 0, decompressedData.Length);
+
                 try
                 {
                     dstBD = Image.LockBits(new Rectangle(0, 0, Image.Width, Image.Height),
@@ -118,7 +118,13 @@ namespace ImageViewer.Helpers
 
                     for (int i = 0; i < Width * Height; i += 1)
                     {
-                        Color c = ReadWORMPixel(binaryReader.ReadUInt16());
+                        //Color c = ReadWORMPixel(binaryReader.ReadUInt16());
+                        int index = i << 1;
+                        int dec = (ushort)((decompressedData[index]) | (decompressedData[index + 1] << 8));
+                        double percent = (double)dec / (double)ushort.MaxValue;
+                        int COLOR = (int)Math.Round(percent * MAX_DEC);
+                        Color c = ReadWORMPixel(COLOR);
+                        //Color c = DecimalToColor(COLOR);
 
                         *(pDst++) = c.B;
                         *(pDst++) = c.G;
@@ -163,6 +169,7 @@ namespace ImageViewer.Helpers
         {
             using (Stream stream = new FileStream(file, FileMode.OpenOrCreate))
             using (BinaryWriter binaryWriter = new BinaryWriter(stream))
+            using(GZipStream compressor  = new GZipStream(stream, CompressionLevel.Optimal))
             {
                 switch (format)
                 {
@@ -180,6 +187,7 @@ namespace ImageViewer.Helpers
                 binaryWriter.Write(Height);
 
                 BitmapData dstBD = null;
+                byte[] data = new byte[Width * Height * 2];
 
                 try
                 {
@@ -188,15 +196,21 @@ namespace ImageViewer.Helpers
 
                     byte* pDst = (byte*)(void*)dstBD.Scan0;
 
-                    for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
+                    for (int i = 0; i < Width * Height; i++)
                     {
                         int Decimal = ColorToDecimal(*(pDst + 2), *(pDst + 1), *(pDst));
                         ushort StorageValue = (ushort)Math.Round(ushort.MaxValue * (Decimal / MAX_DEC));
 
-                        binaryWriter.Write(StorageValue);
+                        int index = i << 1;
+
+                        data[index] = (byte)StorageValue;
+                        data[index + 1] = (byte)(StorageValue >> 8);
+
+                        //binaryWriter.Write(StorageValue);
 
                         pDst += 4; // advance				 
                     }
+                    compressor.Write(data, 0, data.Length);
                 }
                 catch (Exception e)
                 {
@@ -223,7 +237,8 @@ namespace ImageViewer.Helpers
 
         private Color ReadWORMPixel(int dec)
         {
-            Color c = DecimalToColor((int)(dec * MAX_DEC_TO_USHORT));
+            Color c = DecimalToColor((int)(dec));
+            //Color c = DecimalToColor((int)(dec * MAX_DEC_TO_USHORT));
 
             float Hue;
             float Sat;
@@ -277,6 +292,9 @@ namespace ImageViewer.Helpers
                     }
 
                     Hue = Math.Abs(360 - (Hue * 360 + HUE_OFFSET));
+                    Sat = (Sat + 0.05f);
+                    if (Sat > 1)
+                        Sat = Math.Abs(1f - Sat);
                     return HSVToColor(Hue, Sat, Lig);
 
                 case WormFormat.dwrm:

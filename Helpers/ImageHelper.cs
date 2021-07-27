@@ -350,7 +350,15 @@ namespace ImageViewer.Helpers
         /// <returns>A bitmap.</returns>
         public static Bitmap LoadWrm(string path)
         {
-            return WORM.FromFileAsBitmap(path);
+            try
+            {
+                return WORM.FromFileAsBitmap(path);
+            }
+            catch(Exception e)
+            {
+                e.ShowError();
+            }
+            return null;
         }
 
 

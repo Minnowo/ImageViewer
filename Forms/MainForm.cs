@@ -333,7 +333,7 @@ namespace ImageViewer
                 }
                 else
                 {
-                    CurrentPage = (_TabPage)tcMain.TabPages[(tcMain.SelectedIndex + 1).Clamp(0, tcMain.TabPages.Count - 1)];
+                    CurrentPage = (_TabPage)tcMain.TabPages[(preCount + 1).Clamp(0, tcMain.TabPages.Count - 1)];
                 }
 
                 // need to set this here in order for the LoadImage function to be called
