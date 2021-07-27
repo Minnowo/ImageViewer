@@ -9,6 +9,8 @@ namespace ImageViewer.Helpers
     public class WORM : IDisposable
     {
         public const int MAX_SIZE = ushort.MaxValue;
+        public const string MIME_TYPE = "image/worm";
+
         public ushort Width;
         public ushort Height;
 
@@ -74,9 +76,10 @@ namespace ImageViewer.Helpers
                 Height = binaryReader.ReadUInt16();
 
                 Image = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);
+                Image.Tag = ImgFormat.wrm;
 
                 BitmapData dstBD = null;
-
+                
                 try
                 {
                     dstBD = Image.LockBits(new Rectangle(0, 0, Image.Width, Image.Height),

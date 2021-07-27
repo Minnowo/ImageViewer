@@ -13,7 +13,7 @@ namespace ImageViewer.Helpers
     public sealed class WebP : IDisposable
     {
         public const int WEBP_MAX_DIMENSION = 16383;
-
+        public const string MIME_TYPE = "image/webp";
         #region | Public Decode Functions |
         /// <summary>Read a WebP file</summary>
         /// <param name="pathFileName">WebP file to load</param>

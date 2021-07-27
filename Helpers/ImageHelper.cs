@@ -432,8 +432,10 @@ namespace ImageViewer.Helpers
         {
             // https://stackoverflow.com/a/6336453
 
+            if ((ImgFormat)image.Tag == ImgFormat.wrm)
+                return WORM.MIME_TYPE;
             if ((ImgFormat)image.Tag == ImgFormat.webp)
-                return "image/webp";
+                    return WebP.MIME_TYPE;
 
             Guid imgguid = image.RawFormat.Guid;
             foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
