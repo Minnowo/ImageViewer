@@ -416,31 +416,31 @@ namespace ImageViewer.Helpers
             x = c * (1.0 - Math.Abs(Hue360 / 60 % 2 - 1.0));
             m = lightness - c / 2.0;
 
-            if (Hue360 < 60)
+            if (Hue360 <= 60)
             {
                 r = c;
                 g = x;
                 b = 0;
             }
-            else if (Hue360 < 120)
+            else if (Hue360 <= 120)
             {
                 r = x;
                 g = c;
                 b = 0;
             }
-            else if (Hue360 < 180)
+            else if (Hue360 <= 180)
             {
                 r = 0;
                 g = c;
                 b = x;
             }
-            else if (Hue360 < 240)
+            else if (Hue360 <= 240)
             {
                 r = 0;
                 g = x;
                 b = c;
             }
-            else if (Hue360 < 300)
+            else if (Hue360 <= 300)
             {
                 r = x;
                 g = 0;
@@ -680,37 +680,36 @@ namespace ImageViewer.Helpers
         }
         public Color ToColor()
         {
-            //Console.WriteLine(Hue360);
             float c, x, m, r = 0, g = 0, b = 0;
             c = brightness * saturation;
             x = c * (1 - Math.Abs(Hue360 / 60 % 2 - 1));
             m = brightness - c;
 
-            if (Hue360 < 60)
+            if (Hue360 <= 60)
             {
                 r = c;
                 g = x;
                 b = 0;
             }
-            else if (Hue360 < 120)
+            else if (Hue360 <= 120)
             {
                 r = x;
                 g = c;
                 b = 0;
             }
-            else if (Hue360 < 180)
+            else if (Hue360 <= 180)
             {
                 r = 0;
                 g = c;
                 b = x;
             }
-            else if (Hue360 < 240)
+            else if (Hue360 <= 240)
             {
                 r = 0;
                 g = x;
                 b = c;
             }
-            else if (Hue360 < 300)
+            else if (Hue360 <= 300)
             {
                 r = x;
                 g = 0;

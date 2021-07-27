@@ -80,6 +80,7 @@ namespace ImageViewer.Helpers
                 case "tiff":
                     return ImgFormat.tif;
                 case "wrm":
+                case "dwrm":
                     return ImgFormat.wrm;
                 case "webp":
                     return ImgFormat.webp;
