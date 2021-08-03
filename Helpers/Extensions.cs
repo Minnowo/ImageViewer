@@ -31,14 +31,14 @@ namespace ImageViewer.Helpers
         {
             if (str == null || str.Length < 1)
                 return null;
-            List<string> newA = str.ToList();
+            List<string> newA = new List<string>();
 
-            for(int i = 0; i < newA.Count; i++)
+            foreach(string path in str)
             {
-                if (!Helper.IsValidFilePath(newA[i]) || !File.Exists(newA[i]))
-                    newA.RemoveAt(i);
-                else
-                    newA[i] = new FileInfo(newA[i]).FullName; // force absolute paths
+                if (!Helper.IsValidFilePath(path) || !File.Exists(path))
+                    continue;
+
+                newA.Add(new FileInfo(path).FullName); // force absolute paths
             }
             return newA.ToArray();
         }

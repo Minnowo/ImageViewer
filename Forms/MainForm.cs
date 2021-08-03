@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
 using System.Drawing.Drawing2D;
+using System.Diagnostics;
 using ImageViewer.Helpers;
 using ImageViewer.Controls;
 using ImageViewer.Native;
@@ -740,6 +741,31 @@ namespace ImageViewer
             ToggleTopMost();
         }
 
+        private void NewInstance_Click(object sender, EventArgs e)
+        {
+            string exePath = Process.GetCurrentProcess().MainModule.FileName;
+
+            if (!File.Exists(exePath))
+            {
+                MessageBox.Show(this, "The path to the application was not found", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string args = "";
+
+            if (currentPage != null)
+                args = currentPage.ImagePath.FullName;
+
+            Process newInstance = new Process()
+            {
+                StartInfo =
+                {
+                    FileName = exePath,
+                    Arguments = string.Format("-n {0}", args)
+                }
+            };
+            newInstance.Start();
+        }
 
         // Tab Control / Tab Pages
         private void TabControl_DragEnter(object sender, DragEventArgs e)
@@ -1389,13 +1415,6 @@ namespace ImageViewer
 
         #endregion
 
-        private void ConvertWORM_Click(object sender, EventArgs e)
-        {
-            /*if (currentPage == null)
-                return;
-
-            ImageHelper.ConvertWORM((Bitmap)currentPage.Image);
-            currentPage.ibMain.Invalidate();*/
-        }
+        
     }
 }

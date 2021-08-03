@@ -25,7 +25,20 @@ namespace ImageViewer
         static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-            using (InstanceManager instanceManager = new InstanceManager(args.Length > 0, args, SingleInstanceCallback))
+            
+            bool singleInstance = true;
+
+            // nyan means run as new instance
+            if (args.Contains("-n"))
+            {
+                singleInstance = false;
+            }
+            else if(args.Length < 1)
+            {
+                singleInstance = false;
+            }
+
+            using (InstanceManager instanceManager = new InstanceManager(singleInstance, args, SingleInstanceCallback))
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);

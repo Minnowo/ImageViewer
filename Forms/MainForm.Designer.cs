@@ -30,12 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.tsMain = new ImageViewer.Controls.ToolStripEx();
-            this.tsbMain_File = new System.Windows.Forms.ToolStripButton();
-            this.tsbMain_Edit = new System.Windows.Forms.ToolStripButton();
-            this.tsbMain_View = new System.Windows.Forms.ToolStripButton();
-            this.tsbMain_Settings = new System.Windows.Forms.ToolStripButton();
-            this.tsbAlwaysOnTop = new System.Windows.Forms.ToolStripButton();
             this.pnlTopMain = new System.Windows.Forms.Panel();
             this.cbLockSelectionToImage = new System.Windows.Forms.CheckBox();
             this.cbInterpolationMode = new System.Windows.Forms.ComboBox();
@@ -85,82 +79,21 @@
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
             this.tcMain = new ImageViewer.Controls._TabControl();
-            this.tsMain.SuspendLayout();
+            this.tsMain = new ImageViewer.Controls.ToolStripEx();
+            this.tsbMain_File = new System.Windows.Forms.ToolStripButton();
+            this.tsbMain_Edit = new System.Windows.Forms.ToolStripButton();
+            this.tsbMain_View = new System.Windows.Forms.ToolStripButton();
+            this.tsbMain_Settings = new System.Windows.Forms.ToolStripButton();
+            this.tsbAlwaysOnTop = new System.Windows.Forms.ToolStripButton();
+            this.tsbNewInstance = new System.Windows.Forms.ToolStripButton();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
             this.cmsFileBtn.SuspendLayout();
             this.cmsEditBtn.SuspendLayout();
             this.cmsViewBtn.SuspendLayout();
             this.statusStrip.SuspendLayout();
+            this.tsMain.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // tsMain
-            // 
-            this.tsMain.ClickThrough = false;
-            this.tsMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbMain_File,
-            this.tsbMain_Edit,
-            this.tsbMain_View,
-            this.tsbMain_Settings,
-            this.tsbAlwaysOnTop});
-            this.tsMain.Location = new System.Drawing.Point(0, 0);
-            this.tsMain.Name = "tsMain";
-            this.tsMain.Size = new System.Drawing.Size(800, 25);
-            this.tsMain.TabIndex = 0;
-            // 
-            // tsbMain_File
-            // 
-            this.tsbMain_File.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsbMain_File.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbMain_File.Name = "tsbMain_File";
-            this.tsbMain_File.Size = new System.Drawing.Size(29, 22);
-            this.tsbMain_File.Text = "File";
-            this.tsbMain_File.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsbMain_File.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_File_MouseUp);
-            // 
-            // tsbMain_Edit
-            // 
-            this.tsbMain_Edit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsbMain_Edit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbMain_Edit.Name = "tsbMain_Edit";
-            this.tsbMain_Edit.Size = new System.Drawing.Size(31, 22);
-            this.tsbMain_Edit.Text = "Edit";
-            this.tsbMain_Edit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsbMain_Edit.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_Edit_MouseUp);
-            // 
-            // tsbMain_View
-            // 
-            this.tsbMain_View.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsbMain_View.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbMain_View.Name = "tsbMain_View";
-            this.tsbMain_View.Size = new System.Drawing.Size(36, 22);
-            this.tsbMain_View.Text = "View";
-            this.tsbMain_View.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsbMain_View.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_View_MouseUp);
-            // 
-            // tsbMain_Settings
-            // 
-            this.tsbMain_Settings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsbMain_Settings.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbMain_Settings.Name = "tsbMain_Settings";
-            this.tsbMain_Settings.Size = new System.Drawing.Size(53, 22);
-            this.tsbMain_Settings.Text = "Settings";
-            this.tsbMain_Settings.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsbMain_Settings.Click += new System.EventHandler(this.Settings_Click);
-            this.tsbMain_Settings.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_Settings_MouseUp);
-            // 
-            // tsbAlwaysOnTop
-            // 
-            this.tsbAlwaysOnTop.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.tsbAlwaysOnTop.BackColor = System.Drawing.SystemColors.Control;
-            this.tsbAlwaysOnTop.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsbAlwaysOnTop.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbAlwaysOnTop.Name = "tsbAlwaysOnTop";
-            this.tsbAlwaysOnTop.Size = new System.Drawing.Size(60, 22);
-            this.tsbAlwaysOnTop.Text = "Top Most";
-            this.tsbAlwaysOnTop.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.tsbAlwaysOnTop.Click += new System.EventHandler(this.AlwaysOnTop_Click);
             // 
             // pnlTopMain
             // 
@@ -360,26 +293,26 @@
             this.ditherToolStripMenuItem});
             this.cmsEditBtn.Name = "cmsEditBtn";
             this.cmsEditBtn.ShowImageMargin = false;
-            this.cmsEditBtn.Size = new System.Drawing.Size(156, 264);
+            this.cmsEditBtn.Size = new System.Drawing.Size(142, 242);
             this.cmsEditBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsEditBtn_Opening);
             // 
             // fillTransparentToolStripMenuItem
             // 
             this.fillTransparentToolStripMenuItem.Name = "fillTransparentToolStripMenuItem";
-            this.fillTransparentToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.fillTransparentToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.fillTransparentToolStripMenuItem.Text = "Fill Transparent";
             this.fillTransparentToolStripMenuItem.Click += new System.EventHandler(this.FillTransparent_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(138, 6);
             // 
             // rotateLeftToolStripMenuItem
             // 
             this.rotateLeftToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.rotateLeftToolStripMenuItem.Name = "rotateLeftToolStripMenuItem";
-            this.rotateLeftToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.rotateLeftToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.rotateLeftToolStripMenuItem.Text = "Rotate Left";
             this.rotateLeftToolStripMenuItem.Click += new System.EventHandler(this.rotateLeftToolStripMenuItem_Click);
             // 
@@ -387,7 +320,7 @@
             // 
             this.rotateRightToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.rotateRightToolStripMenuItem.Name = "rotateRightToolStripMenuItem";
-            this.rotateRightToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.rotateRightToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.rotateRightToolStripMenuItem.Text = "Rotate Right";
             this.rotateRightToolStripMenuItem.Click += new System.EventHandler(this.rotateRightToolStripMenuItem_Click);
             // 
@@ -395,7 +328,7 @@
             // 
             this.flipHorizontallyToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.flipHorizontallyToolStripMenuItem.Name = "flipHorizontallyToolStripMenuItem";
-            this.flipHorizontallyToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.flipHorizontallyToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.flipHorizontallyToolStripMenuItem.Text = "Flip Horizontally";
             this.flipHorizontallyToolStripMenuItem.Click += new System.EventHandler(this.flipHorizontallyToolStripMenuItem_Click);
             // 
@@ -403,20 +336,20 @@
             // 
             this.flipVerticallyToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.flipVerticallyToolStripMenuItem.Name = "flipVerticallyToolStripMenuItem";
-            this.flipVerticallyToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.flipVerticallyToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.flipVerticallyToolStripMenuItem.Text = "Flip Vertically";
             this.flipVerticallyToolStripMenuItem.Click += new System.EventHandler(this.flipVerticallyToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(138, 6);
             // 
             // resizeToolStripMenuItem
             // 
             this.resizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.resizeToolStripMenuItem.Name = "resizeToolStripMenuItem";
-            this.resizeToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.resizeToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.resizeToolStripMenuItem.Text = "Resize";
             this.resizeToolStripMenuItem.Click += new System.EventHandler(this.resizeToolStripMenuItem_Click);
             // 
@@ -424,20 +357,20 @@
             // 
             this.cropToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.cropToolStripMenuItem.Name = "cropToolStripMenuItem";
-            this.cropToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.cropToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.cropToolStripMenuItem.Text = "Crop To Selection";
             this.cropToolStripMenuItem.Click += new System.EventHandler(this.cropToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(152, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(138, 6);
             // 
             // grayScaleToolStripMenuItem
             // 
             this.grayScaleToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.grayScaleToolStripMenuItem.Name = "grayScaleToolStripMenuItem";
-            this.grayScaleToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.grayScaleToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.grayScaleToolStripMenuItem.Text = "Gray Scale";
             this.grayScaleToolStripMenuItem.Click += new System.EventHandler(this.grayScaleToolStripMenuItem_Click);
             // 
@@ -445,14 +378,14 @@
             // 
             this.invertColorToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.invertColorToolStripMenuItem.Name = "invertColorToolStripMenuItem";
-            this.invertColorToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.invertColorToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.invertColorToolStripMenuItem.Text = "Invert Color";
             this.invertColorToolStripMenuItem.Click += new System.EventHandler(this.invertColorToolStripMenuItem_Click);
             // 
             // ditherToolStripMenuItem
             // 
             this.ditherToolStripMenuItem.Name = "ditherToolStripMenuItem";
-            this.ditherToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.ditherToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.ditherToolStripMenuItem.Text = "Dither";
             this.ditherToolStripMenuItem.Click += new System.EventHandler(this.ditherToolStripMenuItem_Click);
             // 
@@ -623,6 +556,85 @@
             this.tcMain.DragDrop += new System.Windows.Forms.DragEventHandler(this.TabControl_DragDrop);
             this.tcMain.DragEnter += new System.Windows.Forms.DragEventHandler(this.TabControl_DragEnter);
             // 
+            // tsMain
+            // 
+            this.tsMain.ClickThrough = false;
+            this.tsMain.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbMain_File,
+            this.tsbMain_Edit,
+            this.tsbMain_View,
+            this.tsbMain_Settings,
+            this.tsbAlwaysOnTop,
+            this.tsbNewInstance});
+            this.tsMain.Location = new System.Drawing.Point(0, 0);
+            this.tsMain.Name = "tsMain";
+            this.tsMain.Size = new System.Drawing.Size(800, 25);
+            this.tsMain.TabIndex = 0;
+            // 
+            // tsbMain_File
+            // 
+            this.tsbMain_File.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbMain_File.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbMain_File.Name = "tsbMain_File";
+            this.tsbMain_File.Size = new System.Drawing.Size(29, 22);
+            this.tsbMain_File.Text = "File";
+            this.tsbMain_File.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.tsbMain_File.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_File_MouseUp);
+            // 
+            // tsbMain_Edit
+            // 
+            this.tsbMain_Edit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbMain_Edit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbMain_Edit.Name = "tsbMain_Edit";
+            this.tsbMain_Edit.Size = new System.Drawing.Size(31, 22);
+            this.tsbMain_Edit.Text = "Edit";
+            this.tsbMain_Edit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.tsbMain_Edit.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_Edit_MouseUp);
+            // 
+            // tsbMain_View
+            // 
+            this.tsbMain_View.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbMain_View.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbMain_View.Name = "tsbMain_View";
+            this.tsbMain_View.Size = new System.Drawing.Size(36, 22);
+            this.tsbMain_View.Text = "View";
+            this.tsbMain_View.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.tsbMain_View.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_View_MouseUp);
+            // 
+            // tsbMain_Settings
+            // 
+            this.tsbMain_Settings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbMain_Settings.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbMain_Settings.Name = "tsbMain_Settings";
+            this.tsbMain_Settings.Size = new System.Drawing.Size(53, 22);
+            this.tsbMain_Settings.Text = "Settings";
+            this.tsbMain_Settings.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.tsbMain_Settings.Click += new System.EventHandler(this.Settings_Click);
+            this.tsbMain_Settings.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_Settings_MouseUp);
+            // 
+            // tsbAlwaysOnTop
+            // 
+            this.tsbAlwaysOnTop.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsbAlwaysOnTop.BackColor = System.Drawing.SystemColors.Control;
+            this.tsbAlwaysOnTop.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbAlwaysOnTop.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbAlwaysOnTop.Name = "tsbAlwaysOnTop";
+            this.tsbAlwaysOnTop.Size = new System.Drawing.Size(60, 22);
+            this.tsbAlwaysOnTop.Text = "Top Most";
+            this.tsbAlwaysOnTop.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.tsbAlwaysOnTop.Click += new System.EventHandler(this.AlwaysOnTop_Click);
+            // 
+            // tsbNewInstance
+            // 
+            this.tsbNewInstance.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsbNewInstance.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsbNewInstance.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbNewInstance.Name = "tsbNewInstance";
+            this.tsbNewInstance.Size = new System.Drawing.Size(82, 22);
+            this.tsbNewInstance.Text = "New Instance";
+            this.tsbNewInstance.Click += new System.EventHandler(this.NewInstance_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -637,8 +649,6 @@
             this.Name = "MainForm";
             this.Text = "NULL";
             this.Resize += new System.EventHandler(this.MainWindow_Resize);
-            this.tsMain.ResumeLayout(false);
-            this.tsMain.PerformLayout();
             this.pnlTopMain.ResumeLayout(false);
             this.pnlTopMain.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).EndInit();
@@ -647,6 +657,8 @@
             this.cmsViewBtn.ResumeLayout(false);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
+            this.tsMain.ResumeLayout(false);
+            this.tsMain.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -709,6 +721,7 @@
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton2;
         private System.Windows.Forms.ComboBox cbInterpolationMode;
         private System.Windows.Forms.CheckBox cbLockSelectionToImage;
+        private System.Windows.Forms.ToolStripButton tsbNewInstance;
     }
 }
 
