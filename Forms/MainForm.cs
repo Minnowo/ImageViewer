@@ -510,6 +510,32 @@ namespace ImageViewer
             }
         }
 
+        public void SpawnNewInstance(bool includeCurrentImage = true)
+        {
+            string exePath = Process.GetCurrentProcess().MainModule.FileName;
+
+            if (!File.Exists(exePath))
+            {
+                MessageBox.Show(this, "The path to the application was not found", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string args = "";
+
+            if (currentPage != null && includeCurrentImage)
+                args = currentPage.ImagePath.FullName;
+
+            Process newInstance = new Process()
+            {
+                StartInfo =
+                {
+                    FileName = exePath,
+                    Arguments = string.Format("-n {0}", args)
+                }
+            };
+            newInstance.Start();
+        }
+
         #endregion
 
 
@@ -561,6 +587,8 @@ namespace ImageViewer
 
             return c;
         }
+
+        
 
         #endregion
 
@@ -743,28 +771,7 @@ namespace ImageViewer
 
         private void NewInstance_Click(object sender, EventArgs e)
         {
-            string exePath = Process.GetCurrentProcess().MainModule.FileName;
-
-            if (!File.Exists(exePath))
-            {
-                MessageBox.Show(this, "The path to the application was not found", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            string args = "";
-
-            if (currentPage != null)
-                args = currentPage.ImagePath.FullName;
-
-            Process newInstance = new Process()
-            {
-                StartInfo =
-                {
-                    FileName = exePath,
-                    Arguments = string.Format("-n {0}", args)
-                }
-            };
-            newInstance.Start();
+            SpawnNewInstance();
         }
 
         // Tab Control / Tab Pages
@@ -1211,6 +1218,16 @@ namespace ImageViewer
         {
         }
 
+        private void ViewColorPicker_Click(object sender, EventArgs e)
+        {
+            ColorPickerForm f = new ColorPickerForm();
+            f.Owner = this;
+            f.TopMost = this.TopMost;
+            f.StartPosition = FormStartPosition.Manual;
+            f.Location = Helper.GetCenteredPoint(this, f);
+            f.Show();
+        }
+
         private void ViewFullscreen_Click(object sender, EventArgs e)
         {
             currentPage.ibMain.ShowFullScreen();
@@ -1360,27 +1377,7 @@ namespace ImageViewer
 
             if (InternalSettings.CenterChild_When_Parent_Following_Child)
             {
-                Point p = f.Location;
-
-                if (f.Width < Width)
-                {
-                    p.X -= Math.Abs(Width - f.Width) >> 1;
-                }
-                else
-                {
-                    p.X += Math.Abs(Width - f.Width) >> 1;
-                }
-
-                if (f.Height < Height)
-                {
-                    p.Y -= Math.Abs(Height - f.Height) >> 1;
-                }
-                else
-                {
-                    p.Y += Math.Abs(Height - f.Height) >> 1;
-                }
-
-                this.Location = p;
+                this.Location = Helper.GetCenteredPoint(f, this);
                 return;
             }
             this.Location = f.Location;
@@ -1409,6 +1406,7 @@ namespace ImageViewer
                     break;
             }
         }
+
 
 
 

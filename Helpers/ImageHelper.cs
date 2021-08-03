@@ -519,6 +519,39 @@ namespace ImageViewer.Helpers
         }
 
 
+        public static void DrawCheckers(Bitmap bmp, int checkerSize, Color color1, Color color2)
+        {
+            using (Graphics g = Graphics.FromImage(bmp))
+            using (Image checker = CreateCheckerPattern(checkerSize, color1, color2))
+            using (Brush checkerBrush = new TextureBrush(checker, WrapMode.Tile))
+            {
+                g.FillRectangle(checkerBrush, new Rectangle(0, 0, bmp.Width, bmp.Height));
+            }
+        }
+
+
+        public static Bitmap CreateCheckerPattern(int cellSize, Color color1, Color color2)
+        {
+            Bitmap resultBMP = new Bitmap(cellSize << 1, cellSize << 1, PixelFormat.Format24bppRgb);
+            
+            using (Graphics g = Graphics.FromImage(resultBMP))
+            {
+                using (Brush brush = new SolidBrush(color1))
+                {
+                    g.FillRectangle(brush, new Rectangle(cellSize, 0, cellSize, cellSize));
+                    g.FillRectangle(brush, new Rectangle(0, cellSize, cellSize, cellSize));
+                }
+
+                using (Brush brush = new SolidBrush(color2))
+                {
+                    g.FillRectangle(brush, new Rectangle(0, 0, cellSize, cellSize));
+                    g.FillRectangle(brush, new Rectangle(cellSize, cellSize, cellSize, cellSize));
+                }
+            }
+
+            return resultBMP;
+        }
+
 
         /// <summary>
         /// Copy the given image to a 32bppArgb image.

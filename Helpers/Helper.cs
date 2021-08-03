@@ -93,6 +93,39 @@ namespace ImageViewer.Helpers
             return null;
         }
 
+
+        /// <summary>
+        /// Returns the point the child window should spawn to be centered on the parent window.
+        /// </summary>
+        /// <param name="parent">The parent form.</param>
+        /// <param name="child">The child form.</param>
+        /// <returns></returns>
+        public static Point GetCenteredPoint(Form parent, Form child)
+        {
+            Point p = parent.Location;
+
+            if (parent.Width < child.Width)
+            {
+                p.X -= Math.Abs(child.Width - parent.Width) >> 1;
+            }
+            else
+            {
+                p.X += Math.Abs(child.Width - parent.Width) >> 1;
+            }
+
+            if (parent.Height < child.Height)
+            {
+                p.Y -= Math.Abs(child.Height - parent.Height) >> 1;
+            }
+            else
+            {
+                p.Y += Math.Abs(child.Height - parent.Height) >> 1;
+            }
+
+            return p;
+        }
+
+
         /// <summary>
         /// Opens a save file dialog that doesn't save anything, but instead moves the file.
         /// </summary>

@@ -30,7 +30,7 @@ namespace ImageViewer.Controls
             }
         }
 
-        public _Color SelectedColor
+        public COLOR SelectedColor
         {
             get
             {
@@ -81,8 +81,8 @@ namespace ImageViewer.Controls
         }
 
         protected DrawStyles drawStyle;
-        protected _Color selectedColor;
-        protected _Color absoluteColor = Color.White;
+        protected COLOR selectedColor;
+        protected COLOR absoluteColor = Color.White;
         protected Point lastClicked;
         protected int clientWidth, clientHeight;
         protected bool isLeftClicking;
@@ -191,12 +191,40 @@ namespace ImageViewer.Controls
         {
 
         }
+        public static Bitmap CreateCheckerPattern(int width, int height, Color checkerColor1, Color checkerColor2)
+        {
+            Bitmap bmp = new Bitmap(width * 2, height * 2);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            using (Brush brush1 = new SolidBrush(checkerColor1))
+            using (Brush brush2 = new SolidBrush(checkerColor2))
+            {
+                g.FillRectangle(brush1, 0, 0, width, height);
+                g.FillRectangle(brush1, width, height, width, height);
+                g.FillRectangle(brush2, width, 0, width, height);
+                g.FillRectangle(brush2, 0, height, width, height);
+            }
+
+            return bmp;
+        }
         private void Paint_Event(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
 
             if (!isLeftClicking)
             {
+                if (selectedColor.isTransparent)
+                {
+                    if (bmp != null) 
+                        bmp.Dispose();
+
+                    bmp = new Bitmap(clientWidth, clientHeight, PixelFormat.Format24bppRgb);
+
+                    ImageHelper.DrawCheckers(bmp,32, 
+                        SystemColors.ControlLight,
+                        SystemColors.ControlLightLight);
+
+                }
                 DrawColors();
             }
 
@@ -268,52 +296,52 @@ namespace ImageViewer.Controls
             {
                 // HSB Color Space
                 case DrawStyles.HSBHue:
-                    selectedColor.hsb.Saturation = (float)lastClicked.X / clientWidth;
-                    selectedColor.hsb.Brightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSB.Saturation = (float)lastClicked.X / clientWidth;
+                    selectedColor.HSB.Brightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSB();
                     break;
                 case DrawStyles.HSBSaturation:
-                    selectedColor.hsb.Hue = (float)lastClicked.X / clientWidth;
-                    selectedColor.hsb.Brightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSB.Hue = (float)lastClicked.X / clientWidth;
+                    selectedColor.HSB.Brightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSB();
                     break;
                 case DrawStyles.HSBBrightness:
-                    selectedColor.hsb.Hue = (float)lastClicked.X / clientWidth;
-                    selectedColor.hsb.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSB.Hue = (float)lastClicked.X / clientWidth;
+                    selectedColor.HSB.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSB();
                     break;
 
                 // HSL Color Space
                 case DrawStyles.HSLHue:
-                    selectedColor.hsl.Saturation = (float)lastClicked.X / clientWidth;
-                    selectedColor.hsl.Lightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSL.Saturation = (float)lastClicked.X / clientWidth;
+                    selectedColor.HSL.Lightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSL();
                     break;
                 case DrawStyles.HSLSaturation:
-                    selectedColor.hsl.Hue = (float)lastClicked.X / clientWidth;
-                    selectedColor.hsl.Lightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSL.Hue = (float)lastClicked.X / clientWidth;
+                    selectedColor.HSL.Lightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSL();
                     break;
                 case DrawStyles.HSLLightness:
-                    selectedColor.hsl.Hue = (float)lastClicked.X / clientWidth;
-                    selectedColor.hsl.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSL.Hue = (float)lastClicked.X / clientWidth;
+                    selectedColor.HSL.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSL();
                     break;
 
                 // RGB Color Space
                 case DrawStyles.Red:
-                    selectedColor.argb.B = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
-                    selectedColor.argb.G = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
+                    selectedColor.ARGB.B = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
+                    selectedColor.ARGB.G = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Green:
-                    selectedColor.argb.B = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
-                    selectedColor.argb.R = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
+                    selectedColor.ARGB.B = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
+                    selectedColor.ARGB.R = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Blue:
-                    selectedColor.argb.R = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
-                    selectedColor.argb.G = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
+                    selectedColor.ARGB.R = (byte)Math.Round(255 * (double)lastClicked.X / (clientWidth));
+                    selectedColor.ARGB.G = (byte)Math.Round(255 * (1.0 - ((double)lastClicked.Y / (clientHeight))));
                     selectedColor.UpdateARGB();
                     break;
             }
@@ -325,43 +353,43 @@ namespace ImageViewer.Controls
             {
                 // HSB Color Space
                 case DrawStyles.HSBHue:
-                    selectedColor.hsb.Hue = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSB.Hue = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSB();
                     break;
                 case DrawStyles.HSBSaturation:
-                    selectedColor.hsb.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSB.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSB();
                     break;
                 case DrawStyles.HSBBrightness:
-                    selectedColor.hsb.Brightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSB.Brightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSB();
                     break;
 
                 // HSL Color Space
                 case DrawStyles.HSLHue:
-                    selectedColor.hsl.Hue = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSL.Hue = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSL();
                     break;
                 case DrawStyles.HSLSaturation:
-                    selectedColor.hsl.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSL.Saturation = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSL();
                     break;
                 case DrawStyles.HSLLightness:
-                    selectedColor.hsl.Lightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
+                    selectedColor.HSL.Lightness = (float)(1.0 - ((double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateHSL();
                     break;
 
                 // RGB Color Space
                 case DrawStyles.Red:
-                    selectedColor.argb.R = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
+                    selectedColor.ARGB.R = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Green:
-                    selectedColor.argb.G = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
+                    selectedColor.ARGB.G = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateARGB();
                     break;
                 case DrawStyles.Blue:
-                    selectedColor.argb.B = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
+                    selectedColor.ARGB.B = (byte)(255 - Math.Round(255 * (double)lastClicked.Y / clientHeight));
                     selectedColor.UpdateARGB();
                     break;
             }
@@ -373,44 +401,44 @@ namespace ImageViewer.Controls
             {
                 // HSB Color Space
                 case DrawStyles.HSBHue:
-                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.hsb.Saturation);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.hsb.Brightness));
+                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.HSB.Saturation);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.HSB.Brightness));
                     break;
                 case DrawStyles.HSBSaturation:
-                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.hsb.Hue);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.hsb.Brightness));
+                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.HSB.Hue);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.HSB.Brightness));
                     break;
                 case DrawStyles.HSBBrightness:
-                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.hsb.Hue);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.hsb.Saturation));
+                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.HSB.Hue);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.HSB.Saturation));
                     break;
 
                 // HSL Color Space
                 case DrawStyles.HSLHue:
-                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.hsl.Saturation);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.hsl.Lightness));
+                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.HSL.Saturation);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.HSL.Lightness));
                     break;
                 case DrawStyles.HSLSaturation:
-                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.hsl.Hue);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.hsl.Lightness));
+                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.HSL.Hue);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.HSL.Lightness));
                     break;
                 case DrawStyles.HSLLightness:
-                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.hsl.Hue);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.hsl.Saturation));
+                    lastClicked.X = (int)Math.Round(clientWidth * selectedColor.HSL.Hue);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - selectedColor.HSL.Saturation));
                     break;
 
                 // RGB Color Space
                 case DrawStyles.Red:
-                    lastClicked.X = (int)Math.Round(clientWidth * (double)selectedColor.argb.B / 255);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - ((double)selectedColor.argb.G / 255)));
+                    lastClicked.X = (int)Math.Round(clientWidth * (double)selectedColor.ARGB.B / 255);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - ((double)selectedColor.ARGB.G / 255)));
                     break;
                 case DrawStyles.Green:
-                    lastClicked.X = (int)Math.Round(clientWidth * (double)selectedColor.argb.B / 255);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - ((double)selectedColor.argb.R / 255)));
+                    lastClicked.X = (int)Math.Round(clientWidth * (double)selectedColor.ARGB.B / 255);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - ((double)selectedColor.ARGB.R / 255)));
                     break;
                 case DrawStyles.Blue:
-                    lastClicked.X = (int)Math.Round(clientWidth * (double)selectedColor.argb.R / 255);
-                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - ((double)selectedColor.argb.G / 255)));
+                    lastClicked.X = (int)Math.Round(clientWidth * (double)selectedColor.ARGB.R / 255);
+                    lastClicked.Y = (int)Math.Round(clientHeight * (1.0 - ((double)selectedColor.ARGB.G / 255)));
                     break;
             }
 
@@ -423,35 +451,35 @@ namespace ImageViewer.Controls
             {
                 // HSB Color Space
                 case DrawStyles.HSBHue:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.hsb.Hue));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.HSB.Hue));
                     break;
                 case DrawStyles.HSBSaturation:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.hsb.Saturation));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.HSB.Saturation));
                     break;
                 case DrawStyles.HSBBrightness:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.hsb.Brightness));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.HSB.Brightness));
                     break;
 
                 // HSL Color Space
                 case DrawStyles.HSLHue:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.hsl.Hue));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.HSL.Hue));
                     break;
                 case DrawStyles.HSLSaturation:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.hsl.Saturation));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.HSL.Saturation));
                     break;
                 case DrawStyles.HSLLightness:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.hsl.Lightness));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * SelectedColor.HSL.Lightness));
                     break;
 
                 // RGB Color Space
                 case DrawStyles.Red:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * (double)SelectedColor.argb.R / 255));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * (double)SelectedColor.ARGB.R / 255));
                     break;
                 case DrawStyles.Green:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * (double)SelectedColor.argb.G / 255));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * (double)SelectedColor.ARGB.G / 255));
                     break;
                 case DrawStyles.Blue:
-                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * (double)SelectedColor.argb.B / 255));
+                    lastClicked.Y = (clientHeight) - (int)Math.Round(((clientHeight) * (double)SelectedColor.ARGB.B / 255));
                     break;
             }
 

@@ -86,6 +86,7 @@
             this.tsbMain_Settings = new System.Windows.Forms.ToolStripButton();
             this.tsbAlwaysOnTop = new System.Windows.Forms.ToolStripButton();
             this.tsbNewInstance = new System.Windows.Forms.ToolStripButton();
+            this.tsmiViewColorPicker = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
             this.cmsFileBtn.SuspendLayout();
@@ -396,16 +397,17 @@
             this.actualSizeToolStripMenuItem,
             this.tsmiFitToScreen,
             this.imageBackingToolStripMenuItem,
-            this.tsmiViewPixelGrid});
+            this.tsmiViewPixelGrid,
+            this.tsmiViewColorPicker});
             this.cmsViewBtn.Name = "cmsViewBtn";
-            this.cmsViewBtn.Size = new System.Drawing.Size(153, 114);
+            this.cmsViewBtn.Size = new System.Drawing.Size(181, 158);
             this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
             this.fullScreenToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.fullScreenToolStripMenuItem.Name = "fullScreenToolStripMenuItem";
-            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.fullScreenToolStripMenuItem.Text = "Full Screen";
             this.fullScreenToolStripMenuItem.Click += new System.EventHandler(this.ViewFullscreen_Click);
             // 
@@ -413,14 +415,14 @@
             // 
             this.actualSizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.actualSizeToolStripMenuItem.Name = "actualSizeToolStripMenuItem";
-            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.ViewActualImageSize_Click);
             // 
             // tsmiFitToScreen
             // 
             this.tsmiFitToScreen.Name = "tsmiFitToScreen";
-            this.tsmiFitToScreen.Size = new System.Drawing.Size(152, 22);
+            this.tsmiFitToScreen.Size = new System.Drawing.Size(180, 22);
             this.tsmiFitToScreen.Text = "Fit To Screen";
             this.tsmiFitToScreen.Click += new System.EventHandler(this.FitImageToScreen_Click);
             // 
@@ -432,7 +434,7 @@
             this.tsmiShowDefaultTransparentGridColors,
             this.tsmiShowTransparentColor1Only});
             this.imageBackingToolStripMenuItem.Name = "imageBackingToolStripMenuItem";
-            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.imageBackingToolStripMenuItem.Text = "Image Backing";
             // 
             // tsmiImageBackColor1
@@ -469,7 +471,7 @@
             // 
             this.tsmiViewPixelGrid.CheckOnClick = true;
             this.tsmiViewPixelGrid.Name = "tsmiViewPixelGrid";
-            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(152, 22);
+            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(180, 22);
             this.tsmiViewPixelGrid.Text = "Pixel Grid";
             this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
             // 
@@ -635,6 +637,13 @@
             this.tsbNewInstance.Text = "New Instance";
             this.tsbNewInstance.Click += new System.EventHandler(this.NewInstance_Click);
             // 
+            // tsmiViewColorPicker
+            // 
+            this.tsmiViewColorPicker.Name = "tsmiViewColorPicker";
+            this.tsmiViewColorPicker.Size = new System.Drawing.Size(180, 22);
+            this.tsmiViewColorPicker.Text = "Color Picker";
+            this.tsmiViewColorPicker.Click += new System.EventHandler(this.ViewColorPicker_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -722,6 +731,7 @@
         private System.Windows.Forms.ComboBox cbInterpolationMode;
         private System.Windows.Forms.CheckBox cbLockSelectionToImage;
         private System.Windows.Forms.ToolStripButton tsbNewInstance;
+        private System.Windows.Forms.ToolStripMenuItem tsmiViewColorPicker;
     }
 }
 

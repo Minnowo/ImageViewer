@@ -11,17 +11,17 @@ namespace ImageViewer.Events
 
     public class ColorEventArgs : EventArgs
     {
-        public _Color Color;
+        public COLOR Color;
         public ColorFormat ColorType;
         public DrawStyles DrawStyle;
 
-        public ColorEventArgs(_Color color, ColorFormat format)
+        public ColorEventArgs(COLOR color, ColorFormat format)
         {
             Color = color;
             ColorType = format;
         }
 
-        public ColorEventArgs(_Color color, DrawStyles drawStyle)
+        public ColorEventArgs(COLOR color, DrawStyles drawStyle)
         {
             Color = color;
             DrawStyle = drawStyle;

@@ -35,7 +35,7 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB color = new HSB(0f, 100, 100, SelectedColor.argb.A);
+                HSB color = new HSB(0f, 100, 100, SelectedColor.ARGB.A);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -53,8 +53,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB start = new HSB((int)SelectedColor.hsb.Hue360, 100, (int)SelectedColor.hsb.Brightness100, SelectedColor.argb.A);
-                HSB end = new HSB((int)SelectedColor.hsb.Hue360, 0, (int)SelectedColor.hsb.Brightness100, SelectedColor.argb.A);
+                HSB start = new HSB((int)SelectedColor.HSB.Hue360, 100, (int)SelectedColor.HSB.Brightness100, SelectedColor.ARGB.A);
+                HSB end = new HSB((int)SelectedColor.HSB.Hue360, 0, (int)SelectedColor.HSB.Brightness100, SelectedColor.ARGB.A);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {
@@ -67,8 +67,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB start = new HSB((int)SelectedColor.hsb.Hue360, (int)SelectedColor.hsb.Saturation100, 100, SelectedColor.argb.A);
-                HSB end = new HSB((int)SelectedColor.hsb.Hue360, (int)SelectedColor.hsb.Saturation100, 0, SelectedColor.argb.A);
+                HSB start = new HSB((int)SelectedColor.HSB.Hue360, (int)SelectedColor.HSB.Saturation100, 100, SelectedColor.ARGB.A);
+                HSB end = new HSB((int)SelectedColor.HSB.Hue360, (int)SelectedColor.HSB.Saturation100, 0, SelectedColor.ARGB.A);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {
@@ -81,8 +81,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                ARGB start = new ARGB(SelectedColor.argb.A, 255, SelectedColor.argb.G, SelectedColor.argb.B);
-                ARGB end = new ARGB(SelectedColor.argb.A, 0, SelectedColor.argb.G, SelectedColor.argb.B);
+                ARGB start = new ARGB(SelectedColor.ARGB.A, 255, SelectedColor.ARGB.G, SelectedColor.ARGB.B);
+                ARGB end = new ARGB(SelectedColor.ARGB.A, 0, SelectedColor.ARGB.G, SelectedColor.ARGB.B);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {
@@ -95,8 +95,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                ARGB start = new ARGB(SelectedColor.argb.A, SelectedColor.argb.R, 255, SelectedColor.argb.B);
-                ARGB end = new ARGB(SelectedColor.argb.A, SelectedColor.argb.R, 0, SelectedColor.argb.B);
+                ARGB start = new ARGB(SelectedColor.ARGB.A, SelectedColor.ARGB.R, 255, SelectedColor.ARGB.B);
+                ARGB end = new ARGB(SelectedColor.ARGB.A, SelectedColor.ARGB.R, 0, SelectedColor.ARGB.B);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {
@@ -109,8 +109,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                ARGB start = new ARGB(SelectedColor.argb.A, SelectedColor.argb.R, SelectedColor.argb.G, 255);
-                ARGB end = new ARGB(SelectedColor.argb.A, SelectedColor.argb.R, SelectedColor.argb.G, 0);
+                ARGB start = new ARGB(SelectedColor.ARGB.A, SelectedColor.ARGB.R, SelectedColor.ARGB.G, 255);
+                ARGB end = new ARGB(SelectedColor.ARGB.A, SelectedColor.ARGB.R, SelectedColor.ARGB.G, 0);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {
@@ -123,7 +123,7 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB color = new HSB(0f, 100, 100, SelectedColor.argb.A);
+                HSB color = new HSB(0f, 100, 100, SelectedColor.ARGB.A);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -141,8 +141,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSL start = new HSL((int)SelectedColor.hsl.Hue360, 100, (int)SelectedColor.hsl.Lightness100, SelectedColor.argb.A);
-                HSL end = new HSL((int)SelectedColor.hsl.Hue360, 0, (int)SelectedColor.hsl.Lightness100, SelectedColor.argb.A);
+                HSL start = new HSL((int)SelectedColor.HSL.Hue360, 100, (int)SelectedColor.HSL.Lightness100, SelectedColor.ARGB.A);
+                HSL end = new HSL((int)SelectedColor.HSL.Hue360, 0, (int)SelectedColor.HSL.Lightness100, SelectedColor.ARGB.A);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {
@@ -155,8 +155,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSL start = new HSL((int)SelectedColor.hsl.Hue360, (int)SelectedColor.hsl.Saturation100, 100, SelectedColor.argb.A);
-                HSL end = new HSL((int)SelectedColor.hsl.Hue360, (int)SelectedColor.hsl.Saturation100, 0, SelectedColor.argb.A);
+                HSL start = new HSL((int)SelectedColor.HSL.Hue360, (int)SelectedColor.HSL.Saturation100, 100, SelectedColor.ARGB.A);
+                HSL end = new HSL((int)SelectedColor.HSL.Hue360, (int)SelectedColor.HSL.Saturation100, 0, SelectedColor.ARGB.A);
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, clientWidth, clientHeight), start, end, LinearGradientMode.Vertical))
                 {

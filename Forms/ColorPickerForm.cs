@@ -18,6 +18,8 @@ namespace ImageViewer
             this.Text = "ColorPicker";
             this.MaximizeBox = false;
             this.KeyPreview = true;
+
+            nudAlphaValue.Value = 255;
         }
 
         private void ColorPicker_ColorChanged(object sender, ColorEventArgs e)
@@ -25,6 +27,7 @@ namespace ImageViewer
             if (preventOverflow)
                 return;
 
+            e.Color.Alpha = (byte)nudAlphaValue.Value;
             UpdateColors(e.Color);
         }
 
@@ -33,24 +36,35 @@ namespace ImageViewer
             UpdateColors(e.Color);
         }
 
-        public _Color GetCurrentColor()
+        public COLOR GetCurrentColor()
         {
             return cp_ColorPickerMain.SelectedColor;
         }
 
-        public void UpdateColors(_Color e)
+        public void UpdateColors(COLOR e)
         {
             preventOverflow = true;
 
             cp_ColorPickerMain.SelectedColor = e;
+
+            nudAlphaValue.Value = e.Alpha;
 
             ccb_RGB.UpdateColor(e);
             ccb_HSB.UpdateColor(e);
             ccb_HSL.UpdateColor(e);
             ccb_CMYK.UpdateColor(e);
 
-            tb_DecimalInput.Text = ColorHelper.ColorToDecimal(e).ToString();
-            tb_HexInput.Text = ColorHelper.ColorToHex(e);
+            tb_DecimalDisplay.Text = ColorHelper.ColorToDecimal(e).ToString();
+
+            if (e.isTransparent)
+            {
+                tb_HexDisplay.Text = ColorHelper.ColorToHex(e, ColorFormat.ARGB);
+            }
+            else
+            {
+                tb_HexDisplay.Text = ColorHelper.ColorToHex(e, ColorFormat.RGB);
+            }
+
             cd_ColorDisplayMain.CurrentColor = e;
 
             preventOverflow = false;
@@ -58,7 +72,7 @@ namespace ImageViewer
 
         public void UpdateColors(Color e)
         {
-            UpdateColors(new _Color(e));
+            UpdateColors(new COLOR(e));
         }
 
         private void PasteColor_Click(object sender, EventArgs e)
@@ -152,7 +166,7 @@ namespace ImageViewer
             preventOverflow = true;
             try
             {
-                UpdateColors(ColorHelper.HexToColor(tb_HexInput.Text));
+                UpdateColors(ColorHelper.HexToColor(tb_HexInput.Text));   
             }
             catch
             {
@@ -178,6 +192,24 @@ namespace ImageViewer
             {
 
             }
+            preventOverflow = false;
+        }
+
+        private void Alpha_ValueChanged(object sender, EventArgs e)
+        {
+            if (preventOverflow)
+                return;
+
+            preventOverflow = true;
+
+            UpdateColors(
+                new COLOR(
+                    (byte)nudAlphaValue.Value,
+                    cd_ColorDisplayMain.CurrentColor.R, 
+                    cd_ColorDisplayMain.CurrentColor.G, 
+                    cd_ColorDisplayMain.CurrentColor.B
+                    ));
+
             preventOverflow = false;
         }
     }

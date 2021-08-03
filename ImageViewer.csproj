@@ -109,6 +109,11 @@
     <Compile Include="Forms\DitherForm.Designer.cs">
       <DependentUpon>DitherForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\Color\ARGB.cs" />
+    <Compile Include="Helpers\Color\CMYK.cs" />
+    <Compile Include="Helpers\Color\HSB.cs" />
+    <Compile Include="Helpers\Color\HSL.cs" />
+    <Compile Include="Helpers\Color\COLOR.cs" />
     <Compile Include="Helpers\DitherHelper.cs" />
     <Compile Include="Helpers\DitherWorkerData.cs" />
     <Compile Include="Forms\AskForNumericValueForm.cs">

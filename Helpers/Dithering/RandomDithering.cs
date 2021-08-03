@@ -36,11 +36,11 @@ namespace ImageViewer.Helpers.Dithering
       : this(_whiteDefault, _blackDefault)
     { }
 
-    public RandomDithering(ARGB white, ARGB black)
+    public RandomDithering(Color white, Color black)
       : this(Environment.TickCount, white, black)
     { }
 
-    public RandomDithering(int seed, ARGB white, ARGB black)
+    public RandomDithering(int seed, Color white, Color black)
     {
       _random = new Random(seed);
       _white = white;

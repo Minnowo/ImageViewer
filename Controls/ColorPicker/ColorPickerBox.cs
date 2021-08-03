@@ -38,8 +38,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB start = new HSB((int)selectedColor.hsb.Hue360, 0, 0, selectedColor.argb.A);
-                HSB end = new HSB((int)selectedColor.hsb.Hue360, 100, 0, selectedColor.argb.A);
+                HSB start = new HSB((int)selectedColor.HSB.Hue360, 0, 0, selectedColor.ARGB.A);
+                HSB end = new HSB((int)selectedColor.HSB.Hue360, 100, 0, selectedColor.ARGB.A);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -60,8 +60,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB start = new HSB(0, (int)selectedColor.hsb.Saturation100, 100, selectedColor.argb.A);
-                HSB end = new HSB(0, (int)selectedColor.hsb.Saturation100, 0, selectedColor.argb.A);
+                HSB start = new HSB(0, (int)selectedColor.HSB.Saturation100, 100, selectedColor.ARGB.A);
+                HSB end = new HSB(0, (int)selectedColor.HSB.Saturation100, 0, selectedColor.ARGB.A);
 
                 for (int x = 0; x < clientWidth; x++)
                 {
@@ -82,8 +82,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSB start = new HSB(0, 100, (int)selectedColor.hsb.Brightness100, selectedColor.argb.A);
-                HSB end = new HSB(0, 0, (int)selectedColor.hsb.Brightness100, selectedColor.argb.A);
+                HSB start = new HSB(0, 100, (int)selectedColor.HSB.Brightness100, selectedColor.ARGB.A);
+                HSB end = new HSB(0, 0, (int)selectedColor.HSB.Brightness100, selectedColor.ARGB.A);
 
                 for (int x = 0; x < clientWidth; x++)
                 {
@@ -104,8 +104,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                ARGB start = new ARGB(selectedColor.argb.A, (int)selectedColor.argb.R, 0, 0);
-                ARGB end = new ARGB(selectedColor.argb.A, (int)selectedColor.argb.R, 0, 255);
+                ARGB start = new ARGB(selectedColor.ARGB.A, (int)selectedColor.ARGB.R, 0, 0);
+                ARGB end = new ARGB(selectedColor.ARGB.A, (int)selectedColor.ARGB.R, 0, 255);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -126,8 +126,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                ARGB start = new ARGB(selectedColor.argb.A, 0, (int)selectedColor.argb.G, 0);
-                ARGB end = new ARGB(selectedColor.argb.A, 0, (int)selectedColor.argb.G, 255);
+                ARGB start = new ARGB(selectedColor.ARGB.A, 0, (int)selectedColor.ARGB.G, 0);
+                ARGB end = new ARGB(selectedColor.ARGB.A, 0, (int)selectedColor.ARGB.G, 255);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -148,8 +148,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                ARGB start = new ARGB(selectedColor.argb.A, 0, 0, (int)selectedColor.argb.B);
-                ARGB end = new ARGB(selectedColor.argb.A, 255, 0, (int)selectedColor.argb.B);
+                ARGB start = new ARGB(selectedColor.ARGB.A, 0, 0, (int)selectedColor.ARGB.B);
+                ARGB end = new ARGB(selectedColor.ARGB.A, 255, 0, (int)selectedColor.ARGB.B);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -170,8 +170,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSL start = new HSL((int)selectedColor.hsl.Hue360, 0, 0, selectedColor.argb.A);
-                HSL end = new HSL((int)selectedColor.hsl.Hue360, 100, 0, selectedColor.argb.A);
+                HSL start = new HSL((int)selectedColor.HSL.Hue360, 0, 0, selectedColor.ARGB.A);
+                HSL end = new HSL((int)selectedColor.HSL.Hue360, 100, 0, selectedColor.ARGB.A);
 
                 for (int y = 0; y < clientHeight; y++)
                 {
@@ -192,8 +192,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSL start = new HSL(0, (int)selectedColor.hsl.Saturation100, 50, selectedColor.argb.A);
-                HSL end = new HSL(360, (int)selectedColor.hsl.Saturation100, 50, selectedColor.argb.A);
+                HSL start = new HSL(0, (int)selectedColor.HSL.Saturation100, 50, selectedColor.ARGB.A);
+                HSL end = new HSL(360, (int)selectedColor.HSL.Saturation100, 50, selectedColor.ARGB.A);
 
                 for (int x = 0; x < clientWidth; x++)
                 {
@@ -225,8 +225,8 @@ namespace ImageViewer.Controls
         {
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                HSL start = new HSL(0, 100, (int)selectedColor.hsl.Lightness100, selectedColor.argb.A);
-                HSL end = new HSL(0, 0, (int)selectedColor.hsl.Lightness100, selectedColor.argb.A);
+                HSL start = new HSL(0, 100, (int)selectedColor.HSL.Lightness100, selectedColor.ARGB.A);
+                HSL end = new HSL(0, 0, (int)selectedColor.HSL.Lightness100, selectedColor.ARGB.A);
 
                 for (int x = 0; x < clientWidth; x++)
                 {

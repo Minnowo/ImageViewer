@@ -18,7 +18,7 @@ namespace ImageViewer.Controls
     {
         public event ColorEventHandler ColorChanged;
 
-        public _Color CurrentColor 
+        public COLOR CurrentColor 
         {
             get
             {
@@ -119,17 +119,17 @@ namespace ImageViewer.Controls
             UpdateValues();
         }
 
-        private _Color GetColor()
+        private COLOR GetColor()
         {
-            _Color mycolor = Color.White;
+            COLOR mycolor = Color.White;
             switch (this.colorFormat)
             {
                 case ColorFormat.RGB:
-                    mycolor = new _Color((short)values[0], (short)values[1], (short)values[2]);
+                    mycolor = new COLOR((short)values[0], (short)values[1], (short)values[2]);
                     break;
 
                 case ColorFormat.ARGB:
-                    mycolor = new _Color((short)values[1], (short)values[2], (short)values[3], (short)values[0]);
+                    mycolor = new COLOR((short)values[0], (short)values[1], (short)values[2], (short)values[3]);
                     break;
 
                 case ColorFormat.CMYK:
@@ -171,7 +171,7 @@ namespace ImageViewer.Controls
         {
             OnColorChanged(GetColor());
         }
-        public void OnColorChanged(_Color color)
+        public void OnColorChanged(COLOR color)
         {
             if (ColorChanged != null)
             {
@@ -179,7 +179,7 @@ namespace ImageViewer.Controls
             }
         }
 
-        public void UpdateColor(_Color newColor)
+        public void UpdateColor(COLOR newColor)
         {
             if (preventOverflow)
                 return;
@@ -189,32 +189,32 @@ namespace ImageViewer.Controls
             switch (ColorFormat)
             {
                 case ColorFormat.RGB:
-                    values[0] = newColor.argb.R;
-                    values[1] = newColor.argb.G;
-                    values[2] = newColor.argb.B;
+                    values[0] = newColor.ARGB.R;
+                    values[1] = newColor.ARGB.G;
+                    values[2] = newColor.ARGB.B;
                     break;
                 case ColorFormat.ARGB:
-                    values[0] = newColor.argb.A;
-                    values[1] = newColor.argb.R;
-                    values[2] = newColor.argb.G;
-                    values[3] = newColor.argb.B;
+                    values[0] = newColor.ARGB.A;
+                    values[1] = newColor.ARGB.R;
+                    values[2] = newColor.ARGB.G;
+                    values[3] = newColor.ARGB.B;
                     break;
                 case ColorFormat.CMYK:
-                    values[0] = (decimal)newColor.cmyk.C100;
-                    values[1] = (decimal)newColor.cmyk.M100;
-                    values[2] = (decimal)newColor.cmyk.Y100;
-                    values[3] = (decimal)newColor.cmyk.K100;
+                    values[0] = (decimal)newColor.CMYK.C100;
+                    values[1] = (decimal)newColor.CMYK.M100;
+                    values[2] = (decimal)newColor.CMYK.Y100;
+                    values[3] = (decimal)newColor.CMYK.K100;
                     break;
                 case ColorFormat.HSB:
                 case ColorFormat.HSV:
-                    values[0] = (decimal)newColor.hsb.Hue360;
-                    values[1] = (decimal)newColor.hsb.Saturation100;
-                    values[2] = (decimal)newColor.hsb.Brightness100;
+                    values[0] = (decimal)newColor.HSB.Hue360;
+                    values[1] = (decimal)newColor.HSB.Saturation100;
+                    values[2] = (decimal)newColor.HSB.Brightness100;
                     break;
                 case ColorFormat.HSL:
-                    values[0] = (decimal)newColor.hsl.Hue360;
-                    values[1] = (decimal)newColor.hsl.Saturation100;
-                    values[2] = (decimal)newColor.hsl.Lightness100;
+                    values[0] = (decimal)newColor.HSL.Hue360;
+                    values[1] = (decimal)newColor.HSL.Saturation100;
+                    values[2] = (decimal)newColor.HSL.Lightness100;
                     break;
             }
             UpdateValues();

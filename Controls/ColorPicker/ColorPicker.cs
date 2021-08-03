@@ -12,7 +12,7 @@ namespace ImageViewer.Controls
     {
         public event ColorEventHandler ColorChanged;
 
-        public _Color SelectedColor
+        public COLOR SelectedColor
         {
             get
             {
@@ -45,7 +45,7 @@ namespace ImageViewer.Controls
 
         [DefaultValue(DrawStyles.HSBHue)]
         private DrawStyles drawStyle = DrawStyles.HSBHue;
-        private _Color selectedColor;
+        private COLOR selectedColor;
         private ColorPickerBox colorBox;
         private ColorPickerSlider colorSlider;
 
@@ -71,7 +71,7 @@ namespace ImageViewer.Controls
         private void OnColorChanged()
         {
             if (ColorChanged != null)
-                ColorChanged(this, new ColorEventArgs(selectedColor, DrawStyles.HSBHue));
+                ColorChanged(this, new ColorEventArgs(selectedColor, DrawStyle));
         }
 
         private void InitializeComponent()

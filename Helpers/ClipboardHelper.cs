@@ -53,21 +53,21 @@ namespace ImageViewer.Helpers
 
         public static bool FormatCopyColor(ColorFormat format, Color color)
         {
-            return FormatCopyColor(format, new _Color(color));
+            return FormatCopyColor(format, new COLOR(color));
         }
 
-        public static bool FormatCopyColor(ColorFormat format, _Color color)
+        public static bool FormatCopyColor(ColorFormat format, COLOR color)
         {
             string formatedColor = "";
 
             switch (format)
             {
                 case ColorFormat.ARGB:
-                    formatedColor += color.argb.ToString(ColorFormat.ARGB);
+                    formatedColor += color.ARGB.ToString(ColorFormat.ARGB);
                     break;
 
                 case ColorFormat.RGB:
-                    formatedColor += color.argb.ToString();
+                    formatedColor += color.ARGB.ToString();
                     break;
 
                 case ColorFormat.Hex:
@@ -79,19 +79,19 @@ namespace ImageViewer.Helpers
                     break;
 
                 case ColorFormat.CMYK:
-                    formatedColor += color.cmyk.ToString();
+                    formatedColor += color.CMYK.ToString();
                     break;
 
                 case ColorFormat.HSL:
-                    formatedColor += color.hsl.ToString();
+                    formatedColor += color.HSL.ToString();
                     break;
 
                 case ColorFormat.HSV:
-                    formatedColor += color.hsb.ToString();
+                    formatedColor += color.HSB.ToString();
                     break;
 
                 case ColorFormat.HSB:
-                    formatedColor += color.hsb.ToString();
+                    formatedColor += color.HSB.ToString();
                     break;
 
             }
