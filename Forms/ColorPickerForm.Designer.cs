@@ -98,6 +98,7 @@
             this.rb_DisplayBlue.TabStop = true;
             this.rb_DisplayBlue.Text = "Blue";
             this.rb_DisplayBlue.UseVisualStyleBackColor = true;
+            this.rb_DisplayBlue.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // rb_DisplayGreen
             // 
@@ -109,6 +110,7 @@
             this.rb_DisplayGreen.TabStop = true;
             this.rb_DisplayGreen.Text = "Green";
             this.rb_DisplayGreen.UseVisualStyleBackColor = true;
+            this.rb_DisplayGreen.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // rb_DisplayRed
             // 
@@ -120,6 +122,7 @@
             this.rb_DisplayRed.TabStop = true;
             this.rb_DisplayRed.Text = "Red";
             this.rb_DisplayRed.UseVisualStyleBackColor = true;
+            this.rb_DisplayRed.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // pnl_HSLColor
             // 
@@ -143,6 +146,7 @@
             this.rb_DisplayLightness.TabStop = true;
             this.rb_DisplayLightness.Text = "Lightness";
             this.rb_DisplayLightness.UseVisualStyleBackColor = true;
+            this.rb_DisplayLightness.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // rb_DisplayHSLSaturation
             // 
@@ -154,6 +158,7 @@
             this.rb_DisplayHSLSaturation.TabStop = true;
             this.rb_DisplayHSLSaturation.Text = "Saturation";
             this.rb_DisplayHSLSaturation.UseVisualStyleBackColor = true;
+            this.rb_DisplayHSLSaturation.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // rb_DisplayHSLHue
             // 
@@ -165,6 +170,7 @@
             this.rb_DisplayHSLHue.TabStop = true;
             this.rb_DisplayHSLHue.Text = "Hue";
             this.rb_DisplayHSLHue.UseVisualStyleBackColor = true;
+            this.rb_DisplayHSLHue.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // pnl_HSBColor
             // 
@@ -188,6 +194,7 @@
             this.rb_DisplayBrightness.TabStop = true;
             this.rb_DisplayBrightness.Text = "Brightness";
             this.rb_DisplayBrightness.UseVisualStyleBackColor = true;
+            this.rb_DisplayBrightness.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // rb_DisplayHSBSaturation
             // 
@@ -199,6 +206,7 @@
             this.rb_DisplayHSBSaturation.TabStop = true;
             this.rb_DisplayHSBSaturation.Text = "Saturation";
             this.rb_DisplayHSBSaturation.UseVisualStyleBackColor = true;
+            this.rb_DisplayHSBSaturation.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // rb_DisplayHSBHue
             // 
@@ -210,6 +218,7 @@
             this.rb_DisplayHSBHue.TabStop = true;
             this.rb_DisplayHSBHue.Text = "Hue";
             this.rb_DisplayHSBHue.UseVisualStyleBackColor = true;
+            this.rb_DisplayHSBHue.CheckedChanged += new System.EventHandler(this.RadioButton_CheckChanged);
             // 
             // lbl_RGBColor
             // 

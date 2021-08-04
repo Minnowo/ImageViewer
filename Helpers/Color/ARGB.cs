@@ -7,6 +7,19 @@ namespace ImageViewer.Helpers
     {
         public static readonly ARGB Empty;
 
+
+        /// <summary>
+        /// A bool indicating if the color is transparent.
+        /// </summary>
+        public bool isTransparent
+        {
+            get
+            {
+                return A < 255;
+            }
+        }
+
+
         /// <summary>
         /// A value from 0 - 255 representing the Alpha value of this color.
         /// </summary>
@@ -16,6 +29,7 @@ namespace ImageViewer.Helpers
             set { a = value.Clamp<byte>(0, 255); }
         }
         private byte a;
+
 
         /// <summary>
         /// A value from 0 - 255 representing the Red value of this color.
@@ -27,6 +41,7 @@ namespace ImageViewer.Helpers
         }
         private byte r;
 
+
         /// <summary>
         /// A value from 0 - 255 representing the Green value of this color.
         /// </summary>
@@ -36,6 +51,7 @@ namespace ImageViewer.Helpers
             set { g = value.Clamp<byte>(0, 255); }
         }
         private byte g;
+
 
         /// <summary>
         /// A value from 0 - 255 representing the Blue value of this color.
@@ -136,27 +152,27 @@ namespace ImageViewer.Helpers
         }
 
         /// <summary>
-        /// Convert the current color to a HSB color format.
+        /// Convert the current color to a HSB color.
         /// </summary>
-        /// <returns>A HSB representation of this color.</returns>
+        /// <returns>An HSB representation of this color.</returns>
         public HSB ToHSB()
         {
             return new HSB(r, g, b, a);
         }
 
         /// <summary>
-        /// Convert the current color to a HSL color format.
+        /// Convert the current color to a HSL color.
         /// </summary>
-        /// <returns>A HSL representation of this color.</returns>
+        /// <returns>An HSL representation of this color.</returns>
         public HSL ToHSL()
         {
             return new HSL(r, g, b, a);
         }
 
         /// <summary>
-        /// Convert the current color to a CMYK color format.
+        /// Convert the current color to a CMYK color.
         /// </summary>
-        /// <returns>A CMYK representation of this color.</returns>
+        /// <returns>An CMYK representation of this color.</returns>
         public CMYK ToCMYK()
         {
             return new CMYK(r, g, b, a);
@@ -193,7 +209,7 @@ namespace ImageViewer.Helpers
         /// <param name="B">a value from 0 - 255</param>
         /// <param name="A">a value from 0 - 255</param>
         /// <returns>A ARGB color.</returns>
-        public static ARGB FromArgb(int A, int R, int G, int B)
+        public static ARGB FromARGB(int A, int R, int G, int B)
         {
             return new ARGB(A, R, G, B);
         }
@@ -208,7 +224,7 @@ namespace ImageViewer.Helpers
         /// <param name="G">a value from 0 - 255</param>
         /// <param name="B">a value from 0 - 255</param>
         /// <returns>A ARGB color.</returns>
-        public static ARGB FromArgb(int R, int G, int B)
+        public static ARGB FromARGB(int R, int G, int B)
         {
             return new ARGB(R, G, B);
         }

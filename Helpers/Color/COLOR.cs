@@ -14,54 +14,79 @@ namespace ImageViewer.Helpers
     {
         public static readonly COLOR Empty;
 
+        /// <summary>
+        /// A bool indicating if the color is transparent.
+        /// </summary>
         public bool isTransparent
         {
             get
             {
-                return Alpha < 255;
+                return A < 255;
             }
         }
 
-        public byte Alpha
+        /// <summary>
+        /// A value from 0 - 255 representing the Alpha value of this color.
+        /// </summary>
+        public byte A
         {
             get
             {
-                return alpha;
+                return a;
             }
             set
             {
-                alpha = ColorHelper.ValidColor(value);
-                ARGB.A = alpha;
-                HSB.A = alpha;
-                HSL.Alpha = alpha;
-                CMYK.Alpha = alpha;
+                a = value.Clamp<byte>(0, 255);
+                ARGB.A = a;
+                HSB.A = a;
+                HSL.A = a;
+                CMYK.A = a;
             }
         }
-        private byte alpha;
+        private byte a;
 
+        /// <summary>
+        /// The ARGB format of this color.
+        /// </summary>
         public ARGB ARGB;
+
+        /// <summary>
+        /// The HSB format of this color.
+        /// </summary>
         public HSB HSB;
+
+        /// <summary>
+        /// The HSL format of this color.
+        /// </summary>
         public HSL HSL;
+
+        /// <summary>
+        /// The CMYK format of this color.
+        /// </summary>
         public CMYK CMYK;
 
 
+        /// <summary>
+        /// Creates a new instnace of the COLOR struct from the given System.Drawing.Color.
+        /// </summary>
+        /// <param name="color">A System.Drawing.Color color.</param>
         public COLOR(Color color)
         {
             ARGB = color;
             HSB = color;
             HSL = color;
             CMYK = color;
-            alpha = color.A;
+            a = color.A;
         }
 
         public COLOR(int A, int R, int G, int B) : this(Color.FromArgb(A, R, G, B))
         {
-            Alpha = (byte)A.Clamp(0, 255);
+            this.A = (byte)A.Clamp(0, 255);
         }
 
         public COLOR(int R, int G, int B) : this(Color.FromArgb(R, G, B))
         {
-            Alpha = 255;
+            A = 255;
         }
 
         public static bool operator ==(COLOR left, COLOR right)
@@ -69,7 +94,7 @@ namespace ImageViewer.Helpers
             return  (left.ARGB.R == right.ARGB.R) && 
                     (left.ARGB.G == right.ARGB.G) && 
                     (left.ARGB.B == right.ARGB.B) && 
-                    (left.Alpha == right.Alpha);
+                    (left.A == right.A);
         }
 
         public static bool operator !=(COLOR left, COLOR right)
@@ -84,7 +109,7 @@ namespace ImageViewer.Helpers
 
         public static implicit operator Color(COLOR color)
         {
-            return Color.FromArgb(color.alpha, color.ARGB.R, color.ARGB.G, color.ARGB.B);
+            return Color.FromArgb(color.a, color.ARGB.R, color.ARGB.G, color.ARGB.B);
         }
 
         public string ToHex(ColorFormat format = ColorFormat.RGB)
@@ -97,32 +122,68 @@ namespace ImageViewer.Helpers
             return ColorHelper.ColorToDecimal(ARGB.R, ARGB.G, ARGB.B, ARGB.A, format);
         }
 
+
+        /// <summary>
+        /// Updates the ARGB, HSL and CMYK color to represent the HSB current color.
+        /// <para>This SHOULD be called after changing any values of the HSB color</para>
+        /// </summary>
         public void UpdateHSB()
         {
-            this.ARGB = HSB.ToColor();
+            this.ARGB = HSB;
             this.HSL = HSB;
             this.CMYK = HSB;
+            this.a = HSB.A;
         }
 
+        /// <summary>
+        /// Updates the ARGB, HSB and CMYK color to represent the HSL current color.
+        /// <para>This SHOULD be called after changing any values of the HSL color</para>
+        /// </summary>
         public void UpdateHSL()
         {
-            this.ARGB = HSL.ToColor();
+            this.ARGB = HSL;
             this.HSB = HSL;
             this.CMYK = HSL;
+            this.a = HSL.A;
         }
 
+        /// <summary>
+        /// Updates the ARGB, HSL and HSB color to represent the CMYK current color.
+        /// <para>This SHOULD be called after changing any values of the CMYK color</para>
+        /// </summary>
         public void UpdateCMYK()
         {
-            this.ARGB = CMYK.ToColor();
+            this.ARGB = CMYK;
             this.HSL = CMYK;
             this.HSB = CMYK;
+            this.a = CMYK.A;
         }
 
+        /// <summary>
+        /// Updates the HSB, HSL and CMYK color to represent the ARGB current color.
+        /// <para>This SHOULD be called after changing any values of the ARGB color</para>
+        /// </summary>
         public void UpdateARGB()
         {
             this.HSB = ARGB;
             this.CMYK = ARGB;
             this.HSB = ARGB;
+            this.a = ARGB.A;
+        }
+
+        public COLOR GetInverted()
+        {
+            return new COLOR(ARGB.GetInverted());
+        }
+
+        public static COLOR FromARGB(int A, int R, int G, int B)
+        {
+            return new COLOR(A, R, G, B);
+        }
+
+        public static COLOR FromARGB(int R, int G, int B)
+        {
+            return new COLOR(R, G, B);
         }
 
         public override int GetHashCode()

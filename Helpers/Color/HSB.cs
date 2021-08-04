@@ -7,6 +7,19 @@ namespace ImageViewer.Helpers
     {
         public static readonly HSB Empty;
 
+
+        /// <summary>
+        /// A bool indicating if the color is transparent.
+        /// </summary>
+        public bool isTransparent
+        {
+            get
+            {
+                return A < 255;
+            }
+        }
+
+
         /// <summary>
         /// A value from 0 - 255 representing the Alpha value of this color.
         /// </summary>
@@ -107,9 +120,9 @@ namespace ImageViewer.Helpers
         /// <para>Where B is a value from 0 - 100</para>
         /// <para>Where A is a value from 0 - 255</para>
         /// </summary>
-        /// <param name="H">A value from 0 - 360f</param>
-        /// <param name="S">a value from 0 - 100f</param>
-        /// <param name="B">a value from 0 - 100f</param>
+        /// <param name="H">A value from 0 - 360</param>
+        /// <param name="S">a value from 0 - 100</param>
+        /// <param name="B">a value from 0 - 100</param>
         /// <param name="A">a value from 0 - 255</param>
         public HSB(int H, int S, int B, int A = 255) : this()
         {
@@ -122,7 +135,7 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// Creates a new instance of the HSB struct with the given System.Drawing.Color.
         /// </summary>
-        /// <param name="color">A ARGB color.</param>
+        /// <param name="color">A System.Drawing.Color color.</param>
         public HSB(Color color) : this(color.R, color.G, color.B, color.A)
         {
         }
@@ -309,27 +322,27 @@ namespace ImageViewer.Helpers
         }
 
         /// <summary>
-        /// Converts the current color to an ARGB format.
+        /// Converts the current color to an ARGB color.
         /// </summary>
-        /// <returns>A ARGB representation of this color.</returns>
+        /// <returns>An ARGB representation of this color.</returns>
         public ARGB ToARGB()
         {
             return new ARGB(this.ToColor());
         }
 
         /// <summary>
-        /// Converts the current color to an HSL format.
+        /// Converts the current color to a HSL color.
         /// </summary>
-        /// <returns>A HSL representation of this color.</returns>
+        /// <returns>An HSL representation of this color.</returns>
         public HSL ToHSL()
         {
             return new HSL(this.ToColor());
         }
 
         /// <summary>
-        /// Converts the current color to an CMYK format.
+        /// Converts the current color to a CMYK color.
         /// </summary>
-        /// <returns>A CMYK representation of this color.</returns>
+        /// <returns>An CMYK representation of this color.</returns>
         public CMYK ToCMYK()
         {
             return new CMYK(this.ToColor());
@@ -435,9 +448,9 @@ namespace ImageViewer.Helpers
         public override string ToString()
         {
             return string.Format("{0}, {1}, {2}",
-                Math.Round(Hue360, ColorHelper.decimalPlaces),
-                Math.Round(Saturation100, ColorHelper.decimalPlaces),
-                Math.Round(Brightness100, ColorHelper.decimalPlaces));
+                Math.Round(Hue360, ColorHelper.DecimalPlaces),
+                Math.Round(Saturation100, ColorHelper.DecimalPlaces),
+                Math.Round(Brightness100, ColorHelper.DecimalPlaces));
         }
 
         public override int GetHashCode()

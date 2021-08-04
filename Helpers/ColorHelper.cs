@@ -11,17 +11,9 @@ using System.IO;
 
 namespace ImageViewer.Helpers
 {
-    
-   
-    
-
-    
-
-    
-
     public static class ColorHelper
     {
-        public static int decimalPlaces { get; set; } = 2;
+        public static int DecimalPlaces { get; set; } = 2;
 
         public static Color AskChooseColor()
         {
@@ -84,18 +76,6 @@ namespace ImageViewer.Helpers
                 case ColorFormat.ARGB:
                     return Color.FromArgb((dec >> 24) & 0xFF, (dec >> 16) & 0xFF, (dec >> 8) & 0xFF, dec & 0xFF);
             }
-        }
-
-        public static bool ParseDecimal(string input, out Color color)
-        {
-            Match matchDecimal = Regex.Match(input, @"^[0-9]{1,9}$");
-            if (matchDecimal.Success)
-            {
-                color = DecimalToColor(int.Parse(matchDecimal.Value));
-                return true;
-            }
-            color = Color.Empty;
-            return false;
         }
 
         public static bool ParseCMYK(string input, out CMYK color)
@@ -201,42 +181,6 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public static Color BackgroundColorBasedOffTextColor(Color text)
-        {
-            if ((text.R * 0.299 + text.G * 0.587 + text.B * 0.114) > 150)
-            {
-                return Color.Black;
-            }
-            else
-            {
-                return Color.White;
-            }
-        }
-
-        public static double ValidRGBColor(double number)
-        {
-            return number.Clamp(0, 255);
-        }
-
-        public static double ValidColor(double number)
-        {
-            return number.Clamp(0, 1);
-        }
-
-        public static float ValidColor(float number)
-        {
-            return (float)number.Clamp(0, 1);
-        }
-
-        public static int ValidColor(int number)
-        {
-            return number.Clamp(0, 255);
-        }
-
-        public static byte ValidColor(byte number)
-        {
-            return number.Clamp<byte>(0, 255);
-        }
 
         public static List<Color> ReadPlainTextColorPalette(string fileName)
         {
@@ -322,7 +266,7 @@ namespace ImageViewer.Helpers
                             g = stream.ReadByte();
                             b = stream.ReadByte();
 
-                            colorPalette.Add(ARGB.FromArgb(255, r.ToByte(), g.ToByte(), b.ToByte()));
+                            colorPalette.Add(ARGB.FromARGB(255, r.ToByte(), g.ToByte(), b.ToByte()));
                         }
 
                         // all done so stop reading the rest of the file
@@ -424,7 +368,7 @@ namespace ImageViewer.Helpers
                         green = value2 / 256; // 0-255
                         blue = value3 / 256; // 0-255
 
-                        results.Add(ARGB.FromArgb(red.ToByte(), green.ToByte(), blue.ToByte()));
+                        results.Add(ARGB.FromARGB(red.ToByte(), green.ToByte(), blue.ToByte()));
                         break;
 
                     case ColorSpace.Hsb:
@@ -452,7 +396,7 @@ namespace ImageViewer.Helpers
 
                         gray = (int)(value1 / 39.0625); // 0-255
 
-                        results.Add(ARGB.FromArgb(gray.ToByte(), gray.ToByte(), gray.ToByte()));
+                        results.Add(ARGB.FromARGB(gray.ToByte(), gray.ToByte(), gray.ToByte()));
                         break;
 
                     default:

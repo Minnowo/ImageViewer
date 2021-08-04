@@ -9,7 +9,32 @@ namespace ImageViewer
 {
     public partial class ColorPickerForm : Form
     {
+        public DrawStyles ColorBoxDrawStyle
+        {
+            get
+            {
+                return cp_ColorPickerMain.DrawStyle;
+            }
+            set
+            {
+                cp_ColorPickerMain.DrawStyle = value;
+            }
+        }
+
         private bool preventOverflow = false;
+        private RadioButton currentRad = null;
+
+        private const string RB_DISPLAY_RED = "rb_DisplayRed";
+        private const string RB_DISPLAY_GREEN = "rb_DisplayGreen";
+        private const string RB_DISPLAY_BLUE = "rb_DisplayBlue";
+
+        private const string RB_DISPLAY_HSB_HUE= "rb_DisplayHSBHue";
+        private const string RB_DISPLAY_HSB_SAT = "rb_DisplayHSBSaturation";
+        private const string RB_DISPLAY_HSB_BRI = "rb_DisplayBrightness";
+
+        private const string RB_DISPLAY_HSL_HUE = "rb_DisplayHSLHue";
+        private const string RB_DISPLAY_HSL_SAT = "rb_DisplayHSLSaturation";
+        private const string RB_DISPLAY_HSL_LIG = "rb_DisplayLightness";
 
         public ColorPickerForm()
         {
@@ -20,6 +45,8 @@ namespace ImageViewer
             this.KeyPreview = true;
 
             nudAlphaValue.Value = 255;
+
+            rb_DisplayHSBHue.Checked = true;
         }
 
         private void ColorPicker_ColorChanged(object sender, ColorEventArgs e)
@@ -27,7 +54,7 @@ namespace ImageViewer
             if (preventOverflow)
                 return;
 
-            e.Color.Alpha = (byte)nudAlphaValue.Value;
+            e.Color.A = (byte)nudAlphaValue.Value;
             UpdateColors(e.Color);
         }
 
@@ -47,7 +74,7 @@ namespace ImageViewer
 
             cp_ColorPickerMain.SelectedColor = e;
 
-            nudAlphaValue.Value = e.Alpha;
+            nudAlphaValue.Value = e.A;
 
             ccb_RGB.UpdateColor(e);
             ccb_HSB.UpdateColor(e);
@@ -209,6 +236,54 @@ namespace ImageViewer
                     cd_ColorDisplayMain.CurrentColor.G, 
                     cd_ColorDisplayMain.CurrentColor.B
                     ));
+
+            preventOverflow = false;
+        }
+
+        private void RadioButton_CheckChanged(object sender, EventArgs e)
+        {
+            if (preventOverflow)
+                return;
+
+            preventOverflow = true;
+
+            if (currentRad != null)
+                currentRad.Checked = false;
+
+            currentRad = sender as RadioButton;
+
+            switch (currentRad.Name)
+            {
+                case RB_DISPLAY_RED:
+                    ColorBoxDrawStyle = DrawStyles.Red;
+                    break;
+                case RB_DISPLAY_GREEN:
+                    ColorBoxDrawStyle = DrawStyles.Green;
+                    break;
+                case RB_DISPLAY_BLUE:
+                    ColorBoxDrawStyle = DrawStyles.Blue;
+                    break;
+
+                case RB_DISPLAY_HSB_HUE:
+                    ColorBoxDrawStyle = DrawStyles.HSBHue;
+                    break;
+                case RB_DISPLAY_HSB_SAT:
+                    ColorBoxDrawStyle = DrawStyles.HSBSaturation;
+                    break;
+                case RB_DISPLAY_HSB_BRI:
+                    ColorBoxDrawStyle = DrawStyles.HSBBrightness;
+                    break;
+
+                case RB_DISPLAY_HSL_HUE:
+                    ColorBoxDrawStyle = DrawStyles.HSLHue;
+                    break;
+                case RB_DISPLAY_HSL_SAT:
+                    ColorBoxDrawStyle = DrawStyles.HSLSaturation;
+                    break;
+                case RB_DISPLAY_HSL_LIG:
+                    ColorBoxDrawStyle = DrawStyles.HSLLightness;
+                    break;
+            }
 
             preventOverflow = false;
         }
