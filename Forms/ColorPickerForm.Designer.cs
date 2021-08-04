@@ -757,6 +757,7 @@
             this.MaximizeBox = false;
             this.Name = "ColorPickerForm";
             this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ColorPickerForm";
             this.pnl_RGBColor.ResumeLayout(false);
             this.pnl_RGBColor.PerformLayout();

@@ -111,6 +111,8 @@
     </Compile>
     <Compile Include="Helpers\Color\ARGB.cs" />
     <Compile Include="Helpers\Color\CMYK.cs" />
+    <Compile Include="Helpers\Color\ColorConverter.cs" />
+    <Compile Include="Helpers\Color\ColorEditor.cs" />
     <Compile Include="Helpers\Color\HSB.cs" />
     <Compile Include="Helpers\Color\HSL.cs" />
     <Compile Include="Helpers\Color\COLOR.cs" />

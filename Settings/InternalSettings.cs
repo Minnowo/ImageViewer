@@ -14,6 +14,10 @@ using System.Collections;
 using System.Reflection;
 using System.Windows.Forms;
 
+using ImageViewer.Misc;
+using System.Drawing.Design;
+
+using ImageViewer.Helpers;
 namespace ImageViewer.Settings
 {
     public static class InternalSettings
@@ -532,6 +536,9 @@ namespace ImageViewer.Settings
 
         [XmlIgnore]
         [Description("The color that fills the transparent pixels when copying an image."), DisplayName("Fill Transparency On Copy Color")]
+        [DefaultValue(typeof(Color), "White"),
+        Editor(typeof(ColorEditor), typeof(UITypeEditor)),
+        TypeConverter(typeof(_ColorConverter))]
         public Color Fill_Transparency_On_Copy_Color { get; set; } = Color.White;
 
 
@@ -595,26 +602,41 @@ namespace ImageViewer.Settings
 
         [XmlIgnore]
         [Description("The back color of the image display."), DisplayName("Image Display Back Color")]
+        [DefaultValue(typeof(Color), "Black"),
+        Editor(typeof(ColorEditor), typeof(UITypeEditor)),
+        TypeConverter(typeof(_ColorConverter))]
         public Color Image_Box_Back_Color { get; set; } = Color.Black;
 
 
         [XmlIgnore]
         [Description("The default transparent grid color 1."), DisplayName("Default Image Backing 1")]
+        [DefaultValue(typeof(Color), "Gainsboro"),
+        Editor(typeof(ColorEditor), typeof(UITypeEditor)),
+        TypeConverter(typeof(_ColorConverter))]
         public Color Default_Transparent_Grid_Color { get; set; } = Color.Gainsboro;
 
 
         [XmlIgnore]
         [Description("The default transparent grid color 2."), DisplayName("Default Image Backing 2")]
+        [DefaultValue(typeof(Color), "White"),
+        Editor(typeof(ColorEditor), typeof(UITypeEditor)),
+        TypeConverter(typeof(_ColorConverter))]
         public Color Default_Transparent_Grid_Color_Alternate { get; set; } = Color.White;
 
 
         [XmlIgnore]
         [Description("The current transparent grid color 1."), DisplayName("Current Image Backing 1")]
+        [DefaultValue(typeof(Color), "Gainsboro"),
+        Editor(typeof(ColorEditor), typeof(UITypeEditor)),
+        TypeConverter(typeof(_ColorConverter))]
         public Color Current_Transparent_Grid_Color { get; set; } = Color.Gainsboro;
 
 
         [XmlIgnore]
         [Description("The current transparent grid color 2."), DisplayName("Current Image Backing 2")]
+        [DefaultValue(typeof(Color), "White"),
+        Editor(typeof(ColorEditor), typeof(UITypeEditor)),
+        TypeConverter(typeof(_ColorConverter))]
         public Color Current_Transparent_Grid_Color_Alternate { get; set; } = Color.White;
 
 

@@ -50,6 +50,20 @@ namespace ImageViewer.Helpers
         private static double gsbm = 0.11; // 0.071
 
 
+        public static void DrawRectangleProper(this Graphics g, Pen pen, Rectangle rect)
+        {
+            if (pen.Width == 1)
+            {
+                rect = new Rectangle(rect.X, rect.Y, rect.Width - 1, rect.Height - 1);
+            }
+
+            if (rect.Width > 0 && rect.Height > 0)
+            {
+                g.DrawRectangle(pen, rect);
+            }
+        }
+
+
 
         /// <summary>
         /// Gets the image format from the file extension.
@@ -519,6 +533,14 @@ namespace ImageViewer.Helpers
         }
 
 
+        public static Bitmap GetCheckeredBitmap(int width, int height, int checkerSize, Color color1, Color color2)
+        {
+            Bitmap bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            DrawCheckers(bmp, checkerSize, color1, color2);
+            return bmp;
+        }
+
+
         public static void DrawCheckers(Bitmap bmp, int checkerSize, Color color1, Color color2)
         {
             using (Graphics g = Graphics.FromImage(bmp))
@@ -530,7 +552,7 @@ namespace ImageViewer.Helpers
         }
 
 
-        public static Bitmap CreateCheckerPattern(int cellSize, Color color1, Color color2)
+        private static Bitmap CreateCheckerPattern(int cellSize, Color color1, Color color2)
         {
             Bitmap resultBMP = new Bitmap(cellSize << 1, cellSize << 1, PixelFormat.Format24bppRgb);
             

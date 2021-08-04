@@ -21,6 +21,11 @@ namespace ImageViewer
             }
         }
 
+        public COLOR SelectedColor
+        {
+            get { return cp_ColorPickerMain.SelectedColor; }
+        }
+
         private bool preventOverflow = false;
         private RadioButton currentRad = null;
 
@@ -36,7 +41,7 @@ namespace ImageViewer
         private const string RB_DISPLAY_HSL_SAT = "rb_DisplayHSLSaturation";
         private const string RB_DISPLAY_HSL_LIG = "rb_DisplayLightness";
 
-        public ColorPickerForm()
+        public ColorPickerForm(COLOR startingColor)
         {
             InitializeComponent();
 
@@ -47,6 +52,13 @@ namespace ImageViewer
             nudAlphaValue.Value = 255;
 
             rb_DisplayHSBHue.Checked = true;
+
+            UpdateColors(startingColor);
+        }
+
+        public ColorPickerForm() : this(Color.Red)
+        {
+            
         }
 
         private void ColorPicker_ColorChanged(object sender, ColorEventArgs e)
