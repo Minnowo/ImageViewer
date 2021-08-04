@@ -144,6 +144,12 @@ namespace ImageViewer.Settings
         }
         private static int fill_Alpha_Less_Than = 128;
 
+        public static int Grid_Cell_Size
+        {
+            get { return CurrentUserSettings.Grid_Cell_Size; }
+            set { CurrentUserSettings.Grid_Cell_Size = value; }
+        }
+
         public static Color Image_Box_Back_Color
         {
             get { return CurrentUserSettings.Image_Box_Back_Color; }
@@ -519,6 +525,10 @@ namespace ImageViewer.Settings
         [XmlIgnore]
         private bool replace_Transparency_On_Copy  = false;
 
+
+        [Description("The size of the transparent back grid cells."), DisplayName("Transparent Grid Cell Size")]
+        public int Grid_Cell_Size { get; set; } = 8;
+        
 
         [XmlIgnore]
         [Description("The color that fills the transparent pixels when copying an image."), DisplayName("Fill Transparency On Copy Color")]

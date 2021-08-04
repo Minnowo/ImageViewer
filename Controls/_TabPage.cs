@@ -40,7 +40,7 @@ namespace ImageViewer.Controls
             set
             {
                 imagePath = value;
-                this.Text = value.Name;
+                this.Text = value.Name.Truncate(25);
 
                 if (isCurrentPage)
                 {
@@ -150,7 +150,8 @@ namespace ImageViewer.Controls
 
             ibMain.Location = new Point(0, 0);
             ibMain.Dock = DockStyle.Fill;
-
+            
+            ibMain.GridCellSize = 128;
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
 
             ibMain.ImageChanged += IbMain_ImageChanged;

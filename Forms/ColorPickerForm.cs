@@ -182,6 +182,7 @@ namespace ImageViewer
 
         private void CloseForm_Event(object sender, EventArgs e)
         {
+            DialogResult = DialogResult.OK;
             Close();
         }
 

@@ -124,11 +124,14 @@ namespace ImageViewer
             UpdateInterpolationMode(true);
             UpdatePixelGrid(true);
             UpdateCurrentPageTransparentBackColor(true);
+            UpdateGridCellSize(true);
             UpdateImageBoxBackColor(true);
             UpdateBottomInfoLabel();
 
             if (currentPage != null)
+            {
                 currentPage.ibMain.Invalidate();
+            }
 
             if (updateWatcherIndex)
             {
@@ -136,16 +139,27 @@ namespace ImageViewer
             }
         }
 
-        public void UpdateCurrentPageTransparentBackColor(bool suppressRedraw = false)
+        public void UpdateGridCellSize(bool suppressRedraw = false)
         {
             if (currentPage == null)
                 return;
 
+            currentPage.ibMain.GridCellSize = InternalSettings.Grid_Cell_Size;
 
+            if (suppressRedraw)
+                return;
+            currentPage.ibMain.Invalidate();
+        }
+
+        public void UpdateCurrentPageTransparentBackColor(bool suppressRedraw = false)
+        {
             tsmiImageBackColor1.Image = ImageHelper.CreateSolidColorBitmap(
                     InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color);
             tsmiImageBackColor2.Image = ImageHelper.CreateSolidColorBitmap(
                 InternalSettings.TSMI_Generated_Icon_Size, InternalSettings.Current_Transparent_Grid_Color_Alternate);
+
+            if (currentPage == null)
+                return;
 
             if (InternalSettings.Show_Default_Transparent_Colors)
             {
@@ -578,7 +592,12 @@ namespace ImageViewer
                     f.LocationChanged += ParentFollowChild;
 
                 f.UpdateColors(c);
-                f.ShowDialog();
+                
+                if(f.ShowDialog() == DialogResult.Cancel)
+                {
+                    Location = p;
+                    return Color.Empty;
+                }
 
                 c = f.GetCurrentColor();
             }
@@ -1270,14 +1289,21 @@ namespace ImageViewer
             if (btn == null)
                 return;
 
+            Color c;
             switch (btn.Name)
             {
                 case TSMI_IMAGE_BACK_COLOR_1_NAME:
-                    InternalSettings.Current_Transparent_Grid_Color = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color);
+                    c = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color);
+                    if (c == Color.Empty)
+                        return;
+                    InternalSettings.Current_Transparent_Grid_Color = c;
                     break;
 
                 case TSMI_IMAGE_BACK_COLOR_2_NAME:
-                    InternalSettings.Current_Transparent_Grid_Color_Alternate = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color_Alternate);
+                    c = AskChooseColor(InternalSettings.Current_Transparent_Grid_Color_Alternate);
+                    if (c == Color.Empty)
+                        return;
+                    InternalSettings.Current_Transparent_Grid_Color_Alternate = c;
                     break;
             }
 
