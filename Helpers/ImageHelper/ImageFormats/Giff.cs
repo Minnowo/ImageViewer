@@ -11,7 +11,7 @@ namespace ImageViewer.Helpers
     /// Uses default .net GIF encoding and adds animation headers.
     /// </summary>
     // code taken from https://stackoverflow.com/a/32809759
-    public class Gif : IDisposable, IEnumerable<Image>
+    public class Giff : IDisposable, IEnumerable<Image>
     {
         #region Header Constants
 
@@ -35,17 +35,18 @@ namespace ImageViewer.Helpers
         const string FileType = "GIF";
         const string FileVersion = "89a";
 
-        #endregion
+        static readonly byte[] Gif_Identifier = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
+
+    #endregion
+
+    public const string MIME_TYPE = "image/gif";
 
         /// <summary>
         /// The number of frames.
         /// </summary>
         public int Count
         {
-            get
-            {
-                return Frames.Count;
-            }
+            get { return Frames.Count; }
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// Create an empty gif.
         /// </summary>
-        public Gif()
+        public Giff()
         {
             DefaultFrameDelay = DefaultDelay;
         }
@@ -83,7 +84,7 @@ namespace ImageViewer.Helpers
         /// Load a gif from a file.
         /// </summary>
         /// <param name="file"> The path to the file. </param>
-        public Gif(Bitmap file)
+        public Giff(Bitmap file)
         {
             if (!ImageAnimator.CanAnimate(file))
                 throw new Exception("Cannot animate this bitmap, try setting a frame to this image instead");
@@ -104,7 +105,7 @@ namespace ImageViewer.Helpers
         /// Load a gif from a file.
         /// </summary>
         /// <param name="file"> The path to the file. </param>
-        public Gif(string file)
+        public Giff(string file)
         {
             if (!File.Exists(file))
                 throw new Exception("The given file does not exists");
@@ -126,7 +127,7 @@ namespace ImageViewer.Helpers
         /// <param name="InStream"> The stream of the file. </param>
         /// <param name="Delay"> The frame delay in milliseconds, -1 to try getting delay from the gif if this fails 250 default. </param>
         /// <param name="Repeat"> The repeat count for images. </param>
-        public Gif(Stream InStream, int Delay = -1, int Repeat = 0)
+        public Giff(Stream InStream, int Delay = -1, int Repeat = 0)
         {
             this.InitFromStream(InStream, Delay, Repeat);
         }
@@ -356,7 +357,7 @@ namespace ImageViewer.Helpers
 
             sourceGif.Position = SourceGlobalColorInfoPosition;
             Writer.Write((byte)sourceGif.ReadByte()); // Global Color Table Info
-            Writer.Write((byte)0); // Background Color Index
+            Writer.Write((byte)255); // Background Color Index
             Writer.Write((byte)0); // Pixel aspect ratio
             WriteColorTable(sourceGif, Writer);
 

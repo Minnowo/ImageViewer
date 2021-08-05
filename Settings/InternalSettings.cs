@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
-using ImageViewer.Helpers;
-using ImageViewer.structs;
+using System.Drawing.Design;
 using System.Xml.Serialization;
 using System.Drawing.Drawing2D;
 using System.ComponentModel;
@@ -15,9 +14,10 @@ using System.Reflection;
 using System.Windows.Forms;
 
 using ImageViewer.Misc;
-using System.Drawing.Design;
 
 using ImageViewer.Helpers;
+using ImageViewer.structs;
+
 namespace ImageViewer.Settings
 {
     public static class InternalSettings
@@ -117,12 +117,6 @@ namespace ImageViewer.Settings
 
         #endregion
 
-        #region plugin dll paths
-
-        public const string libwebP_x64 = "plugins\\libwebp_x64.dll";
-        public const string libwebP_x86 = "plugins\\libwebp_x86.dll";
-
-        #endregion
 
         #region rate limits
 
@@ -365,7 +359,7 @@ namespace ImageViewer.Settings
         {
             if (CPU_Type_x64)
             {
-                if (File.Exists(libwebP_x64))
+                if (File.Exists(Webp.libwebP_x64))
                 {
                     WebP_Plugin_Exists = true;
                     Readable_Image_Formats_Dialog_Options.Add("*.webp");
@@ -375,7 +369,7 @@ namespace ImageViewer.Settings
             }
             else
             {
-                if (File.Exists(libwebP_x86))
+                if (File.Exists(Webp.libwebP_x86))
                 {
                     WebP_Plugin_Exists = true;
                     Readable_Image_Formats_Dialog_Options.Add("*.webp");

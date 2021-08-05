@@ -50,6 +50,58 @@ namespace ImageViewer.Helpers
         private static double gsbm = 0.11; // 0.071
 
 
+        /// <summary>
+        /// Creates a deep copy of the source image frame allowing you to set the pixel format.
+        /// <remarks>
+        /// Images with an indexed <see cref="PixelFormat"/> cannot deep copied using a <see cref="Graphics"/>
+        /// surface so have to be copied to <see cref="PixelFormat.Format32bppArgb"/> instead.
+        /// </remarks>
+        /// </summary>
+        /// <param name="source">The source image frame.</param>
+        /// <param name="targetFormat">The target pixel format.</param>
+        /// <returns>The <see cref="Bitmap"/>.</returns>
+        public static Bitmap DeepCloneImageFrame(Image source, PixelFormat targetFormat)
+        {
+            // Create a new image and draw the original pixel data over the top.
+            // This will automatically remap the pixel layout.
+            PixelFormat pixelFormat = targetFormat == PixelFormat.Indexed || targetFormat == PixelFormat.Format1bppIndexed || targetFormat == PixelFormat.Format4bppIndexed || targetFormat == PixelFormat.Format8bppIndexed ? PixelFormat.Format32bppArgb : targetFormat;
+            var copy = new Bitmap(source.Width, source.Height, pixelFormat);
+            copy.SetResolution(source.HorizontalResolution, source.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(copy))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.PageUnit = GraphicsUnit.Pixel;
+
+                graphics.Clear(Color.Transparent);
+                graphics.DrawImageUnscaled(source, 0, 0);
+            }
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Copies the metadata from the source image to the target.
+        /// </summary>
+        /// <param name="source">The source image.</param>
+        /// <param name="target">The target image.</param>
+        public static void CopyMetadata(Image source, Image target)
+        {
+            foreach (PropertyItem item in source.PropertyItems)
+            {
+                try
+                {
+                    target.SetPropertyItem(item);
+                }
+                catch
+                {
+                    // Handle issue https://github.com/JimBobSquarePants/ImageProcessor/issues/571
+                    // SetPropertyItem throws a native error if the property item is invalid for that format
+                    // but there's no way to handle individual formats so we do a dumb try...catch...
+                }
+            }
+        }
+
         public static void DrawRectangleProper(this Graphics g, Pen pen, Rectangle rect)
         {
             if (pen.Width == 1)
@@ -63,14 +115,22 @@ namespace ImageViewer.Helpers
             }
         }
 
-
+        /// <summary>
+        /// Reads an image format from the identifier bytes in the file.
+        /// </summary>
+        /// <param name="path">The path to the file.</param>
+        /// <returns></returns>
+        public static ImgFormat GetImageFormat(string path)
+        {
+            return ImageBinarayReader.GetImageFormat(path);
+        }
 
         /// <summary>
         /// Gets the image format from the file extension.
         /// </summary>
         /// <param name="filePath"> The path to the file. </param>
         /// <returns> Enum type representing the image format. </returns>
-        public static ImgFormat GetImageFormat(string filePath)
+        public static ImgFormat GetImageFormatFromPath(string filePath)
         {
             string ext = Helper.GetFilenameExtension(filePath);
 
@@ -122,7 +182,7 @@ namespace ImageViewer.Helpers
 
             try
             {
-                using (WebP webp = new WebP())
+                using (Webp webp = new Webp())
                 {
                     byte[] rawWebP;
 
@@ -186,7 +246,7 @@ namespace ImageViewer.Helpers
                 wrm.Save(filePath);
                 return true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 e.ShowError();
             }
@@ -210,7 +270,7 @@ namespace ImageViewer.Helpers
             Program.mainForm.UseWaitCursor = true;
             try
             {
-                switch (GetImageFormat(filePath))
+                switch (GetImageFormatFromPath(filePath))
                 {
                     default:
                     case ImgFormat.png:
@@ -280,7 +340,7 @@ namespace ImageViewer.Helpers
                 {
                     sfd.FileName = Path.GetFileName(filePath);
 
-                    ImgFormat fmt = GetImageFormat(filePath);
+                    ImgFormat fmt = GetImageFormatFromPath(filePath);
 
                     if (fmt != ImgFormat.nil)
                     {
@@ -341,10 +401,10 @@ namespace ImageViewer.Helpers
 
             try
             {
-                using (WebP webp = new WebP())
+                using (Webp webp = new Webp())
                 {
                     Bitmap image = webp.Load(path);
-                    image.Tag = GetImageFormat(path);
+                    image.Tag = ImgFormat.webp;
                     return image;
                 }
             }
@@ -368,7 +428,7 @@ namespace ImageViewer.Helpers
             {
                 return WORM.FromFileAsBitmap(path);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 e.ShowError();
             }
@@ -388,7 +448,12 @@ namespace ImageViewer.Helpers
 
             try
             {
-                switch (GetImageFormat(path))
+                ImgFormat fmt = GetImageFormat(path);
+
+                if (fmt == ImgFormat.nil)
+                    fmt = GetImageFormatFromPath(path);
+
+                switch (fmt)
                 {
                     case ImgFormat.png:
                     case ImgFormat.bmp:
@@ -397,7 +462,7 @@ namespace ImageViewer.Helpers
                     case ImgFormat.tif:
                     default:
                         Image image = Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
-                        image.Tag = GetImageFormat(path);
+                        image.Tag = fmt;
                         return (Bitmap)image;
 
                     case ImgFormat.webp:
@@ -406,7 +471,7 @@ namespace ImageViewer.Helpers
                     case ImgFormat.wrm:
                         return LoadWrm(path);
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -455,17 +520,21 @@ namespace ImageViewer.Helpers
         {
             // https://stackoverflow.com/a/6336453
 
-            if ((ImgFormat)image.Tag == ImgFormat.wrm)
-                return WORM.MIME_TYPE;
-            if ((ImgFormat)image.Tag == ImgFormat.webp)
-                    return WebP.MIME_TYPE;
-
-            Guid imgguid = image.RawFormat.Guid;
-            foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
+            try
             {
-                if (codec.FormatID == imgguid)
-                    return codec.MimeType;
+                if ((ImgFormat)image.Tag == ImgFormat.wrm)
+                    return WORM.MIME_TYPE;
+                if ((ImgFormat)image.Tag == ImgFormat.webp)
+                    return Webp.MIME_TYPE;
+
+                Guid imgguid = image.RawFormat.Guid;
+                foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())
+                {
+                    if (codec.FormatID == imgguid)
+                        return codec.MimeType;
+                }
             }
+            catch { }
             return "image/unknown";
         }
 
@@ -481,7 +550,7 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
                 return Size.Empty;
 
-            Size s = ImageDimensionReader.GetDimensions(imagePath);
+            Size s = ImageBinarayReader.GetDimensions(imagePath);
             if (s != Size.Empty)
                 return s;
 
@@ -555,7 +624,7 @@ namespace ImageViewer.Helpers
         private static Bitmap CreateCheckerPattern(int cellSize, Color color1, Color color2)
         {
             Bitmap resultBMP = new Bitmap(cellSize << 1, cellSize << 1, PixelFormat.Format24bppRgb);
-            
+
             using (Graphics g = Graphics.FromImage(resultBMP))
             {
                 using (Brush brush = new SolidBrush(color1))
@@ -758,17 +827,6 @@ namespace ImageViewer.Helpers
 
 
 
-        /// <summary>
-        /// Convert the colors of every frame of a Gif object to greyscale.
-        /// </summary>
-        /// <param name="g"> The gif object to convert. </param>
-        public static void GrayscaleGif(Gif g)
-        {
-            for (int i = 0; i < g.Count; i++)
-            {
-                GrayscaleBitmap((Bitmap)g[i]);
-            }
-        }
 
         /// <summary>
         /// Convert the colors of every frame of a Gif object  with animated frames to greyscale.
@@ -779,11 +837,18 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                using (Gif g = new Gif(bmp))
+                GifDecoder d = new GifDecoder(bmp);
+                GifEncoder e = new GifEncoder(d.LoopCount);
+
+                for (int i = 0; i < d.FrameCount; i++)
                 {
-                    GrayscaleGif(g);
-                    return g.ToBitmap();
+                    using (GifFrame frame = d.GetFrame(i))
+                    {
+                        GrayscaleBitmapSafe(frame.Image);
+                        e.EncodeFrame(frame);
+                    }
                 }
+                return (Bitmap)e.Encode();
             }
             catch
             {
@@ -792,18 +857,6 @@ namespace ImageViewer.Helpers
         }
 
 
-
-        /// <summary>
-        /// Invert the colors of every frame of a Gif object.
-        /// </summary>
-        /// <param name="g"> The gif object to invert. </param>
-        public static void InvertGif(Gif g)
-        {
-            for (int i = 0; i < g.Count; i++)
-            {
-                InvertBitmapSafe((Bitmap)g[i]);
-            }
-        }
 
         /// <summary>
         /// Invert the colors of every frame of a bitmap with animated frames.
@@ -814,11 +867,18 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                using (Gif g = new Gif(bmp))
+                GifDecoder d = new GifDecoder(bmp);
+                GifEncoder e = new GifEncoder(d.LoopCount);
+
+                for (int i = 0; i < d.FrameCount; i++)
                 {
-                    InvertGif(g);
-                    return g.ToBitmap();
+                    using (GifFrame frame = d.GetFrame(i))
+                    {
+                        InvertBitmapSafe(frame.Image);
+                        e.EncodeFrame(frame);
+                    }
                 }
+                return (Bitmap)e.Encode();
             }
             catch
             {
@@ -826,6 +886,20 @@ namespace ImageViewer.Helpers
             }
         }
 
+
+
+
+
+
+        /// <summary>
+        /// Inverts the colors of a bitmap.
+        /// </summary>
+        /// <param name="image"> The bitmap to invert </param>
+        /// <returns> true if the bitmap was inverted, else false </returns>
+        public static bool InvertBitmapSafe(Image image)
+        {
+            return InvertBitmapSafe((Bitmap)image);
+        }
 
 
         /// <summary>
@@ -843,7 +917,7 @@ namespace ImageViewer.Helpers
                 InvertBitmap(image);
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }
@@ -885,6 +959,18 @@ namespace ImageViewer.Helpers
 
 
 
+
+        /// <summary>
+        /// Convert a bitmap to greyscale.
+        /// </summary>
+        /// <param name="image"> The bitmap to convert </param>
+        /// <returns> true if the bitmap was converted to greyscale, else false </returns>
+        public static bool GrayscaleBitmapSafe(Image image)
+        {
+            return GrayscaleBitmapSafe((Bitmap)image);
+        }
+
+
         /// <summary>
         /// Convert a bitmap to greyscale.
         /// </summary>
@@ -900,7 +986,7 @@ namespace ImageViewer.Helpers
                 GrayscaleBitmap(image);
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }
@@ -1009,354 +1095,6 @@ namespace ImageViewer.Helpers
             srcImg.UnlockBits(dstBD);
         }
 
-        
-        /*public static unsafe void ConvertWORM(Bitmap srcImg)
-        {
-            BitmapData dstBD = srcImg.LockBits(new Rectangle(0, 0, srcImg.Width, srcImg.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
 
-            byte* pDst = (byte*)(void*)dstBD.Scan0;
-
-            for (int i = 0; i < dstBD.Stride * dstBD.Height; i += 4)
-            {
-                int Decimal = ColorHelper.ColorToDecimal(*(pDst + 2), *(pDst + 1), *(pDst));
-                ushort StorageValue = (ushort)Math.Round(ushort.MaxValue * (Decimal / 16777215d));
-                Color c = ColorHelper.DecimalToColor((int)(StorageValue * 256.00389d));
-
-                HSB s = new HSB(c);
-                s.Hue360 = Math.Abs(360 - (s.Hue360 + 60));
-                c = s.ToColor();
-                *pDst = (byte)c.B; // invert B
-                pDst++;
-                *pDst = (byte)c.G; // invert G
-                pDst++;
-                *pDst = (byte)c.R; // invert R
-                pDst += 2; // skip alpha
-
-                //*pDst = (byte)(255 - *pDst); // invert A
-                //pDst++;						 
-            }
-            srcImg.UnlockBits(dstBD);
-        }*/
-
-
-        /// <summary>
-        /// A class used for reading the width and height of an image file using their headers.
-        /// </summary>
-        // Mod of https://stackoverflow.com/a/60667939
-        public static class ImageDimensionReader
-        {
-            const byte MAX_MAGIC_BYTE_LENGTH = 8;
-
-            readonly static Dictionary<byte[], Func<BinaryReader, Size>> imageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, Size>>()
-        {
-            { new byte[] { 0x42, 0x4D }, DecodeBitmap },
-            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif },
-            { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, DecodeGif },
-            { new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, DecodePng },
-            { new byte[] { 0xff, 0xd8 }, DecodeJfif },
-            { new byte[] { 0x52, 0x49, 0x46, 0x46 }, DecodeWebP },
-            { new byte[] { 0x49, 0x49, 0x2A },  DecodeTiffLE }, // little endian
-            { new byte[] { 0x4D, 0x4D, 0x00, 0x2A },  DecodeTiffBE }  // big endian
-        };
-
-            /// <summary>        
-            /// Gets the dimensions of an image.        
-            /// </summary>        
-            /// <param name="path">The path of the image to get the dimensions of.</param>        
-            /// <returns>The dimensions of the specified image.</returns>        
-            /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>            
-            public static Size GetDimensions(BinaryReader binaryReader)
-            {
-                byte[] magicBytes = new byte[MAX_MAGIC_BYTE_LENGTH];
-
-                for (int i = 0; i < MAX_MAGIC_BYTE_LENGTH; i += 1)
-                {
-                    magicBytes[i] = binaryReader.ReadByte();
-
-                    foreach (KeyValuePair<byte[], Func<BinaryReader, Size>> kvPair in imageFormatDecoders)
-                    {
-                        if (StartsWith(magicBytes, kvPair.Key))
-                        {
-                            return kvPair.Value(binaryReader);
-                        }
-                    }
-                }
-
-                return Size.Empty;
-            }
-
-            /// <summary>
-            /// Gets the dimensions of an image.
-            /// </summary>
-            /// <param name="path">The path of the image to get the dimensions of.</param>
-            /// <returns>The dimensions of the specified image.</returns>
-            /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
-            public static Size GetDimensions(string path)
-            {
-                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (BinaryReader binaryReader = new BinaryReader(fileStream))
-                {
-                    try
-                    {
-                        return GetDimensions(binaryReader);
-                    }
-                    catch
-                    {
-                        return Size.Empty;
-                    }
-                }
-            }
-
-
-            private static Size DecodeTiffLE(BinaryReader binaryReader)
-            {
-                if (binaryReader.ReadByte() != 0)
-                    return Size.Empty;
-
-                int idfStart = ReadInt32LE(binaryReader);
-
-                binaryReader.BaseStream.Seek(idfStart, SeekOrigin.Begin);
-
-                int numberOfIDF = ReadInt16LE(binaryReader);
-
-                int width = -1;
-                int height = -1;
-                for (int i = 0; i < numberOfIDF; i++)
-                {
-                    short field = ReadInt16LE(binaryReader);
-
-                    switch (field)
-                    {
-                        // https://www.awaresystems.be/imaging/tiff/tifftags/baseline.html
-                        default:
-                            binaryReader.ReadBytes(10);
-                            break;
-                        case 256: // image width
-                            binaryReader.ReadBytes(6);
-                            width = ReadInt32LE(binaryReader);
-                            break;
-                        case 257: // image length
-                            binaryReader.ReadBytes(6);
-                            height = ReadInt32LE(binaryReader);
-                            break;
-                    }
-                    if (width != -1 && height != -1)
-                        return new Size(width, height);
-                }
-                return Size.Empty;
-            }
-
-            private static Size DecodeTiffBE(BinaryReader binaryReader)
-            {
-                int idfStart = ReadInt32BE(binaryReader);
-
-                binaryReader.BaseStream.Seek(idfStart, SeekOrigin.Begin);
-
-                int numberOfIDF = ReadInt16BE(binaryReader);
-
-                int width = -1;
-                int height = -1;
-                for (int i = 0; i < numberOfIDF; i++)
-                {
-                    short field = ReadInt16BE(binaryReader);
-
-                    switch (field)
-                    {
-                        // https://www.awaresystems.be/imaging/tiff/tifftags/baseline.html
-                        default:
-                            binaryReader.ReadBytes(10);
-                            break;
-                        case 256: // image width
-                            binaryReader.ReadBytes(6);
-                            width = ReadInt32BE(binaryReader);
-                            break;
-                        case 257: // image length
-                            binaryReader.ReadBytes(6);
-                            height = ReadInt32BE(binaryReader);
-                            break;
-                    }
-                    if (width != -1 && height != -1)
-                        return new Size(width, height);
-                }
-                return Size.Empty;
-            }
-
-            private static Size DecodeBitmap(BinaryReader binaryReader)
-            {
-                binaryReader.ReadBytes(16);
-                int width = binaryReader.ReadInt32();
-                int height = binaryReader.ReadInt32();
-                return new Size(width, height);
-            }
-
-            private static Size DecodeGif(BinaryReader binaryReader)
-            {
-                int width = binaryReader.ReadInt16();
-                int height = binaryReader.ReadInt16();
-                return new Size(width, height);
-            }
-
-            private static Size DecodePng(BinaryReader binaryReader)
-            {
-                binaryReader.ReadBytes(8);
-                int width = ReadInt32BE(binaryReader);
-                int height = ReadInt32BE(binaryReader);
-                return new Size(width, height);
-            }
-
-            private static Size DecodeJfif(BinaryReader binaryReader)
-            {
-                while (binaryReader.ReadByte() == 0xff)
-                {
-                    byte marker = binaryReader.ReadByte();
-                    short chunkLength = ReadInt16BE(binaryReader);
-                    if (marker == 0xc0 || marker == 0xc2) // c2: progressive
-                    {
-                        binaryReader.ReadByte();
-                        int height = ReadInt16BE(binaryReader);
-                        int width = ReadInt16BE(binaryReader);
-                        return new Size(width, height);
-                    }
-
-                    if (chunkLength < 0)
-                    {
-                        ushort uchunkLength = (ushort)chunkLength;
-                        binaryReader.ReadBytes(uchunkLength - 2);
-                    }
-                    else
-                    {
-                        binaryReader.ReadBytes(chunkLength - 2);
-                    }
-                }
-
-                return Size.Empty;
-            }
-
-            private static Size DecodeWebP(BinaryReader binaryReader)
-            {
-                // 'RIFF' already read   
-
-                binaryReader.ReadBytes(4);
-
-                if (ReadInt32LE(binaryReader) != 1346520407)// 1346520407 : 'WEBP'
-                    return Size.Empty;
-
-                switch (ReadInt32LE(binaryReader))
-                {
-                    case 540561494: // 'VP8 ' : lossy
-                        // skip stuff we don't need
-                        binaryReader.ReadBytes(7);
-
-                        if (ReadInt24LE(binaryReader) != 2752925) // invalid webp file
-                            return Size.Empty;
-
-                        return new Size(ReadInt16LE(binaryReader), ReadInt16LE(binaryReader));
-
-                    case 1278758998:// 'VP8L' : lossless
-                        // skip stuff we don't need
-                        binaryReader.ReadBytes(4);
-
-                        if (binaryReader.ReadByte() != 47)// 0x2f : 47 1 byte signature
-                            return Size.Empty;
-
-                        byte[] b = binaryReader.ReadBytes(4);
-
-                        return new Size(
-                            1 + (((b[1] & 0x3F) << 8) | b[0]),
-                            1 + ((b[3] << 10) | (b[2] << 2) | ((b[1] & 0xC0) >> 6)));
-                    // if something breaks put in the '& 0xF' but & oxf should do nothing in theory
-                    // because inclusive & with 1111 will leave the binary untouched
-                    //  1 + (((wh[3] & 0xF) << 10) | (wh[2] << 2) | ((wh[1] & 0xC0) >> 6))
-
-                    case 1480085590:// 'VP8X' : extended
-                        // skip stuff we don't need
-                        binaryReader.ReadBytes(8);
-                        return new Size(1 + ReadInt24LE(binaryReader), 1 + ReadInt24LE(binaryReader));
-                }
-
-                return Size.Empty;
-            }
-
-            private static bool StartsWith(byte[] thisBytes, byte[] thatBytes)
-            {
-                for (int i = 0; i < thatBytes.Length; i += 1)
-                    if (thisBytes[i] != thatBytes[i])
-                        return false;
-
-                return true;
-            }
-
-            #region Endians
-
-            /// <summary>
-            /// Reads a 16 bit int from the stream in the Little Endian format.
-            /// </summary>
-            /// <param name="binaryReader">The binary reader to read</param>
-            /// <returns></returns>
-            private static short ReadInt16LE(BinaryReader binaryReader)
-            {
-                byte[] bytes = binaryReader.ReadBytes(2);
-                return (short)((bytes[0]) | (bytes[1] << 8));
-            }
-
-            /// <summary>
-            /// Reads a 24 bit int from the stream in the Little Endian format.
-            /// </summary>
-            /// <param name="binaryReader">The binary reader to read</param>
-            /// <returns></returns>
-            private static int ReadInt24LE(BinaryReader binaryReader)
-            {
-                byte[] bytes = binaryReader.ReadBytes(3);
-                return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16));
-            }
-
-            /// <summary>
-            /// Reads a 32 bit int from the stream in the Little Endian format.
-            /// </summary>
-            /// <param name="binaryReader">The binary reader to read</param>
-            /// <returns></returns>
-            private static int ReadInt32LE(BinaryReader binaryReader)
-            {
-                byte[] bytes = binaryReader.ReadBytes(4);
-                return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24));
-            }
-
-
-
-            /// <summary>
-            /// Reads a 32 bit int from the stream in the Big Endian format.
-            /// </summary>
-            /// <param name="binaryReader">The binary reader to read</param>
-            /// <returns></returns>
-            private static int ReadInt32BE(BinaryReader binaryReader)
-            {
-                byte[] bytes = binaryReader.ReadBytes(4);
-                return ((bytes[3]) | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24));
-            }
-
-            /// <summary>
-            /// Reads a 24 bit int from the stream in the Big Endian format.
-            /// </summary>
-            /// <param name="binaryReader">The binary reader to read</param>
-            /// <returns></returns>
-            private static int ReadInt24BE(BinaryReader binaryReader)
-            {
-                byte[] bytes = binaryReader.ReadBytes(3);
-                return ((bytes[2]) | (bytes[1] << 8) | (bytes[0] << 16));
-            }
-
-            /// <summary>
-            /// Reads a 16 bit int from the stream in the Big Endian format.
-            /// </summary>
-            /// <param name="binaryReader">The binary reader to read</param>
-            /// <returns></returns>
-            private static short ReadInt16BE(BinaryReader binaryReader)
-            {
-                byte[] bytes = binaryReader.ReadBytes(2);
-                return (short)((bytes[1]) | (bytes[0] << 8));
-            }
-
-            #endregion
-        }
     }
 }

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing.Drawing2D;
-using System.Drawing;
-using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System.IO;
+﻿using System.Drawing;
+
+
 namespace ImageViewer.Helpers
 {
     public struct COLOR
@@ -110,6 +103,26 @@ namespace ImageViewer.Helpers
         public static implicit operator Color(COLOR color)
         {
             return Color.FromArgb(color.a, color.ARGB.R, color.ARGB.G, color.ARGB.B);
+        }
+
+        public static implicit operator ARGB(COLOR color)
+        {
+            return color.ARGB;
+        }
+
+        public static implicit operator HSB(COLOR color)
+        {
+            return color.HSB;
+        }
+
+        public static implicit operator HSL(COLOR color)
+        {
+            return color.HSL;
+        }
+
+        public static implicit operator CMYK(COLOR color)
+        {
+            return color.CMYK;
         }
 
         public string ToHex(ColorFormat format = ColorFormat.RGB)

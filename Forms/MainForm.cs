@@ -961,7 +961,7 @@ namespace ImageViewer
                     int totalFrames = 0;
                     int framesSaved = 0;
 
-                    using (Gif g = new Gif((Bitmap)currentPage.Image))
+                    using (Giff g = new Giff((Bitmap)currentPage.Image))
                     {
                         totalFrames = g.Count;
                         for (int i = 0; i < g.Count; i++)

@@ -62,18 +62,7 @@ namespace ImageViewer.Helpers
         HSL
     }
 
-    public enum ImgFormat
-    {
-        png,
-        jpg,
-        tif,
-        bmp,
-        gif,
-        wrm,
-        webp,
-        [Browsable(false)]
-        nil
-    }
+    
 
     public enum ColorSpace
     {

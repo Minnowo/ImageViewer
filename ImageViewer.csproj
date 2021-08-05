@@ -109,13 +109,13 @@
     <Compile Include="Forms\DitherForm.Designer.cs">
       <DependentUpon>DitherForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\Color\ARGB.cs" />
-    <Compile Include="Helpers\Color\CMYK.cs" />
+    <Compile Include="Helpers\Color\Formats\ARGB.cs" />
+    <Compile Include="Helpers\Color\Formats\CMYK.cs" />
     <Compile Include="Helpers\Color\ColorConverter.cs" />
     <Compile Include="Helpers\Color\ColorEditor.cs" />
-    <Compile Include="Helpers\Color\HSB.cs" />
-    <Compile Include="Helpers\Color\HSL.cs" />
-    <Compile Include="Helpers\Color\COLOR.cs" />
+    <Compile Include="Helpers\Color\Formats\HSB.cs" />
+    <Compile Include="Helpers\Color\Formats\HSL.cs" />
+    <Compile Include="Helpers\Color\Formats\COLOR.cs" />
     <Compile Include="Helpers\DitherHelper.cs" />
     <Compile Include="Helpers\DitherWorkerData.cs" />
     <Compile Include="Forms\AskForNumericValueForm.cs">
@@ -201,6 +201,17 @@
     <Compile Include="Forms\ImagePropertiesForm.Designer.cs">
       <DependentUpon>ImagePropertiesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ImageHelper\ImageBinarayReader.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\ExifPropertyTag.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\Gif.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifDecoder.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifEncoder.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifFrame.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Enums.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\LibWebpStructs.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\UnsafeNativeMethods.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Webp.cs" />
+    <Compile Include="Helpers\ImageHelper\ImgFormat.cs" />
     <Compile Include="Helpers\Transforms\IPixelTransform.cs" />
     <Compile Include="Helpers\Transforms\MonochromePixelTransform.cs" />
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform.cs" />
@@ -210,9 +221,9 @@
     <Compile Include="Helpers\Transforms\UserCustomColorPaletteTransform.cs" />
     <Compile Include="Helpers\UndoRedo\BitmapUndo.cs" />
     <Compile Include="Helpers\UndoRedo\IUndoable.cs" />
-    <Compile Include="Helpers\WORM.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\WORM.cs" />
     <Compile Include="Misc\FolderWatcher.cs" />
-    <Compile Include="Helpers\Gif.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Giff.cs" />
     <Compile Include="Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,7 +244,7 @@
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\FolderSelectDialog.cs" />
     <Compile Include="Helpers\Helper.cs" />
-    <Compile Include="Helpers\ImageHelper.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageHelper.cs" />
     <Compile Include="Helpers\MathHelper.cs" />
     <Compile Include="Helpers\PathHelper.cs" />
     <Compile Include="Native\NativeMethods.cs" />
@@ -246,7 +257,6 @@
     <Compile Include="Controls\_TabPage.Designer.cs">
       <DependentUpon>_TabPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\WebPHelper.cs" />
     <Compile Include="Structs\WebPQuality.cs" />
     <EmbeddedResource Include="Controls\ColorDisplay.resx">
       <DependentUpon>ColorDisplay.cs</DependentUpon>
@@ -326,5 +336,6 @@
   <ItemGroup>
     <Content Include="Resources\imview.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -25,23 +25,42 @@ namespace ImageViewer.Helpers
     //
     public class WORM : IDisposable
     {
-        public const int MAX_SIZE = ushort.MaxValue;
+        public const int MAX_SIZE = 65535; 
         public const string MIME_TYPE = "image/worm";
 
-        public readonly byte[] WRM_IDENTIFIER = new byte[5] { 0x57, 0x4F, 0x52, 0x4D, 0x2E };
-        public readonly byte[] DWRM_IDENTIFIER = new byte[5] { 0x44, 0x57, 0x4F, 0x52, 0x4D };
+        /// <summary>
+        /// The leading bytes to identify the wrm format.
+        /// </summary>
+        public static readonly byte[] WRM_IDENTIFIER = new byte[5] { 0x57, 0x4F, 0x52, 0x4D, 0x2E };
 
+        /// <summary>
+        /// The leading bytes to identify the dwrm format.
+        /// </summary>
+        public static readonly byte[] DWRM_IDENTIFIER = new byte[5] { 0x44, 0x57, 0x4F, 0x52, 0x4D };
+
+        /// <summary>
+        /// The width of the image, cannot be greater than 65535.
+        /// </summary>
         public ushort Width { get; private set; }
 
+        /// <summary>
+        /// The height of the image, cannot be greater than 65535.
+        /// </summary>
         public ushort Height { get; private set; }
 
+        /// <summary>
+        /// The bitmap object.
+        /// </summary>
         public Bitmap Image { get; private set; }
 
+        /// <summary>
+        /// The format of the WORM image, either wrm or dwrm, if its nil the image is invalid.
+        /// </summary>
         public WormFormat WormFormat { get; set; }
 
         private const double MAX_DEC = 16777215d;
         private const double MAX_DEC_TO_USHORT = 256.00389d;
-        private const byte HUE_OFFSET = 60; // 60
+        private const byte HUE_OFFSET = 60;
 
         public WORM()
         {
@@ -68,6 +87,53 @@ namespace ImageViewer.Helpers
         public static Bitmap FromFileAsBitmap(string file)
         {
             return WORM.FromFile(file).Image;
+        }
+
+
+        /// <summary>
+        /// Gets the dimensions of a WORM image from a file.
+        /// </summary>
+        /// <param name="path">The path to the image.</param>
+        /// <returns>The width and height of the image.</returns>
+        public static Size GetDimensionsFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return Size.Empty;
+
+            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (BinaryReader binaryReader = new BinaryReader(fileStream))
+            {
+                return GetDimensions(binaryReader);
+            }
+        }
+
+        /// <summary>
+        /// Gets the dimensions of a WORM image from a binary reader.
+        /// <para>If the Identifier has already been read call this with False as the second argument.</para>
+        /// </summary>
+        /// <param name="binaryReader">The binary reader to read from.</param>
+        /// <param name="checkIdentifier">Should the WRM_IDENTIFIER or DWRM_IDENTIFIER be read from the stream.</param>
+        /// <returns>The width and height of the image.</returns>
+        public static Size GetDimensions(BinaryReader binaryReader, bool checkIdentifier = true)
+        {
+            try
+            {
+                if (checkIdentifier)
+                {
+                    WormFormat format = GetWormFormat(binaryReader);
+
+                    if (format == WormFormat.nil)
+                        return Size.Empty;
+                }
+
+                int Width = binaryReader.ReadUInt16();
+                int Height = binaryReader.ReadUInt16();
+                return new Size(Width, Height);
+            }
+            catch 
+            { 
+            }
+            return Size.Empty;
         }
 
         /// <summary>
@@ -182,7 +248,7 @@ namespace ImageViewer.Helpers
                         binaryWriter.Write(DWRM_IDENTIFIER, 0, DWRM_IDENTIFIER.Length);
                         break;
                 }
-                    
+                
                 binaryWriter.Write(Width);
                 binaryWriter.Write(Height);
 
@@ -224,6 +290,23 @@ namespace ImageViewer.Helpers
         }
 
         /// <summary>
+        /// Reads the first 5 bytes from the reader to identify a WORM image.
+        /// </summary>
+        /// <param name="binaryReader">The reader.</param>
+        /// <returns>The format of a worm image. nil for invalid</returns>
+        public static WormFormat GetWormFormat(BinaryReader binaryReader)
+        {
+            byte[] identifier = binaryReader.ReadBytes(5);
+
+            if (StartsWith(identifier, WRM_IDENTIFIER))
+                return WormFormat.wrm;
+            if (StartsWith(identifier, DWRM_IDENTIFIER))
+                return WormFormat.dwrm;
+
+            return WormFormat.nil;
+        }
+
+        /// <summary>
         /// Dispose of the image.
         /// </summary>
         public void Dispose()
@@ -235,10 +318,11 @@ namespace ImageViewer.Helpers
             Height = 0;
         }
 
+
+
         private Color ReadWORMPixel(int dec)
         {
-            Color c = DecimalToColor((int)(dec));
-            //Color c = DecimalToColor((int)(dec * MAX_DEC_TO_USHORT));
+            Color c = DecimalToColor(dec);
 
             float Hue;
             float Sat;
@@ -307,18 +391,6 @@ namespace ImageViewer.Helpers
                     return HSLToColor(Hue, Sat, Lig);
             }
 
-        }
-
-        private WormFormat GetWormFormat(BinaryReader binaryReader)
-        {
-            byte[] identifier = binaryReader.ReadBytes(5);
-
-            if (StartsWith(identifier, WRM_IDENTIFIER))
-                return WormFormat.wrm;
-            if (StartsWith(identifier, DWRM_IDENTIFIER))
-                return WormFormat.dwrm;
-
-            return WormFormat.nil;
         }
 
         private static bool StartsWith(byte[] thisBytes, byte[] thatBytes)
