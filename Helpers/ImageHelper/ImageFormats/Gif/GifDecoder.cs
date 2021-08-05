@@ -25,7 +25,8 @@ namespace ImageViewer.Helpers
         public GifDecoder(Image image)
         {
             this.image = image;
-            
+            this.ActiveFrameIndex = 0;
+
             if (ImageAnimator.CanAnimate(image))
             {
                 this.IsAnimated = true;
@@ -71,6 +72,11 @@ namespace ImageViewer.Helpers
         public int FrameCount { get; }
 
         /// <summary>
+        /// Gets the active frame index.
+        /// </summary>
+        public int ActiveFrameIndex { get; private set; }
+
+        /// <summary>
         /// Gets the frame at the specified index.
         /// <remarks>
         /// Image frames are returned in <see cref="PixelFormat.Format32bppArgb"/> format to allow processing
@@ -83,6 +89,9 @@ namespace ImageViewer.Helpers
         /// </returns>
         public GifFrame GetFrame(int index)
         {
+            if (index > FrameCount - 1)
+                return null;
+
             // Convert each 4-byte chunk into an integer.
             // GDI returns a single array with all delays, while Mono returns a different array for each frame.
             TimeSpan delay = TimeSpan.FromMilliseconds(BitConverter.ToInt32(this.times, (4 * index) % this.times.Length) * 10);
@@ -94,8 +103,28 @@ namespace ImageViewer.Helpers
 
             // Reset the image
             this.image.SelectActiveFrame(FrameDimension.Time, 0);
+            this.ActiveFrameIndex = 0;
 
             return frame;
+        }
+
+
+        /// <summary>
+        /// Sets the active frame at the specific index.
+        /// </summary>
+        /// <param name="index">The index of the frame.</param>
+        public void SetFrame(int index)
+        {
+            if (index > FrameCount - 1)
+                return;
+
+            // Convert each 4-byte chunk into an integer.
+            // GDI returns a single array with all delays, while Mono returns a different array for each frame.
+            TimeSpan delay = TimeSpan.FromMilliseconds(BitConverter.ToInt32(this.times, (4 * index) % this.times.Length) * 10);
+
+            // Find the frame
+            this.image.SelectActiveFrame(FrameDimension.Time, index);
+            this.ActiveFrameIndex = index;
         }
     }
 }

@@ -109,6 +109,8 @@ namespace Cyotek.Windows.Forms
 
         private static readonly object _eventZoomed = new object();
 
+        private static readonly object _eventPauseChanged = new object();
+
         private static readonly object _eventZoomLevelsChanged = new object();
 
         public const int MaxZoom = 20000;
@@ -670,6 +672,16 @@ namespace Cyotek.Windows.Forms
         }
 
         /// <summary>
+        /// Occurs when then a zoom action is performed.
+        /// </summary>
+        [Category("Action")]
+        public event EventHandler AnimationPauseChanged
+        {
+            add { this.Events.AddHandler(_eventPauseChanged, value); }
+            remove { this.Events.RemoveHandler(_eventPauseChanged, value); }
+        }
+
+        /// <summary>
         ///   Occurs when the ZoomLevels property is changed
         /// </summary>
         [Category("Property Changed")]
@@ -732,6 +744,14 @@ namespace Cyotek.Windows.Forms
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets a vlaue indicating if the current animation is playing.
+        /// </summary>
+        public bool AnimationPaused { get; set; } = false;
+
+        /// <summary>
+        /// Returns true if the selection box is not empty, else false.
+        /// </summary>
         public bool SelectionBoxVisible
         {
             get
@@ -3094,7 +3114,7 @@ namespace Cyotek.Windows.Forms
             try
             {
                 // Animation. Thanks to teamalpha5441 for the contribution
-                if (this.IsAnimating && !this.DesignMode)
+                if (this.IsAnimating && !this.DesignMode && !AnimationPaused)
                 {
                     ImageAnimator.UpdateFrames(this.Image);
                 }
@@ -4612,6 +4632,18 @@ namespace Cyotek.Windows.Forms
 
             switch (e.KeyData)
             {
+                case Keys.Space:
+                    if (this.HasAnimationFrames)
+                    {
+                        AnimationPaused = !AnimationPaused;
+
+                        EventHandler handler;
+
+                        handler = (EventHandler)this.Events[_eventPauseChanged];
+
+                        handler?.Invoke(this, EventArgs.Empty);
+                    }
+                    break;
                 case Keys.Home:
                     if (this.AllowZoom)
                     {

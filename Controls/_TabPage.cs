@@ -29,8 +29,17 @@ namespace ImageViewer.Controls
         public delegate void ImageChangedEvent();
         public static event ImageChangedEvent ImageChanged;
 
-        public BitmapUndo BitmapChangeTracker;
+        
 
+        /// <summary>
+        /// The class responsible for keeping track of changes to the image, <see cref="BitmapUndo.TrackChange(BitmapChanges)"/> 
+        /// should be called before making changes to the image.
+        /// </summary>
+        public BitmapUndo BitmapChangeTracker { get; private set; }
+
+        /// <summary>
+        /// The <see cref="FileInfo"/> of the image assigned to this page.
+        /// </summary>
         public FileInfo ImagePath
         {
             get
@@ -53,7 +62,26 @@ namespace ImageViewer.Controls
         }
         private FileInfo imagePath;
 
+        /// <summary>
+        /// Does the <see cref="ImagePath"/> exist.
+        /// </summary>
+        public bool PathExists
+        {
+            get
+            {
+                return File.Exists(imagePath.FullName);
+            }
+        }
+
+        /// <summary>
+        /// Set true after the image is loaded, set false after unloaded.
+        /// </summary>
         public bool ImageShown { get; private set; } = false;
+
+        /// <summary>
+        /// Is this page being displayed to the user. 
+        /// When set false, the image is unloaded and disposed.
+        /// </summary>
         public bool IsCurrentPage
         {
             get
@@ -71,13 +99,12 @@ namespace ImageViewer.Controls
             }
         }
         private bool isCurrentPage = false;
-        public bool PathExists
-        {
-            get
-            {
-                return File.Exists(imagePath.FullName);
-            }
-        }
+        
+
+        /// <summary>
+        /// Prevents the image from being loaded if requested, also updates the control which checks if it should be loading the image.
+        /// Should be set false if the image should be loaded.
+        /// </summary>
         public bool PreventLoadImage
         {
             get
@@ -92,18 +119,24 @@ namespace ImageViewer.Controls
                 // the image on the OnMouseDown event 
                 // rather than OnTabChanged event so that we can close the
                 // tab quickly if they are hitting the close button instead of just selecting the tab
-                if (!value && isCurrentPage && !ImageShown)
-                {
-                    LoadImage();
-                }                
+                LoadImageSafe(false);
             }
         }
         private bool preventLoadImage = false;
-        private bool imageCached = false;
-        private bool changingImagePath = false;
 
+        
 
+        /// <summary>
+        /// The <see cref="ImageBoxEx"/> responsible for displaying the image. Should be used to set the image via 
+        /// "<see cref="ImageBox.Image"/> = <see cref="BitmapUndo.CurrentBitmap"/>", 
+        /// AFTER calling <see cref="BitmapUndo.ReplaceBitmap(Bitmap)"/> or <see cref="BitmapUndo.UpdateBitmapReferance(Bitmap)"/> 
+        /// depending on the situation.
+        /// </summary>
         public ImageBoxEx ibMain { get; private set; }
+
+        /// <summary>
+        /// Gets the visible image from the imagebox.
+        /// </summary>
         public Image ScaledImage
         {
             get
@@ -111,6 +144,10 @@ namespace ImageViewer.Controls
                 return ibMain.VisibleImage;
             }
         }
+
+        /// <summary>
+        /// Gets the image from the imagebox.
+        /// </summary>
         public Image Image
         {
             get
@@ -118,7 +155,11 @@ namespace ImageViewer.Controls
                 return ibMain.Image;
             }
         }
-       
+
+        public GifDecoder GifDecoder { get; private set; }
+
+        private bool imageCached = false;
+        private bool changingImagePath = false;
 
         public _TabPage(string path)
         {
@@ -153,9 +194,10 @@ namespace ImageViewer.Controls
             
             ibMain.GridCellSize = 128;
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
-
+            
             ibMain.ImageChanged += IbMain_ImageChanged;
-            /*ibMain.AutoScrollMinSize = new Size(5000,5000);*/
+            //ibMain.AnimationPauseChanged += IbMain_AnimationPauseChanged;
+            
             ibMain.AutoScroll = true;
             Controls.Add(ibMain);
 
@@ -164,6 +206,42 @@ namespace ImageViewer.Controls
             BitmapUndo.RedoHappened += OnUndoRedo;
             BitmapUndo.UndoHappened += OnUndoRedo;
             BitmapUndo.UpdateReferences += UpdateReference;
+        }
+
+        
+
+
+        /// <summary>
+        /// Loads the image only if, <see cref="preventLoadImage"/> is false,
+        /// <see cref="IsCurrentPage"/> is true,
+        /// and <see cref="ImageShown"/> is false.
+        /// <param name="SetPreventLoadImageFalse">If true sets <see cref="preventLoadImage"/> = false before trying to load the image.</param>
+        /// </summary>
+        public void LoadImageSafe(bool SetPreventLoadImageFalse = true)
+        {
+            if (SetPreventLoadImageFalse)
+            {
+                preventLoadImage = false;
+            }
+
+            if (!preventLoadImage && isCurrentPage && !ImageShown)
+            {
+                LoadImage();
+            }
+        }
+
+
+        /// <summary>
+        /// Sets the active frame at the specific index.
+        /// </summary>
+        /// <param name="index">The index of the frame.</param>
+        public void SetFrame(int index)
+        {
+            if (GifDecoder == null)
+                return;
+
+            GifDecoder.SetFrame(index);
+            Invalidate();
         }
 
 
@@ -177,25 +255,30 @@ namespace ImageViewer.Controls
 
             if (!File.Exists(imagePath.FullName))
             {
-                MessageBox.Show(this, InternalSettings.Item_Does_Not_Exist_Message, InternalSettings.Item_Does_Not_Exist_Title, MessageBoxButtons.OK);
+                MessageBox.Show(this, 
+                    InternalSettings.Item_Does_Not_Exist_Message, 
+                    InternalSettings.Item_Does_Not_Exist_Title, 
+                    MessageBoxButtons.OK);
+
                 Program.mainForm.CloseCurrentTabPage();
 
                 // need to call this here to display the image
                 // of the tab that gets selected after CloseCurrentTabPage
                 if (Program.mainForm.CurrentPage != null)
-                    Program.mainForm.CurrentPage.PreventLoadImage = false;
+                    Program.mainForm.CurrentPage.LoadImageSafe();
 
                 return;
             }
 
             if (changingImagePath)
+            {
                 BitmapChangeTracker?.Dispose();
-            
-            if(BitmapChangeTracker.CurrentBitmap == null)
-                BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(imagePath.FullName);
+            }
 
-            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
-            //BitmapChangeTracker.UpdateBitmapReferance((Bitmap)ibMain.Image);
+            if (BitmapChangeTracker.CurrentBitmap == null)
+            {
+                BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(imagePath.FullName);
+            }
 
             if(InternalSettings.Show_Default_Transparent_Colors)
             {
@@ -208,6 +291,26 @@ namespace ImageViewer.Controls
                 ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
             }
 
+            if (ImageAnimator.CanAnimate(BitmapChangeTracker.CurrentBitmap))
+            {
+                int curFrame = 0;
+                
+                if (GifDecoder != null)
+                {
+                    curFrame = GifDecoder.ActiveFrameIndex;
+                }
+                
+                GifDecoder = new GifDecoder(BitmapChangeTracker.CurrentBitmap);
+
+                if (curFrame != 0)
+                    GifDecoder.SetFrame(curFrame);
+            }
+            else
+            {
+                GifDecoder = null;
+            }
+
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
             ImageShown = true;
 
             OnImageLoad();

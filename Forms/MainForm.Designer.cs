@@ -72,12 +72,15 @@
             this.tsmiShowDefaultTransparentGridColors = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiShowTransparentColor1Only = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiViewPixelGrid = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiViewColorPicker = new System.Windows.Forms.ToolStripMenuItem();
             this.tsslImageSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslImageFileSize = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.nudGifFrame = new System.Windows.Forms.NumericUpDown();
+            this.cbAnimationPaused = new System.Windows.Forms.CheckBox();
             this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain = new ImageViewer.Controls.ToolStripEx();
             this.tsbMain_File = new System.Windows.Forms.ToolStripButton();
@@ -86,18 +89,20 @@
             this.tsbMain_Settings = new System.Windows.Forms.ToolStripButton();
             this.tsbAlwaysOnTop = new System.Windows.Forms.ToolStripButton();
             this.tsbNewInstance = new System.Windows.Forms.ToolStripButton();
-            this.tsmiViewColorPicker = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlTopMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
             this.cmsFileBtn.SuspendLayout();
             this.cmsEditBtn.SuspendLayout();
             this.cmsViewBtn.SuspendLayout();
             this.statusStrip.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudGifFrame)).BeginInit();
             this.tsMain.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnlTopMain
             // 
+            this.pnlTopMain.Controls.Add(this.cbAnimationPaused);
+            this.pnlTopMain.Controls.Add(this.nudGifFrame);
             this.pnlTopMain.Controls.Add(this.cbLockSelectionToImage);
             this.pnlTopMain.Controls.Add(this.cbInterpolationMode);
             this.pnlTopMain.Controls.Add(this.nudTopMain_ZoomPercentage);
@@ -112,7 +117,7 @@
             // cbLockSelectionToImage
             // 
             this.cbLockSelectionToImage.AutoSize = true;
-            this.cbLockSelectionToImage.Location = new System.Drawing.Point(268, 6);
+            this.cbLockSelectionToImage.Location = new System.Drawing.Point(415, 6);
             this.cbLockSelectionToImage.Name = "cbLockSelectionToImage";
             this.cbLockSelectionToImage.Size = new System.Drawing.Size(145, 17);
             this.cbLockSelectionToImage.TabIndex = 5;
@@ -124,7 +129,7 @@
             // 
             this.cbInterpolationMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbInterpolationMode.FormattingEnabled = true;
-            this.cbInterpolationMode.Location = new System.Drawing.Point(141, 3);
+            this.cbInterpolationMode.Location = new System.Drawing.Point(71, 2);
             this.cbInterpolationMode.Name = "cbInterpolationMode";
             this.cbInterpolationMode.Size = new System.Drawing.Size(121, 21);
             this.cbInterpolationMode.TabIndex = 4;
@@ -137,7 +142,7 @@
             0,
             0,
             0});
-            this.nudTopMain_ZoomPercentage.Location = new System.Drawing.Point(71, 3);
+            this.nudTopMain_ZoomPercentage.Location = new System.Drawing.Point(198, 3);
             this.nudTopMain_ZoomPercentage.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -400,14 +405,14 @@
             this.tsmiViewPixelGrid,
             this.tsmiViewColorPicker});
             this.cmsViewBtn.Name = "cmsViewBtn";
-            this.cmsViewBtn.Size = new System.Drawing.Size(181, 158);
+            this.cmsViewBtn.Size = new System.Drawing.Size(153, 136);
             this.cmsViewBtn.Opening += new System.ComponentModel.CancelEventHandler(this.cmsViewBtn_Opening);
             // 
             // fullScreenToolStripMenuItem
             // 
             this.fullScreenToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.fullScreenToolStripMenuItem.Name = "fullScreenToolStripMenuItem";
-            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fullScreenToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fullScreenToolStripMenuItem.Text = "Full Screen";
             this.fullScreenToolStripMenuItem.Click += new System.EventHandler(this.ViewFullscreen_Click);
             // 
@@ -415,14 +420,14 @@
             // 
             this.actualSizeToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.actualSizeToolStripMenuItem.Name = "actualSizeToolStripMenuItem";
-            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.actualSizeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.actualSizeToolStripMenuItem.Text = "Actual Size";
             this.actualSizeToolStripMenuItem.Click += new System.EventHandler(this.ViewActualImageSize_Click);
             // 
             // tsmiFitToScreen
             // 
             this.tsmiFitToScreen.Name = "tsmiFitToScreen";
-            this.tsmiFitToScreen.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFitToScreen.Size = new System.Drawing.Size(152, 22);
             this.tsmiFitToScreen.Text = "Fit To Screen";
             this.tsmiFitToScreen.Click += new System.EventHandler(this.FitImageToScreen_Click);
             // 
@@ -434,7 +439,7 @@
             this.tsmiShowDefaultTransparentGridColors,
             this.tsmiShowTransparentColor1Only});
             this.imageBackingToolStripMenuItem.Name = "imageBackingToolStripMenuItem";
-            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.imageBackingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.imageBackingToolStripMenuItem.Text = "Image Backing";
             // 
             // tsmiImageBackColor1
@@ -471,9 +476,16 @@
             // 
             this.tsmiViewPixelGrid.CheckOnClick = true;
             this.tsmiViewPixelGrid.Name = "tsmiViewPixelGrid";
-            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(180, 22);
+            this.tsmiViewPixelGrid.Size = new System.Drawing.Size(152, 22);
             this.tsmiViewPixelGrid.Text = "Pixel Grid";
             this.tsmiViewPixelGrid.Click += new System.EventHandler(this.ViewPixelGrid_Clicked);
+            // 
+            // tsmiViewColorPicker
+            // 
+            this.tsmiViewColorPicker.Name = "tsmiViewColorPicker";
+            this.tsmiViewColorPicker.Size = new System.Drawing.Size(152, 22);
+            this.tsmiViewColorPicker.Text = "Color Picker";
+            this.tsmiViewColorPicker.Click += new System.EventHandler(this.ViewColorPicker_Click);
             // 
             // tsslImageSize
             // 
@@ -537,6 +549,25 @@
             this.toolStripDropDownButton2.Text = ">";
             this.toolStripDropDownButton2.ToolTipText = "Next Image";
             this.toolStripDropDownButton2.Click += new System.EventHandler(this.NextImage_Click);
+            // 
+            // nudGifFrame
+            // 
+            this.nudGifFrame.Location = new System.Drawing.Point(268, 3);
+            this.nudGifFrame.Name = "nudGifFrame";
+            this.nudGifFrame.Size = new System.Drawing.Size(73, 20);
+            this.nudGifFrame.TabIndex = 6;
+            this.nudGifFrame.ValueChanged += new System.EventHandler(this.GifFrame_ValueChanged);
+            // 
+            // cbAnimationPaused
+            // 
+            this.cbAnimationPaused.AutoSize = true;
+            this.cbAnimationPaused.Location = new System.Drawing.Point(347, 6);
+            this.cbAnimationPaused.Name = "cbAnimationPaused";
+            this.cbAnimationPaused.Size = new System.Drawing.Size(62, 17);
+            this.cbAnimationPaused.TabIndex = 7;
+            this.cbAnimationPaused.Text = "Paused";
+            this.cbAnimationPaused.UseVisualStyleBackColor = true;
+            this.cbAnimationPaused.CheckedChanged += new System.EventHandler(this.AnimationPaused_CheckChanged);
             // 
             // tcMain
             // 
@@ -637,13 +668,6 @@
             this.tsbNewInstance.Text = "New Instance";
             this.tsbNewInstance.Click += new System.EventHandler(this.NewInstance_Click);
             // 
-            // tsmiViewColorPicker
-            // 
-            this.tsmiViewColorPicker.Name = "tsmiViewColorPicker";
-            this.tsmiViewColorPicker.Size = new System.Drawing.Size(180, 22);
-            this.tsmiViewColorPicker.Text = "Color Picker";
-            this.tsmiViewColorPicker.Click += new System.EventHandler(this.ViewColorPicker_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -666,6 +690,7 @@
             this.cmsViewBtn.ResumeLayout(false);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudGifFrame)).EndInit();
             this.tsMain.ResumeLayout(false);
             this.tsMain.PerformLayout();
             this.ResumeLayout(false);
@@ -732,6 +757,8 @@
         private System.Windows.Forms.CheckBox cbLockSelectionToImage;
         private System.Windows.Forms.ToolStripButton tsbNewInstance;
         private System.Windows.Forms.ToolStripMenuItem tsmiViewColorPicker;
+        private System.Windows.Forms.NumericUpDown nudGifFrame;
+        private System.Windows.Forms.CheckBox cbAnimationPaused;
     }
 }
 

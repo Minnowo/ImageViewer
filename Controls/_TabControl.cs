@@ -71,8 +71,9 @@ namespace ImageViewer.Controls
             // need to call this here to display the image
             // of the tab that gets selected after CloseCurrentTabPage
             if (SelectedIndex >= 0)
-                ((_TabPage)SelectedTab).PreventLoadImage = false;
-            
+                //((_TabPage)SelectedTab).PreventLoadImage = false;
+                ((_TabPage)SelectedTab).LoadImageSafe();
+
             base.OnMouseDown(e);
         }
 
@@ -83,7 +84,11 @@ namespace ImageViewer.Controls
                 return RectangleF.Empty;
 
             Rectangle r = GetTabRect(SelectedIndex);
-            RectangleF buttonRect = new RectangleF(r.X + r.Width - closeTabImage.Width, r.Height / 2 - closeButtonHalfHeight + 2, closeTabImage.Width, closeTabImage.Height);
+            RectangleF buttonRect = new RectangleF(
+                r.X + r.Width - closeTabImage.Width,
+                r.Height / 2 - closeButtonHalfHeight + 2, 
+                closeTabImage.Width, 
+                closeTabImage.Height);
 
             return buttonRect;
         }

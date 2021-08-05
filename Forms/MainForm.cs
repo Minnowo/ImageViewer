@@ -84,7 +84,11 @@ namespace ImageViewer
             nudTopMain_ZoomPercentage.Maximum = ImageBox.MaxZoom;
             nudTopMain_ZoomPercentage.Minimum = ImageBox.MinZoom;
 
-            foreach(InterpolationMode it in Enum.GetValues(typeof(InterpolationMode)))
+            nudGifFrame.Maximum = 0;
+            nudGifFrame.Increment = 1;
+            nudGifFrame.Enabled = false;
+
+            foreach (InterpolationMode it in Enum.GetValues(typeof(InterpolationMode)))
             {
                 if (it != InterpolationMode.Invalid)
                     cbInterpolationMode.Items.Add(it);
@@ -121,6 +125,8 @@ namespace ImageViewer
         public void UpdateAll(bool updateWatcherIndex = false)
         {
             UpdateZoomNumericUpDown();
+            UpdateFramePicker();
+            UpdatePausedCheckbox();
             UpdateInterpolationMode(true);
             UpdatePixelGrid(true);
             UpdateCurrentPageTransparentBackColor(true);
@@ -137,6 +143,34 @@ namespace ImageViewer
             {
                 UpdateWatcherIndex();
             }
+        }
+
+        public void UpdatePausedCheckbox()
+        {
+            if (currentPage == null)
+            {
+                preventOverflow = true;
+                cbAnimationPaused.Checked = false;
+                preventOverflow = false;
+                return;
+            }
+
+            preventOverflow = true;
+            cbAnimationPaused.Checked = currentPage.ibMain.AnimationPaused;
+            preventOverflow = false;
+        }
+
+        public void UpdateFramePicker()
+        {
+            if (currentPage == null || currentPage.GifDecoder == null)
+            {
+                nudGifFrame.Enabled = false;
+                return;
+            }
+            
+            nudGifFrame.Enabled = true;
+            nudGifFrame.Maximum = currentPage.GifDecoder.FrameCount - 1;
+            nudGifFrame.Value = currentPage.GifDecoder.ActiveFrameIndex;
         }
 
         public void UpdateGridCellSize(bool suppressRedraw = false)
@@ -337,6 +371,7 @@ namespace ImageViewer
                 tp.Text = Path.GetFileName(image).Truncate(25);
                 tp.ToolTipText = tp.ImagePath.Name;
                 tp.ibMain.Zoomed += IdMain_ZoomChangedEvent;
+                tp.ibMain.AnimationPauseChanged += IbMain_AnimationPauseChanged;
                 tcMain.TabPages.Add(tp);
             }
 
@@ -352,7 +387,8 @@ namespace ImageViewer
                 }
 
                 // need to set this here in order for the LoadImage function to be called
-                CurrentPage.PreventLoadImage = false;
+                //CurrentPage.PreventLoadImage = false;
+                CurrentPage.LoadImageSafe();
             }
 
             if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
@@ -362,6 +398,8 @@ namespace ImageViewer
 
             UpdateBottomInfoLabel();
         }
+
+        
 
         public void NewPageFromImage(Image img)
         {
@@ -387,7 +425,8 @@ namespace ImageViewer
 
             CurrentPage = tp;
             // need to set this here in order for the LoadImage function to be called
-            CurrentPage.PreventLoadImage = false;
+            //CurrentPage.PreventLoadImage = false;
+            CurrentPage.LoadImageSafe();
 
             if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
             {
@@ -508,6 +547,7 @@ namespace ImageViewer
                 PathHelper.DeleteFileOrPath(currentPage.ImagePath.FullName);
             }
         }
+
 
         public void ToggleTopMost()
         {
@@ -633,7 +673,8 @@ namespace ImageViewer
                     if (tcMain.TabPages.Count - 1 > tcMain.SelectedIndex)
                     {
                         CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex + 1];
-                        currentPage.PreventLoadImage = false;
+                        //currentPage.PreventLoadImage = false;
+                        currentPage.LoadImageSafe();
                     }
                     break;
 
@@ -644,7 +685,8 @@ namespace ImageViewer
                     if (tcMain.SelectedIndex - 1 >= 0)
                     {
                         CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex - 1];
-                        currentPage.PreventLoadImage = false;
+                        //currentPage.PreventLoadImage = false;
+                        currentPage.LoadImageSafe();
                     }
                     break;
 
@@ -742,6 +784,32 @@ namespace ImageViewer
             UpdateInterpolationMode();
         }
 
+
+        private void GifFrame_ValueChanged(object sender, EventArgs e)
+        {
+            if (currentPage == null || currentPage.GifDecoder == null)
+            {
+                nudGifFrame.Enabled = false;
+                return;
+            }
+
+            if (!currentPage.ibMain.AnimationPaused)
+                return;
+            
+            currentPage.SetFrame((int)nudGifFrame.Value);
+        }
+
+        private void AnimationPaused_CheckChanged(object sender, EventArgs e)
+        {
+            if (currentPage == null || preventOverflow)
+                return;
+
+            preventOverflow = true;
+
+            currentPage.ibMain.AnimationPaused = cbAnimationPaused.Checked;
+
+            preventOverflow = false;
+        }
 
 
         // Toolstrip Main
@@ -851,8 +919,7 @@ namespace ImageViewer
 
         private void _TabPage_ImageChanged()
         {
-            //Console.WriteLine("image changed");
-            _TabPage_ImageLoadChanged(true);
+            UpdateAll(true);
         }
 
 
@@ -1394,6 +1461,18 @@ namespace ImageViewer
             preventOverflow = false;
         }
 
+        private void IbMain_AnimationPauseChanged(object sender, EventArgs e)
+        {
+            if (preventOverflow || currentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            cbAnimationPaused.Checked = currentPage.ibMain.AnimationPaused;
+
+            preventOverflow = false;
+        }
+
         private void ParentFollowChild(object sender, EventArgs e)
         {
             Form f = sender as Form;
@@ -1432,6 +1511,8 @@ namespace ImageViewer
                     break;
             }
         }
+
+
 
 
 
