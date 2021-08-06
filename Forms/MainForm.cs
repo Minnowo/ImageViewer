@@ -890,7 +890,6 @@ namespace ImageViewer
                     continue;
 
                 DragDropFiles.Add(new FileInfo(data[i]).FullName);
-                //Console.WriteLine(DragDropFiles[i]);
             }
         }
 
@@ -1028,15 +1027,22 @@ namespace ImageViewer
                     int totalFrames = 0;
                     int framesSaved = 0;
 
-                    using (Giff g = new Giff((Bitmap)currentPage.Image))
+                    GifDecoder g = new GifDecoder(currentPage.Image);
+                    
+                    totalFrames = g.FrameCount;
+                    for (int i = 0; i < totalFrames; i++)
                     {
-                        totalFrames = g.Count;
-                        for (int i = 0; i < g.Count; i++)
+                        using (GifFrame gf = g.GetFrame(i))
                         {
-                            if (ImageHelper.SaveImage(g[i], string.Format("{0}\\{1}.{2}", dir, i, InternalSettings.Default_Image_Format), false))
+                            if (ImageHelper.SaveImage(gf.Image,
+                                string.Format("{0}\\{1}.{2}", dir, i,
+                                InternalSettings.Default_Image_Format), false))
+                            {
                                 framesSaved++;
+                            }
                         }
                     }
+                    
 
                     if (InternalSettings.Open_Explorer_After_Export)
                     {
@@ -1047,6 +1053,12 @@ namespace ImageViewer
                     {
                         GC.Collect();
                     }
+
+                    MessageBox.Show(
+                        this, 
+                        string.Format("Exported {0} of {1} frames", framesSaved, totalFrames), 
+                        InternalSettings.Gif_Export_Title, 
+                        MessageBoxButtons.OK);
                 }
             }
 

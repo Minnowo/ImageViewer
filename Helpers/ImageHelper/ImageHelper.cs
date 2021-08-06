@@ -122,7 +122,7 @@ namespace ImageViewer.Helpers
         /// <returns></returns>
         public static ImgFormat GetImageFormat(string path)
         {
-            return ImageBinarayReader.GetImageFormat(path);
+            return ImageBinaryReader.GetImageFormat(path);
         }
 
         /// <summary>
@@ -550,7 +550,7 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
                 return Size.Empty;
 
-            Size s = ImageBinarayReader.GetDimensions(imagePath);
+            Size s = ImageBinaryReader.GetDimensions(imagePath);
             if (s != Size.Empty)
                 return s;
 

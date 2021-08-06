@@ -228,7 +228,7 @@ namespace ImageViewer.Helpers
                 // the next value is the size of all the data in the FORM chunk
                 // We don't actually need this value, but we have to read it
                 // regardless to advance the stream
-                Helper.ReadInt32(stream);
+                ByteHelper.ReadInt32BE(stream);
 
                 // read either the PBM or ILBM header that identifies this document as an image file
                 stream.Read(buffer, 0, buffer.Length);
@@ -240,7 +240,7 @@ namespace ImageViewer.Helpers
                 {
                     int chunkLength;
 
-                    chunkLength = Helper.ReadInt32(stream);
+                    chunkLength = ByteHelper.ReadInt32BE(stream);
 
                     if (Encoding.ASCII.GetString(buffer) != "CMAP")
                     {
@@ -293,7 +293,7 @@ namespace ImageViewer.Helpers
                 FileVersion version;
 
                 // read the version, which occupies two bytes
-                version = (FileVersion)Helper.ReadInt16(stream);
+                version = (FileVersion)ByteHelper.ReadInt16BE(stream);
 
                 if (version != FileVersion.Version1 && version != FileVersion.Version2)
                     throw new InvalidDataException("Invalid version information.");
@@ -307,7 +307,7 @@ namespace ImageViewer.Helpers
                 colorPalette = ReadSwatches(stream, version);
                 if (version == FileVersion.Version1)
                 {
-                    version = (FileVersion)Helper.ReadInt16(stream);
+                    version = (FileVersion)ByteHelper.ReadInt16BE(stream);
                     if (version == FileVersion.Version2)
                         colorPalette = ReadSwatches(stream, version);
                 }
@@ -326,7 +326,7 @@ namespace ImageViewer.Helpers
             results = new List<Color>();
 
             // read the number of colors, which also occupies two bytes
-            colorCount = Helper.ReadInt16(stream);
+            colorCount = ByteHelper.ReadInt16BE(stream);
 
             for (int i = 0; i < colorCount; i++)
             {
@@ -337,19 +337,19 @@ namespace ImageViewer.Helpers
                 int value4;
 
                 // again, two bytes for the color space
-                colorSpace = (ColorSpace)(Helper.ReadInt16(stream));
+                colorSpace = (ColorSpace)(ByteHelper.ReadInt16BE(stream));
 
-                value1 = Helper.ReadInt16(stream);
-                value2 = Helper.ReadInt16(stream);
-                value3 = Helper.ReadInt16(stream);
-                value4 = Helper.ReadInt16(stream);
+                value1 = ByteHelper.ReadInt16BE(stream);
+                value2 = ByteHelper.ReadInt16BE(stream);
+                value3 = ByteHelper.ReadInt16BE(stream);
+                value4 = ByteHelper.ReadInt16BE(stream);
 
                 if (version == FileVersion.Version2)
                 {
                     int length;
 
                     // need to read the name even though currently our colour collection doesn't support names
-                    length = Helper.ReadInt32(stream);
+                    length = ByteHelper.ReadInt32BE(stream);
                     Helper.ReadString(stream, length);
                 }
 

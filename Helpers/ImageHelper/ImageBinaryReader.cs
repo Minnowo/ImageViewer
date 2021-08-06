@@ -8,7 +8,7 @@ using System.IO;
 
 namespace ImageViewer.Helpers
 {
-    public static class ImageBinarayReader
+    public static class ImageBinaryReader
     {
         const byte MAX_MAGIC_BYTE_LENGTH = 8;
 
@@ -51,7 +51,7 @@ namespace ImageViewer.Helpers
             { DWRM_IDENTIFIER, DecodeDWORM }
         };
 
-        
+
 
         #region Get / Read Image Format 
 
@@ -73,7 +73,7 @@ namespace ImageViewer.Helpers
                 case ImgFormat.bmp:
                     return "iamge/bmp";
                 case ImgFormat.gif:
-                    return Giff.MIME_TYPE;
+                    return Gif.MIME_TYPE;
                 case ImgFormat.webp:
                     return Webp.MIME_TYPE;
                 case ImgFormat.wrm:
@@ -92,10 +92,11 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return ImgFormat.nil;
 
-            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (BinaryReader binaryReader = new BinaryReader(fileStream))
+
+            try
             {
-                try
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (BinaryReader binaryReader = new BinaryReader(fileStream))
                 {
                     byte[] magicBytes = new byte[MAX_MAGIC_BYTE_LENGTH];
 
@@ -105,7 +106,7 @@ namespace ImageViewer.Helpers
 
                         foreach (KeyValuePair<byte[], ImgFormat> kvPair in Image_Byte_Identifiers)
                         {
-                            if (StartsWith(magicBytes, kvPair.Key))
+                            if (ByteHelper.StartsWith(magicBytes, kvPair.Key))
                             {
                                 return kvPair.Value;
                             }
@@ -113,10 +114,10 @@ namespace ImageViewer.Helpers
                     }
                     return ImgFormat.nil;
                 }
-                catch
-                {
-                    return ImgFormat.nil;
-                }
+            }
+            catch
+            {
+                return ImgFormat.nil;
             }
         }
 
@@ -143,7 +144,7 @@ namespace ImageViewer.Helpers
 
                 foreach (KeyValuePair<byte[], Func<BinaryReader, Size>> kvPair in Image_Format_Decoders)
                 {
-                    if (StartsWith(magicBytes, kvPair.Key))
+                    if (ByteHelper.StartsWith(magicBytes, kvPair.Key))
                     {
                         return kvPair.Value(binaryReader);
                     }
@@ -164,17 +165,17 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return Size.Empty;
 
-            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (BinaryReader binaryReader = new BinaryReader(fileStream))
+            try
             {
-                try
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (BinaryReader binaryReader = new BinaryReader(fileStream))
                 {
                     return GetDimensions(binaryReader);
                 }
-                catch
-                {
-                    return Size.Empty;
-                }
+            }
+            catch
+            {
+                return Size.Empty;
             }
         }
 
@@ -193,17 +194,17 @@ namespace ImageViewer.Helpers
             if (binaryReader.ReadByte() != 0)
                 return Size.Empty;
 
-            int idfStart = ReadInt32LE(binaryReader);
+            int idfStart = ByteHelper.ReadInt32LE(binaryReader);
 
             binaryReader.BaseStream.Seek(idfStart, SeekOrigin.Begin);
 
-            int numberOfIDF = ReadInt16LE(binaryReader);
+            int numberOfIDF = ByteHelper.ReadInt16LE(binaryReader);
 
             int width = -1;
             int height = -1;
             for (int i = 0; i < numberOfIDF; i++)
             {
-                short field = ReadInt16LE(binaryReader);
+                short field = ByteHelper.ReadInt16LE(binaryReader);
 
                 switch (field)
                 {
@@ -213,11 +214,11 @@ namespace ImageViewer.Helpers
                         break;
                     case 256: // image width
                         binaryReader.ReadBytes(6);
-                        width = ReadInt32LE(binaryReader);
+                        width = ByteHelper.ReadInt32LE(binaryReader);
                         break;
                     case 257: // image length
                         binaryReader.ReadBytes(6);
-                        height = ReadInt32LE(binaryReader);
+                        height = ByteHelper.ReadInt32LE(binaryReader);
                         break;
                 }
                 if (width != -1 && height != -1)
@@ -228,17 +229,17 @@ namespace ImageViewer.Helpers
 
         private static Size DecodeTiffBE(BinaryReader binaryReader)
         {
-            int idfStart = ReadInt32BE(binaryReader);
+            int idfStart = ByteHelper.ReadInt32BE(binaryReader);
 
             binaryReader.BaseStream.Seek(idfStart, SeekOrigin.Begin);
 
-            int numberOfIDF = ReadInt16BE(binaryReader);
+            int numberOfIDF = ByteHelper.ReadInt16BE(binaryReader);
 
             int width = -1;
             int height = -1;
             for (int i = 0; i < numberOfIDF; i++)
             {
-                short field = ReadInt16BE(binaryReader);
+                short field = ByteHelper.ReadInt16BE(binaryReader);
 
                 switch (field)
                 {
@@ -248,11 +249,11 @@ namespace ImageViewer.Helpers
                         break;
                     case 256: // image width
                         binaryReader.ReadBytes(6);
-                        width = ReadInt32BE(binaryReader);
+                        width = ByteHelper.ReadInt32BE(binaryReader);
                         break;
                     case 257: // image length
                         binaryReader.ReadBytes(6);
-                        height = ReadInt32BE(binaryReader);
+                        height = ByteHelper.ReadInt32BE(binaryReader);
                         break;
                 }
                 if (width != -1 && height != -1)
@@ -279,8 +280,8 @@ namespace ImageViewer.Helpers
         private static Size DecodePng(BinaryReader binaryReader)
         {
             binaryReader.ReadBytes(8);
-            int width = ReadInt32BE(binaryReader);
-            int height = ReadInt32BE(binaryReader);
+            int width = ByteHelper.ReadInt32BE(binaryReader);
+            int height = ByteHelper.ReadInt32BE(binaryReader);
             return new Size(width, height);
         }
 
@@ -289,12 +290,12 @@ namespace ImageViewer.Helpers
             while (binaryReader.ReadByte() == 0xff)
             {
                 byte marker = binaryReader.ReadByte();
-                short chunkLength = ReadInt16BE(binaryReader);
+                short chunkLength = ByteHelper.ReadInt16BE(binaryReader);
                 if (marker == 0xc0 || marker == 0xc2) // c2: progressive
                 {
                     binaryReader.ReadByte();
-                    int height = ReadInt16BE(binaryReader);
-                    int width = ReadInt16BE(binaryReader);
+                    int height = ByteHelper.ReadInt16BE(binaryReader);
+                    int width = ByteHelper.ReadInt16BE(binaryReader);
                     return new Size(width, height);
                 }
 
@@ -315,22 +316,21 @@ namespace ImageViewer.Helpers
         private static Size DecodeWebP(BinaryReader binaryReader)
         {
             // 'RIFF' already read   
-
             binaryReader.ReadBytes(4);
 
-            if (ReadInt32LE(binaryReader) != 1346520407)// 1346520407 : 'WEBP'
+            if (ByteHelper.ReadInt32LE(binaryReader) != 1346520407)// 1346520407 : 'WEBP'
                 return Size.Empty;
 
-            switch (ReadInt32LE(binaryReader))
+            switch (ByteHelper.ReadInt32LE(binaryReader))
             {
                 case 540561494: // 'VP8 ' : lossy
                                 // skip stuff we don't need
                     binaryReader.ReadBytes(7);
 
-                    if (ReadInt24LE(binaryReader) != 2752925) // invalid webp file
+                    if (ByteHelper.ReadInt24LE(binaryReader) != 2752925) // invalid webp file
                         return Size.Empty;
 
-                    return new Size(ReadInt16LE(binaryReader), ReadInt16LE(binaryReader));
+                    return new Size(ByteHelper.ReadInt16LE(binaryReader), ByteHelper.ReadInt16LE(binaryReader));
 
                 case 1278758998:// 'VP8L' : lossless
                                 // skip stuff we don't need
@@ -351,7 +351,7 @@ namespace ImageViewer.Helpers
                 case 1480085590:// 'VP8X' : extended
                                 // skip stuff we don't need
                     binaryReader.ReadBytes(8);
-                    return new Size(1 + ReadInt24LE(binaryReader), 1 + ReadInt24LE(binaryReader));
+                    return new Size(1 + ByteHelper.ReadInt24LE(binaryReader), 1 + ByteHelper.ReadInt24LE(binaryReader));
             }
 
             return Size.Empty;
@@ -359,87 +359,6 @@ namespace ImageViewer.Helpers
 
         #endregion
 
-        private static bool StartsWith(byte[] thisBytes, byte[] thatBytes)
-        {
-            for (int i = 0; i < thatBytes.Length; i += 1)
-                if (thisBytes[i] != thatBytes[i])
-                    return false;
 
-            return true;
-        }
-
-
-
-        #region Endians
-
-        /// <summary>
-        /// Reads a 16 bit int from the stream in the Little Endian format.
-        /// </summary>
-        /// <param name="binaryReader">The binary reader to read</param>
-        /// <returns></returns>
-        private static short ReadInt16LE(BinaryReader binaryReader)
-        {
-            byte[] bytes = binaryReader.ReadBytes(2);
-            return (short)((bytes[0]) | (bytes[1] << 8));
-        }
-
-        /// <summary>
-        /// Reads a 24 bit int from the stream in the Little Endian format.
-        /// </summary>
-        /// <param name="binaryReader">The binary reader to read</param>
-        /// <returns></returns>
-        private static int ReadInt24LE(BinaryReader binaryReader)
-        {
-            byte[] bytes = binaryReader.ReadBytes(3);
-            return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16));
-        }
-
-        /// <summary>
-        /// Reads a 32 bit int from the stream in the Little Endian format.
-        /// </summary>
-        /// <param name="binaryReader">The binary reader to read</param>
-        /// <returns></returns>
-        private static int ReadInt32LE(BinaryReader binaryReader)
-        {
-            byte[] bytes = binaryReader.ReadBytes(4);
-            return ((bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24));
-        }
-
-
-
-        /// <summary>
-        /// Reads a 32 bit int from the stream in the Big Endian format.
-        /// </summary>
-        /// <param name="binaryReader">The binary reader to read</param>
-        /// <returns></returns>
-        private static int ReadInt32BE(BinaryReader binaryReader)
-        {
-            byte[] bytes = binaryReader.ReadBytes(4);
-            return ((bytes[3]) | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24));
-        }
-
-        /// <summary>
-        /// Reads a 24 bit int from the stream in the Big Endian format.
-        /// </summary>
-        /// <param name="binaryReader">The binary reader to read</param>
-        /// <returns></returns>
-        private static int ReadInt24BE(BinaryReader binaryReader)
-        {
-            byte[] bytes = binaryReader.ReadBytes(3);
-            return ((bytes[2]) | (bytes[1] << 8) | (bytes[0] << 16));
-        }
-
-        /// <summary>
-        /// Reads a 16 bit int from the stream in the Big Endian format.
-        /// </summary>
-        /// <param name="binaryReader">The binary reader to read</param>
-        /// <returns></returns>
-        private static short ReadInt16BE(BinaryReader binaryReader)
-        {
-            byte[] bytes = binaryReader.ReadBytes(2);
-            return (short)((bytes[1]) | (bytes[0] << 8));
-        }
-
-        #endregion
     }
 }

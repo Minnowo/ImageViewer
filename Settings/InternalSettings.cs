@@ -115,6 +115,8 @@ namespace ImageViewer.Settings
         public const string Error_Loading_Settings_Title = "Unable to load settings";
         public const string Error_Loading_Settings_Message = "There was an error trying to load the settings, the file will be deleted / overwritten when the program exits";
 
+        public const string Gif_Export_Title = "Gif export";
+
         #endregion
 
 

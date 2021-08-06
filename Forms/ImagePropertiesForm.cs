@@ -51,7 +51,7 @@ namespace ImageViewer
                     cbArchive.Checked = true;
                 }
 
-                tbImageFormat.Text = ImageBinarayReader.GetMimeType(path);
+                tbImageFormat.Text = ImageBinaryReader.GetMimeType(path);
 
                 tbRawImageFormat.Text = image.RawFormat.Guid.ToString();
 

@@ -170,33 +170,6 @@ namespace ImageViewer.Helpers
         }
 
 
-        /// <summary>
-        /// Reads a 16bit unsigned integer in big-endian format.
-        /// </summary>
-        /// <param name="stream">The stream to read the data from.</param>
-        /// <returns>The unsigned 16bit integer cast to an <c>Int32</c>.</returns>
-        public static int ReadInt16(Stream stream)
-        {
-            // https://www.cyotek.com/blog/reading-photoshop-color-swatch-aco-files-using-csharp
-            return (stream.ReadByte() << 8) | (stream.ReadByte() << 0);
-        }
-
-        /// <summary>
-        /// Reads a 32bit unsigned integer in big-endian format.
-        /// </summary>
-        /// <param name="stream">The stream to read the data from.</param>
-        /// <returns>The unsigned 32bit integer cast to an <c>Int32</c>.</returns>
-        public static int ReadInt32(Stream stream)
-        {
-            byte[] buffer;
-
-            // big endian conversion: http://stackoverflow.com/a/14401341/148962
-
-            buffer = new byte[4];
-            stream.Read(buffer, 0, buffer.Length);
-
-            return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
-        }
 
         /// <summary>
         /// Checks if the given size is valid.

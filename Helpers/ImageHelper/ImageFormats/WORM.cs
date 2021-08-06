@@ -298,9 +298,9 @@ namespace ImageViewer.Helpers
         {
             byte[] identifier = binaryReader.ReadBytes(5);
 
-            if (StartsWith(identifier, WRM_IDENTIFIER))
+            if (ByteHelper.StartsWith(identifier, WRM_IDENTIFIER))
                 return WormFormat.wrm;
-            if (StartsWith(identifier, DWRM_IDENTIFIER))
+            if (ByteHelper.StartsWith(identifier, DWRM_IDENTIFIER))
                 return WormFormat.dwrm;
 
             return WormFormat.nil;
@@ -393,14 +393,6 @@ namespace ImageViewer.Helpers
 
         }
 
-        private static bool StartsWith(byte[] thisBytes, byte[] thatBytes)
-        {
-            for (int i = 0; i < thatBytes.Length; i += 1)
-                if (thisBytes[i] != thatBytes[i])
-                    return false;
-
-            return true;
-        }
 
         private static int ColorToDecimal(int r, int g, int b, int a = 255)
         {

@@ -171,7 +171,7 @@
     </Compile>
     <Compile Include="Events\ColorChangedEvent.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
-    <Compile Include="Helpers\ColorHelper.cs" />
+    <Compile Include="Helpers\Color\ColorHelper.cs" />
     <Compile Include="Helpers\Dithering\AtkinsonDithering.cs" />
     <Compile Include="Helpers\Dithering\Bayer2.cs" />
     <Compile Include="Helpers\Dithering\Bayer3.cs" />
@@ -201,8 +201,9 @@
     <Compile Include="Forms\ImagePropertiesForm.Designer.cs">
       <DependentUpon>ImagePropertiesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\ImageHelper\ImageBinarayReader.cs" />
-    <Compile Include="Helpers\ImageHelper\ImageFormats\ExifPropertyTag.cs" />
+    <Compile Include="Helpers\ImageHelper\ByteHelper.cs" />
+    <Compile Include="Helpers\ImageHelper\Enums\ExifPropertyTag.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageBinaryReader.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\Gif.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifDecoder.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifEncoder.cs" />
@@ -211,7 +212,7 @@
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\LibWebpStructs.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\UnsafeNativeMethods.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Webp.cs" />
-    <Compile Include="Helpers\ImageHelper\ImgFormat.cs" />
+    <Compile Include="Helpers\ImageHelper\Enums\ImgFormat.cs" />
     <Compile Include="Helpers\Transforms\IPixelTransform.cs" />
     <Compile Include="Helpers\Transforms\MonochromePixelTransform.cs" />
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform.cs" />
@@ -223,7 +224,6 @@
     <Compile Include="Helpers\UndoRedo\IUndoable.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\WORM.cs" />
     <Compile Include="Misc\FolderWatcher.cs" />
-    <Compile Include="Helpers\ImageHelper\ImageFormats\Giff.cs" />
     <Compile Include="Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
