@@ -14,57 +14,90 @@ namespace ImageViewer.Helpers
         dwrm,
         nil = -1
     }
-    //          structure
-    //  5 bytes         the identifier of the file if its not WORM. or DWORM its invalid
-    //  2 bytes         a ushort representing the width of the image
-    //  2 bytes         a ushort representing the height of the image
-    //  
-    //  pixel data stored as 2 byte ushort values per pixel (this results in a lot of data loss, which gives the image
-    //  a demonic-deepfried look when loaded
-    //
-    //
-    public class WORM : IDisposable
+
+    /// <summary>
+    /// Provides the necessary information to support WORM images.
+    /// </summary>
+    public class WORM : ImageBase
     {
+        #region Readonly / Const / Static 
+
+        /// <summary>
+        /// The maximum width and height of a WORM iamge.
+        /// </summary>
         public const int MAX_SIZE = 65535; 
-        public const string MIME_TYPE = "image/worm";
+
 
         /// <summary>
         /// The leading bytes to identify the wrm format.
         /// </summary>
         public static readonly byte[] WRM_IDENTIFIER = new byte[5] { 0x57, 0x4F, 0x52, 0x4D, 0x2E };
 
+
         /// <summary>
         /// The leading bytes to identify the dwrm format.
         /// </summary>
         public static readonly byte[] DWRM_IDENTIFIER = new byte[5] { 0x44, 0x57, 0x4F, 0x52, 0x4D };
 
-        /// <summary>
-        /// The width of the image, cannot be greater than 65535.
-        /// </summary>
-        public ushort Width { get; private set; }
 
         /// <summary>
-        /// The height of the image, cannot be greater than 65535.
+        /// The leading bytes to identify a WORM image.
         /// </summary>
-        public ushort Height { get; private set; }
+        public static readonly new byte[][] FileIdentifiers = new byte[][]
+        {
+            WRM_IDENTIFIER,
+            DWRM_IDENTIFIER
+        };
+
 
         /// <summary>
-        /// The bitmap object.
+        /// The file extensions used for a WORM image.
         /// </summary>
-        public Bitmap Image { get; private set; }
+        public static readonly new string[] FileExtensions = new[]
+        {
+            "wrm", "dwrm"
+        };
+
 
         /// <summary>
-        /// The format of the WORM image, either wrm or dwrm, if its nil the image is invalid.
+        /// Gets the standard identifier used on the Internet to indicate the type of data that a file contains.
         /// </summary>
-        public WormFormat WormFormat { get; set; }
+        public new const string MimeType = "image/worm";
+
+
+        /// <summary>
+        /// Gets the default file extension.
+        /// </summary>
+        public new const string DefaultExtension = "wrm";
+
+
+        /// <summary>
+        /// Gets the WORM iamge format.
+        /// </summary>
+        public static readonly new ImgFormat ImageFormat = ImgFormat.wrm;
+
+        #endregion
+
+
+        public override Bitmap Image { get; protected set; }
+
+        public override int Width { get; protected set; }
+
+        public override int Height { get; protected set; }
+
+        /// <summary>
+        /// Get the <see cref="WormFormat"/> of the image.
+        /// </summary>
+        public WormFormat Format { get; private set; }
+
 
         private const double MAX_DEC = 16777215d;
         private const double MAX_DEC_TO_USHORT = 256.00389d;
         private const byte HUE_OFFSET = 60;
 
+
         public WORM()
         {
-
         }
 
         public WORM(Image bmp) : this((Bitmap)bmp)
@@ -73,17 +106,36 @@ namespace ImageViewer.Helpers
 
         public WORM(Bitmap bmp)
         {
-            Image = bmp;
+            if (bmp.Width > MAX_SIZE || bmp.Height > MAX_SIZE)
+                throw new Exception($"WORM images do not support width or height larger than {MAX_SIZE}");
+
+            this.Image = bmp;
             Width = (ushort)bmp.Width;
             Height = (ushort)bmp.Height;
-            WormFormat = WormFormat.wrm;
+            Format = WormFormat.nil;
         }
 
+
+        #region Static Functions
+
         /// <summary>
-        /// Loads a wrm image and returns it as a bitmap object.
+        /// Load a wrm image.
         /// </summary>
         /// <param name="file">The path of the image.</param>
-        /// <returns>A bitmap object.</returns>
+        /// <returns>A new instance of the WORM class.</returns>
+        public static WORM FromFile(string file)
+        {
+            WORM wrm = new WORM();
+            wrm.Load(file);
+            return wrm;
+        }
+
+
+        /// <summary>
+        /// Loads a WORM image and returns it as a bitmap object.
+        /// </summary>
+        /// <param name="file">The path of the image.</param>
+        /// <returns>A <see cref="Bitmap"/> object.</returns>
         public static Bitmap FromFileAsBitmap(string file)
         {
             return WORM.FromFile(file).Image;
@@ -106,6 +158,7 @@ namespace ImageViewer.Helpers
                 return GetDimensions(binaryReader);
             }
         }
+
 
         /// <summary>
         /// Gets the dimensions of a WORM image from a binary reader.
@@ -136,159 +189,7 @@ namespace ImageViewer.Helpers
             return Size.Empty;
         }
 
-        /// <summary>
-        /// Load a wrm image.
-        /// </summary>
-        /// <param name="file">The path of the image.</param>
-        /// <returns>A new instance of the WORM class.</returns>
-        public static WORM FromFile(string file)
-        {
-            WORM wrm = new WORM();
-            wrm.Load(file);
-            return wrm;
-        }
-
         
-
-        /// <summary>
-        /// Load an image from the disk.
-        /// </summary>
-        /// <param name="file">The path of the image.</param>
-        public unsafe void Load(string file)
-        {
-            using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (BinaryReader binaryReader = new BinaryReader(fileStream))
-            using(GZipStream decompressor = new GZipStream(fileStream, CompressionMode.Decompress))
-            {
-                WormFormat = GetWormFormat(binaryReader);
-                
-                if(WormFormat == WormFormat.nil)
-                    throw new Exception("Invalid .wrm file cannot read.");
-
-                Width = binaryReader.ReadUInt16();
-                Height = binaryReader.ReadUInt16();
-
-                Image = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);
-                Image.Tag = ImgFormat.wrm;
-
-                BitmapData dstBD = null;
-                byte[] decompressedData = new byte[Width * Height * 2];
-                decompressor.Read(decompressedData, 0, decompressedData.Length);
-
-                try
-                {
-                    dstBD = Image.LockBits(new Rectangle(0, 0, Image.Width, Image.Height),
-                        ImageLockMode.ReadWrite, PixelFormat.Format32bppRgb);
-
-                    byte* pDst = (byte*)(void*)dstBD.Scan0;
-
-                    for (int i = 0; i < Width * Height; i += 1)
-                    {
-                        //Color c = ReadWORMPixel(binaryReader.ReadUInt16());
-                        int index = i << 1;
-                        int dec = (ushort)((decompressedData[index]) | (decompressedData[index + 1] << 8));
-                        double percent = (double)dec / (double)ushort.MaxValue;
-                        int COLOR = (int)Math.Round(percent * MAX_DEC);
-                        Color c = ReadWORMPixel(COLOR);
-                        //Color c = DecimalToColor(COLOR);
-
-                        *(pDst++) = c.B;
-                        *(pDst++) = c.G;
-                        *(pDst++) = c.R;
-                        pDst++; // skip alpha					 
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new Exception(e.Message + "\n\tIn WORM.Load");
-                }
-                finally
-                {
-                    Image.UnlockBits(dstBD);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Save the image to the disk.
-        /// </summary>
-        /// <param name="file">The path to save the image.</param>
-        public unsafe void Save(string file)
-        {
-            switch (Path.GetExtension(file))
-            {
-                case ".wrm":
-                    this.WormFormat = WormFormat.wrm;
-                    break;
-                case ".dwrm":
-                    this.WormFormat = WormFormat.dwrm;
-                    break;
-            }
-            Save(file, this.WormFormat);
-        }
-
-        /// <summary>
-        /// Save the image to the disk.
-        /// </summary>
-        /// <param name="file">The path to save the image.</param>
-        public unsafe void Save(string file, WormFormat format)
-        {
-            using (Stream stream = new FileStream(file, FileMode.OpenOrCreate))
-            using (BinaryWriter binaryWriter = new BinaryWriter(stream))
-            using(GZipStream compressor  = new GZipStream(stream, CompressionLevel.Optimal))
-            {
-                switch (format)
-                {
-                    case WormFormat.nil:
-                        throw new Exception("Invalid worm format.");
-                    case WormFormat.wrm:
-                        binaryWriter.Write(WRM_IDENTIFIER, 0, WRM_IDENTIFIER.Length); 
-                        break;
-                    case WormFormat.dwrm:
-                        binaryWriter.Write(DWRM_IDENTIFIER, 0, DWRM_IDENTIFIER.Length);
-                        break;
-                }
-                
-                binaryWriter.Write(Width);
-                binaryWriter.Write(Height);
-
-                BitmapData dstBD = null;
-                byte[] data = new byte[Width * Height * 2];
-
-                try
-                {
-                    dstBD = Image.LockBits(new Rectangle(0, 0, Image.Width, Image.Height),
-                        ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-
-                    byte* pDst = (byte*)(void*)dstBD.Scan0;
-
-                    for (int i = 0; i < Width * Height; i++)
-                    {
-                        int Decimal = ColorToDecimal(*(pDst + 2), *(pDst + 1), *(pDst));
-                        ushort StorageValue = (ushort)Math.Round(ushort.MaxValue * (Decimal / MAX_DEC));
-
-                        int index = i << 1;
-
-                        data[index] = (byte)StorageValue;
-                        data[index + 1] = (byte)(StorageValue >> 8);
-
-                        //binaryWriter.Write(StorageValue);
-
-                        pDst += 4; // advance				 
-                    }
-                    compressor.Write(data, 0, data.Length);
-                }
-                catch (Exception e)
-                {
-                    throw new Exception(e + "\n\tIn WORM.Save");
-                }
-                finally
-                {
-                    Image.UnlockBits(dstBD);
-                }
-            }
-        }
-
         /// <summary>
         /// Reads the first 5 bytes from the reader to identify a WORM image.
         /// </summary>
@@ -306,19 +207,213 @@ namespace ImageViewer.Helpers
             return WormFormat.nil;
         }
 
+
+        #endregion
+
+
+
+        public override unsafe void Load(string file)
+        {
+            if(string.IsNullOrEmpty(file))
+                throw new ArgumentException("WORM.Load(string)\n\tThe path cannot be null or empty");
+
+            Dispose();
+
+            using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (BinaryReader binaryReader = new BinaryReader(fileStream))
+            using(GZipStream decompressor = new GZipStream(fileStream, CompressionMode.Decompress))
+            {
+                Format = GetWormFormat(binaryReader);
+                
+                if(Format == WormFormat.nil)
+                    throw new Exception("WORM.Load(string)\n\tInvalid WORM file cannot read");
+
+                Width = binaryReader.ReadUInt16();
+                Height = binaryReader.ReadUInt16();
+
+                if (this.Image != null)
+                    this.Image.Dispose();
+                Image = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);
+                Image.Tag = ImgFormat.wrm;
+
+                BitmapData dstBD = null;
+                byte[] decompressedData = new byte[Width * Height * 2];
+                decompressor.Read(decompressedData, 0, decompressedData.Length);
+
+                dstBD = Image.LockBits(
+                        new Rectangle(0, 0, Image.Width, Image.Height),
+                        ImageLockMode.ReadWrite, PixelFormat.Format32bppRgb);
+                try
+                {
+                    byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+                    for (int i = 0; i < Width * Height; i += 1)
+                    {
+                        int index = i << 1;
+                        int dec = (ushort)((decompressedData[index]) | (decompressedData[index + 1] << 8));
+                        double percent = (double)dec / (double)ushort.MaxValue;
+                        int COLOR = (int)Math.Round(percent * MAX_DEC);
+                        Color c = ReadWORMPixel(COLOR);
+
+                        *(pDst++) = c.B;
+                        *(pDst++) = c.G;
+                        *(pDst++) = c.R;
+                        pDst++; // skip alpha					 
+                    }
+                }
+                finally
+                {
+                    Image.UnlockBits(dstBD);
+                }
+            }
+        }
+
+
+
+        public override unsafe void Save(string file)
+        {
+            if (string.IsNullOrEmpty(file))
+                throw new ArgumentException("WORM.Save(string)\n\tThe path cannot be null or empty");
+
+            switch (Path.GetExtension(file))
+            {
+                case ".wrm":
+                    this.Format = WormFormat.wrm;
+                    break;
+                case ".dwrm":
+                    this.Format = WormFormat.dwrm;
+                    break;
+            }
+
+            if (this.Format != WormFormat.nil) 
+            {
+                Save(file, this.Format); 
+            }
+            else
+            {
+                Save(file, WormFormat.wrm);
+            }
+        }
+
+        /// <summary>
+        /// Saves an image to disk.
+        /// <para>Can throw just about any exception and should be used in a try catch</para>
+        /// </summary>
+        /// <param name="file">The path to save.</param>
+        /// <param name="format">The <see cref="WormFormat"/> to encode.</param>
+        /// <exception cref="Exception"></exception>
+        public virtual unsafe void Save(string file, WormFormat format)
+        {
+            if(string.IsNullOrEmpty(file))
+                throw new ArgumentException("WORM.Save(string, WormFormat)\n\tThe path cannot be null or empty");
+            if (this.Image == null)
+                throw new ArgumentException("WORM.Save(string, WormFormat)\n\tThe image cannot be null");
+
+            using (Stream stream = new FileStream(file, FileMode.OpenOrCreate))
+            using (BinaryWriter binaryWriter = new BinaryWriter(stream))
+            using(GZipStream compressor  = new GZipStream(stream, CompressionLevel.Optimal))
+            {
+                switch (format)
+                {
+                    case WormFormat.nil:
+                        throw new Exception("WORM.Save(string, WormFormat)\n\tInvalid worm format.");
+                    case WormFormat.wrm:
+                        binaryWriter.Write(WRM_IDENTIFIER, 0, WRM_IDENTIFIER.Length); 
+                        break;
+                    case WormFormat.dwrm:
+                        binaryWriter.Write(DWRM_IDENTIFIER, 0, DWRM_IDENTIFIER.Length);
+                        break;
+                }
+                
+                binaryWriter.Write(Width);
+                binaryWriter.Write(Height);
+
+                BitmapData dstBD = null;
+                byte[] data = new byte[Width * Height * 2];
+
+                dstBD = Image.LockBits(
+                        new Rectangle(0, 0, Image.Width, Image.Height),
+                        ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                try
+                {
+                    byte* pDst = (byte*)(void*)dstBD.Scan0;
+
+                    for (int i = 0; i < Width * Height; i++)
+                    {
+                        int Decimal = ColorToDecimal(*(pDst + 2), *(pDst + 1), *(pDst));
+                        ushort StorageValue = (ushort)Math.Round(ushort.MaxValue * (Decimal / MAX_DEC));
+
+                        int index = i << 1;
+
+                        data[index] = (byte)StorageValue;
+                        data[index + 1] = (byte)(StorageValue >> 8);
+
+                        pDst += 4; // advance				 
+                    }
+                    compressor.Write(data, 0, data.Length);
+                }
+                finally
+                {
+                    Image.UnlockBits(dstBD);
+                }
+            }
+        }
+
+
+        public override ImgFormat GetImageFormat()
+        {
+            return WORM.ImageFormat;
+        }
+
+        public override string GetMimeType()
+        {
+            return WORM.MimeType;
+        }
+
         /// <summary>
         /// Dispose of the image.
         /// </summary>
-        public void Dispose()
+        public new void Dispose()
         {
             if (Image != null)
                 Image.Dispose();
+            Format = WormFormat.nil;
             Image = null;
             Width = 0;
             Height = 0;
         }
 
 
+        public static implicit operator Bitmap(WORM worm)
+        {
+            return worm.Image;
+        }
+
+        public static implicit operator WORM(Bitmap bitmap)
+        {
+            return new WORM(bitmap);
+        }
+
+        public static implicit operator Image(WORM worm)
+        {
+            return worm.Image;
+        }
+
+        public static implicit operator WORM(Image bitmap)
+        {
+            return new WORM(bitmap);
+        }
+
+
+        private static int ColorToDecimal(int r, int g, int b, int a = 255)
+        {
+            return r << 16 | g << 8 | b;
+        }
+
+        private static Color DecimalToColor(int dec)
+        {
+            return Color.FromArgb((dec >> 16) & 0xFF, (dec >> 8) & 0xFF, dec & 0xFF);
+        }
 
         private Color ReadWORMPixel(int dec)
         {
@@ -328,7 +423,7 @@ namespace ImageViewer.Helpers
             float Sat;
             float Lig;
 
-            switch (WormFormat)
+            switch (Format)
             {
                 default:
                 case WormFormat.wrm:
@@ -391,17 +486,6 @@ namespace ImageViewer.Helpers
                     return HSLToColor(Hue, Sat, Lig);
             }
 
-        }
-
-
-        private static int ColorToDecimal(int r, int g, int b, int a = 255)
-        {
-            return r << 16 | g << 8 | b;
-        }
-
-        private static Color DecimalToColor(int dec)
-        {
-            return Color.FromArgb((dec >> 16) & 0xFF, (dec >> 8) & 0xFF, dec & 0xFF);
         }
 
         private static Color HSVToColor(float Hue360, float saturation, float brightness)

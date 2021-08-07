@@ -208,6 +208,7 @@
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifDecoder.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifEncoder.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifFrame.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\ICO.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Enums.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\LibWebpStructs.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\UnsafeNativeMethods.cs" />

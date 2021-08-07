@@ -27,10 +27,10 @@ namespace ImageViewer.Settings
 
 
         public static List<string> Readable_Image_Formats_Dialog_Options = new List<string>
-        { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff", "*.wrm", "*.dwrm" };
+        { "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.jfif", "*.gif", "*.bmp", "*.tif", "*.tiff", "*.ico", "*.wrm", "*.dwrm" };
 
         public static List<string> Readable_Image_Formats = new List<string>()
-        { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff", "wrm", "dwrm" };
+        { "png", "jpg", "jpeg", "jpe", "jfif", "gif", "bmp", "tif", "tiff", "ico", "wrm", "dwrm" };
 
         public static List<string> Readable_Color_Palette_Dialog_Options = new List<string>
         { "*.aco", "*.lbm", "*.bmm", "*.txt" };
@@ -57,6 +57,7 @@ namespace ImageViewer.Settings
         public const string PNG_File_Dialog = "PNG (*.png)|*.png";
         public const string BMP_File_Dialog = "BMP (*.bmp)|*.bmp";
         public const string GIF_File_Dialog = "GIF (*.gif)|*.gif";
+        public const string ICO_File_Dialog = "ICO (*.ico)|*.ico";
         public const string WEBP_File_Dialog = "WEBP (*.webp)|*.webp";
         public const string TIFF_File_Dialog = "TIFF (*.tif, *.tiff)|*.tif;*.tiff";
         public const string JPEG_File_Dialog = "JPEG (*.jpg, *.jpeg, *.jpe, *.jfif)|*.jpg;*.jpeg;*.jpe;*.jfif";
@@ -77,6 +78,7 @@ namespace ImageViewer.Settings
                 BMP_File_Dialog,
                 TIFF_File_Dialog,
                 GIF_File_Dialog,
+                ICO_File_Dialog,
                 WRM_File_Dialog
             });
 
@@ -350,6 +352,7 @@ namespace ImageViewer.Settings
                     BMP_File_Dialog,
                     TIFF_File_Dialog,
                     GIF_File_Dialog,
+                    ICO_File_Dialog,
                     WRM_File_Dialog
                 });
 

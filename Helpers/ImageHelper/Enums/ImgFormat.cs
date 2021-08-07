@@ -16,6 +16,10 @@ namespace ImageViewer.Helpers
         gif,
         wrm,
         webp,
+
+        // can only read ico images
+        [Browsable(false)] 
+        ico,
         [Browsable(false)]
         nil = -1
     }

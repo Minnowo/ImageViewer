@@ -9,17 +9,182 @@ using System.Drawing.Imaging;
 
 namespace ImageViewer.Helpers
 {
-    public class ICO
+    public class ICO : ImageBase
     {
-        public const string MIME_TYPE = "image/ico";
-        public static readonly byte[] IDENTIFIER_BYTES = new byte[] { 0x00, 0x00, 0x01, 0x00 };
+        #region Readonly / Const / Static 
 
+
+        /// <summary>
+        /// The leading bytes to identify the wrm format.
+        /// </summary>
+        public static readonly byte[] IdentifierBytes_1 = new byte[] { 0x00, 0x00, 0x01, 0x00 };
+
+
+
+        /// <summary>
+        /// The leading bytes to identify a WORM image.
+        /// </summary>
+        public static readonly new byte[][] FileIdentifiers = new byte[][]
+        {
+            IdentifierBytes_1,
+        };
+
+
+        /// <summary>
+        /// The file extensions used for a WORM image.
+        /// </summary>
+        public static readonly new string[] FileExtensions = new[]
+        {
+            "ico"
+        };
+
+
+        /// <summary>
+        /// Gets the standard identifier used on the Internet to indicate the type of data that a file contains.
+        /// </summary>
+        public new const string MimeType = "image/x-icon";
+
+
+        /// <summary>
+        /// Gets the default file extension.
+        /// </summary>
+        public new const string DefaultExtension = "ico";
+
+
+        /// <summary>
+        /// Gets the WORM iamge format.
+        /// </summary>
+        public static readonly new ImgFormat ImageFormat = ImgFormat.ico;
+
+        #endregion
+
+        public virtual Bitmap[] Images { get; protected set; }
+
+        public virtual Bitmap this[int Index]
+        {
+            get
+            {
+                if (Images == null)
+                    return null;
+                else
+                    return Images[Index];
+            }
+        }
+
+        public override Bitmap Image 
+        {
+            get 
+            { 
+                if (Images == null || selectedImageIndex < 0) 
+                    return null; 
+                else 
+                    return Images[selectedImageIndex]; 
+            }
+            protected set { }
+        }
+
+        /// <summary>
+        /// Get the width of the selected image, or 0 if null.
+        /// </summary>
+        public override int Width 
+        { 
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Width;
+            } 
+            protected set 
+            { 
+            }
+        }
+
+        /// <summary>
+        /// Get the height of the selected image, or 0 if null.
+        /// </summary>
+        public override int Height
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Height;
+            }
+            protected set
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of images.
+        /// </summary>
+        public int Count
+        {
+            get 
+            {
+                if (Images == null)
+                    return 0;
+                return Images.Length; 
+            }
+        }
+
+        /// <summary>
+        /// Get or Set the selected image index.
+        /// <para><see cref="ICO.Image"/> returns <see cref="ICO.Images"/> at the selected index.</para>
+        /// </summary>
+        public int SelectedImageIndex 
+        { 
+            get 
+            { 
+                return selectedImageIndex; 
+            }
+            set 
+            {
+                if (Images == null)
+                    selectedImageIndex = 0;
+                else 
+                    selectedImageIndex = value.Clamp(0, Images.Length); 
+            }
+        }
+        private int selectedImageIndex = -1;
+
+        
+
+
+        public ICO()
+        {
+        }
+
+        public ICO(Image bmp) : this((Bitmap)bmp)
+        {
+        }
+
+        public ICO(Bitmap bmp)
+        {
+            this.Images = new Bitmap[1];
+            this.Images[0] = bmp;
+            this.selectedImageIndex = 0;
+            this.Width = bmp.Width;
+            this.Height = bmp.Height;
+        }
+
+        public ICO(Bitmap[] bitmaps)
+        {
+            this.Images = bitmaps;
+            this.selectedImageIndex = 0;
+            this.Width = bitmaps[0].Width;
+            this.Height = bitmaps[0].Height;
+        }
+
+
+
+        #region Static Functions
 
         /// <summary>
         /// Gets the number of images stored in a .ico file.
         /// </summary>
         /// <param name="path">The path to the file.</param>
-        /// <returns>The number of images in the file. -1 if invalid file.</returns>
+        /// <returns>The number of images in the file, OR -1 if error.</returns>
         public static int GetImageCount(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
@@ -32,7 +197,7 @@ namespace ImageViewer.Helpers
                     byte[] bytes = new byte[4];
                     fileStream.Read(bytes, 0, bytes.Length);
 
-                    if (!ByteHelper.StartsWith(bytes, IDENTIFIER_BYTES))
+                    if (!ByteHelper.StartsWith(bytes, IdentifierBytes_1))
                     {
                         return -1;
                     }
@@ -45,8 +210,12 @@ namespace ImageViewer.Helpers
             }
         }
 
-
-        public static Size GetDimensionsFromFile(string path)
+        /// <summary>
+        /// Gets the width and height of the first image directory of a .ico file.
+        /// </summary>
+        /// <param name="path">The path to the file.</param>
+        /// <returns>The <see cref="Size"/> of the first image directory, OR Size.Empty if error.</returns>
+        public static Size GetDimensionOfFirstImageFromFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return Size.Empty;
@@ -58,7 +227,7 @@ namespace ImageViewer.Helpers
                     byte[] bytes = new byte[6];
                     fileStream.Read(bytes, 0, bytes.Length);
 
-                    if (!ByteHelper.StartsWith(bytes, IDENTIFIER_BYTES))
+                    if (!ByteHelper.StartsWith(bytes, IdentifierBytes_1))
                     {
                         return Size.Empty;
                     }
@@ -88,30 +257,34 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public static unsafe Image[] ReadImages(string path)
+        #endregion
+
+        public override unsafe void Load(string path)
         {
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                return null;
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentException("ICO.Load(string)\n\tPath cannot be null or empty");
+            if(!File.Exists(path))
+                throw new ArgumentException("ICO.Load(string)\n\tFile does not exist");
 
-            Image[] images = null;
+            this.Dispose();
 
-            try
+            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                byte[] bytes = new byte[6];
+                fileStream.Read(bytes, 0, bytes.Length);
+
+                if (!ByteHelper.StartsWith(bytes, IdentifierBytes_1))
+                    throw new Exception("ICO.Load(string)\n\tInvalid .ico file");
+
+
+                int imageCount = ByteHelper.ReadInt16LE(bytes, 4);
+
+                this.Images = new Bitmap[imageCount];
+
+                long streamPosition = -1;
+                for (int i = 0; i < imageCount; i++)
                 {
-                    byte[] bytes = new byte[6];
-                    fileStream.Read(bytes, 0, bytes.Length);
-
-                    if (!ByteHelper.StartsWith(bytes, IDENTIFIER_BYTES))
-                    {
-                        return null;
-                    }
-
-                    int imageCount = ByteHelper.ReadInt16LE(bytes, 4);
-
-                    images = new Image[imageCount];
-
-                    for (int i = 0; i < imageCount; i++)
+                    try
                     {
                         byte[] imageDirectory = new byte[8];
                         fileStream.Read(imageDirectory, 0, imageDirectory.Length);
@@ -145,7 +318,7 @@ namespace ImageViewer.Helpers
                         int imageDataSize = ByteHelper.ReadInt32LE(fileStream);
                         int imageDataOffset = ByteHelper.ReadInt32LE(fileStream);
 
-                        long curPos = fileStream.Position;
+                        streamPosition = fileStream.Position;
 
                         // seek to the image data start
                         fileStream.Seek(imageDataOffset, SeekOrigin.Begin);
@@ -155,14 +328,14 @@ namespace ImageViewer.Helpers
                         fileStream.Read(imageData, 0, imageData.Length);
 
                         // reset the position
-                        fileStream.Seek(curPos, SeekOrigin.Begin);
+                        fileStream.Seek(streamPosition, SeekOrigin.Begin);
 
                         // if the image is stored as a png, use a memory stream to read the image
                         if (ByteHelper.StartsWith(imageData, ImageBinaryReader.PNG_IDENTIFIER))
                         {
                             MemoryStream mem = new MemoryStream();
                             mem.Write(imageData, 0, imageData.Length);
-                            images[i] = Image.FromStream(mem);
+                            this.Images[i] = (Bitmap)System.Drawing.Image.FromStream(mem);
                             continue;
                         }
 
@@ -170,7 +343,7 @@ namespace ImageViewer.Helpers
                         int index = dipHeaderSize;
 
                         Bitmap bmp = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-                        images[i] = bmp;
+                        this.Images[i] = bmp;
 
                         BitmapData dstBD = bmp.LockBits(
                             new Rectangle(0, 0, bmp.Width, bmp.Height),
@@ -210,14 +383,78 @@ namespace ImageViewer.Helpers
                         // flip the image 
                         bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     }
-
-                    return images;
+                    catch
+                    {
+                        // chances are the error was thrown when building the image
+                        // so at least try and get the others 
+                        if (streamPosition != -1)
+                            fileStream.Seek(streamPosition, SeekOrigin.Begin);
+                        continue;
+                    }
                 }
             }
-            catch
+        }
+
+        public override void Save(string path)
+        {
+            throw new Exception("ICO.Save(string)\n\tCurrently doesn't support the saving of .ico files");
+        }
+
+        /// <summary>
+        /// Dispose of all the images.
+        /// </summary>
+        public new void Dispose()
+        {
+            if (this.Images == null)
+                return;
+
+            foreach(Bitmap b in this.Images)
             {
-                return images;
+                b?.Dispose();
             }
+            this.Images = null;
+            this.selectedImageIndex = -1;
+        }
+
+        public override ImgFormat GetImageFormat()
+        {
+            return ICO.ImageFormat;
+        }
+
+        public override string GetMimeType()
+        {
+            return ICO.MimeType;
+        }
+
+
+        public static implicit operator Bitmap(ICO ico)
+        {
+            return ico.Image;
+        }
+
+        public static implicit operator ICO(Bitmap bitmap)
+        {
+            return new ICO(bitmap);
+        }
+
+        public static implicit operator Image(ICO ico)
+        {
+            return ico.Image;
+        }
+
+        public static implicit operator ICO(Image bitmap)
+        {
+            return new ICO(bitmap);
+        }
+
+        public static implicit operator ICO(Bitmap[] bitmaps)
+        {
+            return new ICO(bitmaps);
+        }
+
+        public static implicit operator Bitmap[](ICO ico)
+        {
+            return ico.Images;
         }
     }
 }

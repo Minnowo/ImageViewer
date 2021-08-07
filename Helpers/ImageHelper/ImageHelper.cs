@@ -243,6 +243,7 @@ namespace ImageViewer.Helpers
             try
             {
                 WORM wrm = new WORM(img);
+                
                 wrm.Save(filePath);
                 return true;
             }
@@ -446,6 +447,14 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
 
+            // remove Bitmap return type
+            // make custom ImageBase class 
+            // used to hold 1 or more images 
+            // the image type
+            // the mime type
+            // the size
+            // ect 
+
             try
             {
                 ImgFormat fmt = GetImageFormat(path);
@@ -470,6 +479,8 @@ namespace ImageViewer.Helpers
 
                     case ImgFormat.wrm:
                         return LoadWrm(path);
+
+
                 }
 
             }
@@ -523,7 +534,7 @@ namespace ImageViewer.Helpers
             try
             {
                 if ((ImgFormat)image.Tag == ImgFormat.wrm)
-                    return WORM.MIME_TYPE;
+                    return WORM.MimeType;
                 if ((ImgFormat)image.Tag == ImgFormat.webp)
                     return Webp.MIME_TYPE;
 

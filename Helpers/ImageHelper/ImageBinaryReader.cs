@@ -13,7 +13,7 @@ namespace ImageViewer.Helpers
         const byte MAX_MAGIC_BYTE_LENGTH = 8;
 
         public static readonly byte[] BMP_IDENTIFIER = new byte[2] { 0x42, 0x4D };
-        public static readonly byte[] JPG_IDENTIFIER = new byte[2] { 0xff, 0xd8 };
+        public static readonly byte[] JPG_IDENTIFIER = new byte[3] { 0xFF, 0xD8, 0xFF };
         public static readonly byte[] TIFF_LE_IDENTIFIER = new byte[3] { 0x49, 0x49, 0x2A };
         public static readonly byte[] WEBP_IDENTIFIER = new byte[4] { 0x52, 0x49, 0x46, 0x46 };
         public static readonly byte[] TIFF_BE_IDENTIFIER = new byte[4] { 0x4D, 0x4D, 0x00, 0x2A };
@@ -73,11 +73,11 @@ namespace ImageViewer.Helpers
                 case ImgFormat.bmp:
                     return "iamge/bmp";
                 case ImgFormat.gif:
-                    return Gif.MIME_TYPE;
+                    return Gif.MimeType;
                 case ImgFormat.webp:
                     return Webp.MIME_TYPE;
                 case ImgFormat.wrm:
-                    return WORM.MIME_TYPE;
+                    return WORM.MimeType;
             }
             return "image/unknown";
         }
