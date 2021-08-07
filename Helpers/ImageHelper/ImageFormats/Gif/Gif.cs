@@ -20,13 +20,13 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// The leading bytes to identify the wrm format.
         /// </summary>
-        public static readonly byte[] GIF_IDENTIFIER_1 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
+        public static readonly byte[] IdentifierBytes_1 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
 
 
         /// <summary>
         /// The leading bytes to identify the dwrm format.
         /// </summary>
-        public static readonly byte[] GIF_IDENTIFIER_2 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 };
+        public static readonly byte[] IdentifierBytes_2 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 };
 
 
         /// <summary>
@@ -34,8 +34,8 @@ namespace ImageViewer.Helpers
         /// </summary>
         public static readonly new byte[][] FileIdentifiers = new byte[][]
         {
-            GIF_IDENTIFIER_1,
-            GIF_IDENTIFIER_2
+            IdentifierBytes_1,
+            IdentifierBytes_2
         };
 
 

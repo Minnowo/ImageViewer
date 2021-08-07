@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ImageViewer.Misc
+
+namespace ImageViewer.Helpers
 {
     public class ValueTypeTypeConverter : System.ComponentModel.ExpandableObjectConverter
     {

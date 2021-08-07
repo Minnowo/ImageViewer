@@ -31,6 +31,13 @@ using System.Threading.Tasks;
 
 namespace ImageViewer.Helpers
 {
+    public enum WebpEncodingFormat
+    {
+        EncodeLossless,
+        EncodeNearLossless,
+        EncodeLossy
+    }
+
     /// <summary>
     /// Enumerate some predefined settings for WebPConfig, depending on the type of source picture. 
     /// These presets are used when calling WebPConfigPreset().

@@ -209,11 +209,13 @@
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifEncoder.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifFrame.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\ICO.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\ImageBase.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Enums.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\LibWebpStructs.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\UnsafeNativeMethods.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Webp.cs" />
     <Compile Include="Helpers\ImageHelper\Enums\ImgFormat.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\WebpQuality.cs" />
     <Compile Include="Helpers\Transforms\IPixelTransform.cs" />
     <Compile Include="Helpers\Transforms\MonochromePixelTransform.cs" />
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform.cs" />
@@ -224,6 +226,7 @@
     <Compile Include="Helpers\UndoRedo\BitmapUndo.cs" />
     <Compile Include="Helpers\UndoRedo\IUndoable.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\WORM.cs" />
+    <Compile Include="Helpers\ValueTypeTypeConverter.cs" />
     <Compile Include="Misc\FolderWatcher.cs" />
     <Compile Include="Forms\SettingsForm.cs">
       <SubType>Form</SubType>
@@ -232,7 +235,6 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Misc\InstanceManager.cs" />
-    <Compile Include="Misc\ValueTypeConverter.cs" />
     <Compile Include="Native\NativeConstants.cs" />
     <Compile Include="Settings\SettingsLoader.cs" />
     <Compile Include="Structs\Structs.cs" />
@@ -258,7 +260,6 @@
     <Compile Include="Controls\_TabPage.Designer.cs">
       <DependentUpon>_TabPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Structs\WebPQuality.cs" />
     <EmbeddedResource Include="Controls\ColorDisplay.resx">
       <DependentUpon>ColorDisplay.cs</DependentUpon>
     </EmbeddedResource>

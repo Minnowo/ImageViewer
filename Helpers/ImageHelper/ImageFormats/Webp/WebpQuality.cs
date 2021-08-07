@@ -1,29 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ImageViewer.Helpers;
-using ImageViewer.Settings;
-using ImageViewer.Misc;
 
-namespace ImageViewer.structs
+namespace ImageViewer.Helpers
 {
-    public enum WebpEncodingFormat
-    {
-        EncodeLossless,
-        EncodeNearLossless,
-        EncodeLossy
-    }
-
-
     [TypeConverter(typeof(ValueTypeTypeConverter))]
     public struct WebPQuality
     {
-        public static readonly WebPQuality empty;
+        public static readonly WebPQuality Empty;
+        public static readonly WebPQuality Default = new WebPQuality(WebpEncodingFormat.EncodeLossy, 74, 6);
 
         /// <summary>
         /// The encoding format of the webp.
@@ -89,7 +77,7 @@ namespace ImageViewer.structs
 
         public static WebPQuality FromDecimal(int dec)
         {
-            return new WebPQuality((WebpEncodingFormat)((dec >> 16) & 0xFF).Clamp(0,2), (dec >> 8) & 0xFF, dec & 0xFF);
+            return new WebPQuality((WebpEncodingFormat)((dec >> 16) & 0xFF).Clamp(0, 2), (dec >> 8) & 0xFF, dec & 0xFF);
         }
 
         public override int GetHashCode()

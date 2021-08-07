@@ -20,8 +20,8 @@ namespace ImageViewer.Helpers
         public static readonly byte[] GIF_IDENTIFIER_1 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
         public static readonly byte[] GIF_IDENTIFIER_2 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 };
         public static readonly byte[] PNG_IDENTIFIER = new byte[8] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-        public static readonly byte[] WRM_IDENTIFIER = WORM.WRM_IDENTIFIER;
-        public static readonly byte[] DWRM_IDENTIFIER = WORM.DWRM_IDENTIFIER;
+        public static readonly byte[] WRM_IDENTIFIER = WORM.IdentifierBytes_1;
+        public static readonly byte[] DWRM_IDENTIFIER = WORM.IdentifierBytes_2;
 
         public static readonly Dictionary<byte[], ImgFormat> Image_Byte_Identifiers = new Dictionary<byte[], ImgFormat>()
         {
@@ -75,7 +75,7 @@ namespace ImageViewer.Helpers
                 case ImgFormat.gif:
                     return Gif.MimeType;
                 case ImgFormat.webp:
-                    return Webp.MIME_TYPE;
+                    return Webp.MimeType;
                 case ImgFormat.wrm:
                     return WORM.MimeType;
             }

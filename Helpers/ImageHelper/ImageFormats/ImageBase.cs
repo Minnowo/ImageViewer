@@ -144,13 +144,22 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// Dispose of the image.
         /// </summary>
-        public void Dispose()
+        public virtual void Clear()
         {
             if (this.Image == null)
                 return;
 
             this.Image.Dispose();
             this.Image = null;
+        }
+
+        /// <summary>
+        /// Dispose of the image.
+        /// </summary>
+        public void Dispose()
+        {
+            Clear();
+            GC.SuppressFinalize(this);
         }
 
 

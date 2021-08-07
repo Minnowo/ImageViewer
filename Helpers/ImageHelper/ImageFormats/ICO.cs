@@ -266,7 +266,7 @@ namespace ImageViewer.Helpers
             if(!File.Exists(path))
                 throw new ArgumentException("ICO.Load(string)\n\tFile does not exist");
 
-            this.Dispose();
+            this.Clear();
 
             using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -400,20 +400,26 @@ namespace ImageViewer.Helpers
             throw new Exception("ICO.Save(string)\n\tCurrently doesn't support the saving of .ico files");
         }
 
-        /// <summary>
-        /// Dispose of all the images.
-        /// </summary>
-        public new void Dispose()
+        public override void Clear()
         {
             if (this.Images == null)
                 return;
 
-            foreach(Bitmap b in this.Images)
+            foreach (Bitmap b in this.Images)
             {
                 b?.Dispose();
             }
             this.Images = null;
             this.selectedImageIndex = -1;
+        }
+
+        /// <summary>
+        /// Dispose of all the images.
+        /// </summary>
+        public new void Dispose()
+        {
+            Clear();
+            GC.SuppressFinalize(this);
         }
 
         public override ImgFormat GetImageFormat()

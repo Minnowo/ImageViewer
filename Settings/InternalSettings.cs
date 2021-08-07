@@ -587,7 +587,7 @@ namespace ImageViewer.Settings
 
         [XmlIgnore]
         [Description("The default webp quality"), DisplayName("Default Webp Quality")]
-        public WebPQuality WebpQuality_Default { get; set; } = new WebPQuality(WebpEncodingFormat.EncodeLossy, 74, 6);
+        public WebPQuality WebpQuality_Default { get; set; } = WebPQuality.Default;
 
 
 

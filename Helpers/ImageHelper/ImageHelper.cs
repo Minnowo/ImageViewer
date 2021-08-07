@@ -130,9 +130,9 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="filePath"> The path to the file. </param>
         /// <returns> Enum type representing the image format. </returns>
-        public static ImgFormat GetImageFormatFromPath(string filePath)
+        public static ImgFormat GetImageFormatFromPath(string path)
         {
-            string ext = Helper.GetFilenameExtension(filePath);
+            string ext = Helper.GetFilenameExtension(path);
 
             if (string.IsNullOrEmpty(ext))
                 return InternalSettings.Default_Image_Format;
@@ -168,40 +168,20 @@ namespace ImageViewer.Helpers
         /// Save a bitmap as a webp file. (Requires the libwebp_x64.dll or libwebp_x86.dll)
         /// </summary>
         /// <param name="img"> The bitmap to encode. </param>
-        /// <param name="filePath"> The path to save the bitmap. </param>
+        /// <param name="Path"> The path to save the bitmap. </param>
         /// <param name="q"> The webp quality args. </param>
         /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
         /// <returns> true if the bitmap was saved successfully, else false </returns>
-        public static bool SaveWebp(Bitmap img, string filePath, WebPQuality q, bool collectGarbage = true)
+        public static bool SaveWebp(Bitmap img, string path, WebPQuality q, bool collectGarbage = true)
         {
-            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(filePath) || img == null)
+            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || img == null)
                 return false;
-
-            if (q == WebPQuality.empty)
-                q = InternalSettings.WebpQuality_Default;
+    
+            q = InternalSettings.WebpQuality_Default;
 
             try
             {
-                using (Webp webp = new Webp())
-                {
-                    byte[] rawWebP;
-
-                    switch (q.Format)
-                    {
-                        default:
-                        case WebpEncodingFormat.EncodeLossless:
-                            rawWebP = webp.EncodeLossless(img, q.Speed);
-                            break;
-                        case WebpEncodingFormat.EncodeNearLossless:
-                            rawWebP = webp.EncodeNearLossless(img, q.Quality, q.Speed);
-                            break;
-                        case WebpEncodingFormat.EncodeLossy:
-                            rawWebP = webp.EncodeLossy(img, q.Quality, q.Speed);
-                            break;
-                    }
-
-                    File.WriteAllBytes(filePath, rawWebP);
-                }
+                Webp.Save(img, path, q);
                 return true;
             }
             catch (Exception e)
@@ -226,9 +206,9 @@ namespace ImageViewer.Helpers
         /// <param name="q"> The webp quality args. </param>
         /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
         /// <returns> true if the image was saved successfully, else false </returns>
-        public static bool SaveWebp(Image img, string filePath, WebPQuality q, bool collectGarbage = true)
+        public static bool SaveWebp(Image img, string path, WebPQuality q, bool collectGarbage = true)
         {
-            return SaveWebp((Bitmap)img, filePath, q, collectGarbage);
+            return SaveWebp((Bitmap)img, path, q, collectGarbage);
         }
 
 
@@ -238,13 +218,13 @@ namespace ImageViewer.Helpers
         /// <param name="img">The image to encode.</param>
         /// <param name="filePath">The path to save the image.</param>
         /// <returns>True if the image was saved, else false.</returns>
-        public static bool SaveWrm(Image img, string filePath)
+        public static bool SaveWrm(Image img, string path)
         {
             try
             {
                 WORM wrm = new WORM(img);
                 
-                wrm.Save(filePath);
+                wrm.Save(path);
                 return true;
             }
             catch (Exception e)
@@ -259,40 +239,40 @@ namespace ImageViewer.Helpers
         /// Saves an image.
         /// </summary>
         /// <param name="img"> The image to save. </param>
-        /// <param name="filePath"> The path to save the image. </param>
+        /// <param name="path"> The path to save the image. </param>
         /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
         /// <returns> true if the image was saved successfully, else false </returns>
-        public static bool SaveImage(Image img, string filePath, bool collectGarbage = true)
+        public static bool SaveImage(Image img, string path, bool collectGarbage = true)
         {
-            if (img == null || string.IsNullOrEmpty(filePath))
+            if (img == null || string.IsNullOrEmpty(path))
                 return false;
 
-            PathHelper.CreateDirectoryFromFilePath(filePath);
+            PathHelper.CreateDirectoryFromFilePath(path);
             Program.mainForm.UseWaitCursor = true;
             try
             {
-                switch (GetImageFormatFromPath(filePath))
+                switch (GetImageFormatFromPath(path))
                 {
                     default:
                     case ImgFormat.png:
-                        img.Save(filePath, ImageFormat.Png);
+                        img.Save(path, ImageFormat.Png);
                         return true;
                     case ImgFormat.jpg:
-                        img.Save(filePath, ImageFormat.Jpeg);
+                        img.Save(path, ImageFormat.Jpeg);
                         return true;
                     case ImgFormat.bmp:
-                        img.Save(filePath, ImageFormat.Bmp);
+                        img.Save(path, ImageFormat.Bmp);
                         return true;
                     case ImgFormat.gif:
-                        img.Save(filePath, ImageFormat.Gif);
+                        img.Save(path, ImageFormat.Gif);
                         return true;
                     case ImgFormat.tif:
-                        img.Save(filePath, ImageFormat.Tiff);
+                        img.Save(path, ImageFormat.Tiff);
                         return true;
                     case ImgFormat.wrm:
-                        return SaveWrm(img, filePath);
+                        return SaveWrm(img, path);
                     case ImgFormat.webp:
-                        return SaveWebp(img, filePath, InternalSettings.WebpQuality_Default);
+                        return SaveWebp(img, path, InternalSettings.WebpQuality_Default);
                 }
             }
             catch (Exception e)
@@ -314,22 +294,22 @@ namespace ImageViewer.Helpers
         /// Saves an image.
         /// </summary>
         /// <param name="img"> The image to save. </param>
-        /// <param name="filePath"> The path to save the image. </param>
+        /// <param name="path"> The path to save the image. </param>
         /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
         /// <returns> true if the image was saved successfully, else false </returns>
-        public static bool SaveImage(Bitmap img, string filePath, bool collectGarbage = true)
+        public static bool SaveImage(Bitmap img, string path, bool collectGarbage = true)
         {
-            return SaveImage((Image)img, filePath, collectGarbage);
+            return SaveImage((Image)img, path, collectGarbage);
         }
 
         /// <summary>
         /// Opens a save file dialog asking where to save an image.
         /// </summary>
         /// <param name="img"> The image to save. </param>
-        /// <param name="filePath"> The path to open. </param>
+        /// <param name="path"> The path to open. </param>
         /// <param name="collectGarbage"> A bool indicating if GC.Collect should be called after saving. </param>
         /// <returns> The filename of the saved image, null if failed to save or canceled. </returns>
-        public static string SaveImageFileDialog(Image img, string filePath = "", bool collectGarbage = true)
+        public static string SaveImageFileDialog(Image img, string path = "", bool collectGarbage = true)
         {
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
@@ -337,11 +317,11 @@ namespace ImageViewer.Helpers
                 sfd.Filter = InternalSettings.Image_Dialog_Filters;
                 sfd.DefaultExt = "png";
 
-                if (!string.IsNullOrEmpty(filePath))
+                if (!string.IsNullOrEmpty(path))
                 {
-                    sfd.FileName = Path.GetFileName(filePath);
+                    sfd.FileName = Path.GetFileName(path);
 
-                    ImgFormat fmt = GetImageFormatFromPath(filePath);
+                    ImgFormat fmt = GetImageFormatFromPath(path);
 
                     if (fmt != ImgFormat.nil)
                     {
@@ -402,12 +382,7 @@ namespace ImageViewer.Helpers
 
             try
             {
-                using (Webp webp = new Webp())
-                {
-                    Bitmap image = webp.Load(path);
-                    image.Tag = ImgFormat.webp;
-                    return image;
-                }
+                return Webp.FromFileAsBitmap(path);
             }
             catch (Exception e)
             {
@@ -423,7 +398,7 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="path">The path of the image.</param>
         /// <returns>A bitmap.</returns>
-        public static Bitmap LoadWrm(string path)
+        public static Bitmap LoadWORM(string path)
         {
             try
             {
@@ -478,7 +453,7 @@ namespace ImageViewer.Helpers
                         return LoadWebP(path);
 
                     case ImgFormat.wrm:
-                        return LoadWrm(path);
+                        return LoadWORM(path);
 
 
                 }
@@ -536,7 +511,7 @@ namespace ImageViewer.Helpers
                 if ((ImgFormat)image.Tag == ImgFormat.wrm)
                     return WORM.MimeType;
                 if ((ImgFormat)image.Tag == ImgFormat.webp)
-                    return Webp.MIME_TYPE;
+                    return Webp.MimeType;
 
                 Guid imgguid = image.RawFormat.Guid;
                 foreach (ImageCodecInfo codec in ImageCodecInfo.GetImageDecoders())

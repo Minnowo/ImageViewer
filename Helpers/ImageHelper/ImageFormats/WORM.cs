@@ -31,13 +31,13 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// The leading bytes to identify the wrm format.
         /// </summary>
-        public static readonly byte[] WRM_IDENTIFIER = new byte[5] { 0x57, 0x4F, 0x52, 0x4D, 0x2E };
+        public static readonly byte[] IdentifierBytes_1 = new byte[5] { 0x57, 0x4F, 0x52, 0x4D, 0x2E };
 
 
         /// <summary>
         /// The leading bytes to identify the dwrm format.
         /// </summary>
-        public static readonly byte[] DWRM_IDENTIFIER = new byte[5] { 0x44, 0x57, 0x4F, 0x52, 0x4D };
+        public static readonly byte[] IdentifierBytes_2 = new byte[5] { 0x44, 0x57, 0x4F, 0x52, 0x4D };
 
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace ImageViewer.Helpers
         /// </summary>
         public static readonly new byte[][] FileIdentifiers = new byte[][]
         {
-            WRM_IDENTIFIER,
-            DWRM_IDENTIFIER
+            IdentifierBytes_1,
+            IdentifierBytes_2
         };
 
 
@@ -110,9 +110,9 @@ namespace ImageViewer.Helpers
                 throw new Exception($"WORM images do not support width or height larger than {MAX_SIZE}");
 
             this.Image = bmp;
-            Width = (ushort)bmp.Width;
-            Height = (ushort)bmp.Height;
-            Format = WormFormat.nil;
+            this.Width = (ushort)bmp.Width;
+            this.Height = (ushort)bmp.Height;
+            this.Format = WormFormat.nil;
         }
 
 
@@ -138,7 +138,14 @@ namespace ImageViewer.Helpers
         /// <returns>A <see cref="Bitmap"/> object.</returns>
         public static Bitmap FromFileAsBitmap(string file)
         {
-            return WORM.FromFile(file).Image;
+            try
+            {
+                return WORM.FromFile(file).Image;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
 
@@ -199,9 +206,9 @@ namespace ImageViewer.Helpers
         {
             byte[] identifier = binaryReader.ReadBytes(5);
 
-            if (ByteHelper.StartsWith(identifier, WRM_IDENTIFIER))
+            if (ByteHelper.StartsWith(identifier, IdentifierBytes_1))
                 return WormFormat.wrm;
-            if (ByteHelper.StartsWith(identifier, DWRM_IDENTIFIER))
+            if (ByteHelper.StartsWith(identifier, IdentifierBytes_2))
                 return WormFormat.dwrm;
 
             return WormFormat.nil;
@@ -217,7 +224,7 @@ namespace ImageViewer.Helpers
             if(string.IsNullOrEmpty(file))
                 throw new ArgumentException("WORM.Load(string)\n\tThe path cannot be null or empty");
 
-            Dispose();
+            Clear();
 
             using (FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (BinaryReader binaryReader = new BinaryReader(fileStream))
@@ -318,10 +325,10 @@ namespace ImageViewer.Helpers
                     case WormFormat.nil:
                         throw new Exception("WORM.Save(string, WormFormat)\n\tInvalid worm format.");
                     case WormFormat.wrm:
-                        binaryWriter.Write(WRM_IDENTIFIER, 0, WRM_IDENTIFIER.Length); 
+                        binaryWriter.Write(IdentifierBytes_1, 0, IdentifierBytes_1.Length); 
                         break;
                     case WormFormat.dwrm:
-                        binaryWriter.Write(DWRM_IDENTIFIER, 0, DWRM_IDENTIFIER.Length);
+                        binaryWriter.Write(IdentifierBytes_2, 0, IdentifierBytes_2.Length);
                         break;
                 }
                 
@@ -370,10 +377,7 @@ namespace ImageViewer.Helpers
             return WORM.MimeType;
         }
 
-        /// <summary>
-        /// Dispose of the image.
-        /// </summary>
-        public new void Dispose()
+        public override void Clear()
         {
             if (Image != null)
                 Image.Dispose();
@@ -381,6 +385,15 @@ namespace ImageViewer.Helpers
             Image = null;
             Width = 0;
             Height = 0;
+        }
+
+        /// <summary>
+        /// Dispose of the image.
+        /// </summary>
+        public new void Dispose()
+        {
+            Clear();
+            GC.SuppressFinalize(this);
         }
 
 

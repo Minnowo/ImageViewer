@@ -34,33 +34,160 @@ namespace ImageViewer.Helpers
 {
     // https://github.com/JosePineiro/WebP-wrapper
 
-    public sealed class Webp : IDisposable
+    public sealed class Webp : ImageBase
     {
+        #region Readonly / Const / Static 
+
         public const string libwebP_x64 = "plugins\\libwebp_x64.dll";
         public const string libwebP_x86 = "plugins\\libwebp_x86.dll";
 
-        public const string MIME_TYPE = "image/webp";
-
         public const int WEBP_MAX_DIMENSION = 16383;
-        public static readonly Size MAX_SIZE = new Size(WEBP_MAX_DIMENSION, WEBP_MAX_DIMENSION);
+
+        /// <summary>
+        /// The leading bytes to identify the webp format.
+        /// </summary>
+        public static readonly byte[] IdentifierBytes_1 = new byte[4] { 0x52, 0x49, 0x46, 0x46 };
+
+
+        /// <summary>
+        /// The file extensions used for a WORM image.
+        /// </summary>
+        public static readonly new string[] FileExtensions = new[]
+        {
+            "webp"
+        };
+
+
+        /// <summary>
+        /// Gets the standard identifier used on the Internet to indicate the type of data that a file contains.
+        /// </summary>
+        public new const string MimeType = "image/webp";
+
+
+        /// <summary>
+        /// Gets the default file extension.
+        /// </summary>
+        public new const string DefaultExtension = "webp";
+
+
+        /// <summary>
+        /// Gets the WORM iamge format.
+        /// </summary>
+        public static readonly new ImgFormat ImageFormat = ImgFormat.webp;
+
+        #endregion
+
+        public override Bitmap Image { get; protected set; }
+
+        public override int Width { get; protected set; }
+
+        public override int Height { get; protected set; }
+
+        /// <summary>
+        /// Gets or Sets How should the webp should be encoded / what quality and speed should be used.
+        /// </summary>
+        public WebPQuality EncodingFormat { get; set; }
+
 
         private delegate int MyWriterDelegate([InAttribute()] IntPtr data, UIntPtr data_size, ref WebPPicture picture);
 
 
-        #region | Public Decode Functions |
+        public Webp()
+        {
+        }
+
+        public Webp(Image bmp) : this((Bitmap)bmp)
+        {
+        }
+
+        public Webp(Bitmap bmp)
+        {
+            if (bmp.Width > WEBP_MAX_DIMENSION || bmp.Height > WEBP_MAX_DIMENSION)
+                throw new Exception($"WORM images do not support width or height larger than {WEBP_MAX_DIMENSION}");
+
+            this.Image = bmp;
+            this.Width = bmp.Width;
+            this.Height = bmp.Height;
+            this.EncodingFormat = WebPQuality.Default;
+        }
+
+
+        #region Static Functions 
+
+        /// <summary>
+        /// Save a webp image with the given quality.
+        /// </summary>
+        /// <param name="img">The image to save.</param>
+        /// <param name="Path">The path to the file.</param>
+        /// <param name="quality">The encoding settings.</param>
+        public static void Save(Bitmap img, string Path, WebPQuality quality)
+        {
+            try
+            {
+                using (Webp webp = new Webp())
+                {
+                    byte[] rawWebP;
+
+                    switch (quality.Format)
+                    {
+                        default:
+                        case WebpEncodingFormat.EncodeLossless:
+                            rawWebP = webp.EncodeLossless(img, quality.Speed);
+                            break;
+                        case WebpEncodingFormat.EncodeNearLossless:
+                            rawWebP = webp.EncodeNearLossless(img, quality.Quality, quality.Speed);
+                            break;
+                        case WebpEncodingFormat.EncodeLossy:
+                            rawWebP = webp.EncodeLossy(img, quality.Quality, quality.Speed);
+                            break;
+                    }
+
+                    File.WriteAllBytes(Path, rawWebP);
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\nIn Webp.Save(Bitmap, string, WebPQuality)");
+            }
+        }
 
         /// <summary>
         /// Read a WebP file
         /// </summary>
-        /// <param name="pathFileName">WebP file to load</param>
+        /// <param name="path">WebP file to load</param>
         /// <returns>Bitmap with the WebP image</returns>
-        public Bitmap Load(string pathFileName)
+        public static Bitmap FromFileAsBitmap(string path)
         {
             try
             {
-                byte[] rawWebP = File.ReadAllBytes(pathFileName);
+                using (Webp webp = new Webp())
+                {
+                    byte[] rawWebP = File.ReadAllBytes(path);
+                    Bitmap image = webp.Decode(rawWebP);
+                    image.Tag = ImgFormat.webp;
+                    return image;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\nIn WebP.Load");
+            }
+        }
 
-                return Decode(rawWebP);
+        #endregion
+
+        #region | Public Decode Functions |
+
+
+        public override void Load(string path)
+        {
+            try
+            {
+                Clear();
+                byte[] rawWebP = File.ReadAllBytes(path);
+                this.Image = Decode(rawWebP);
+                this.Width = this.Image.Width;
+                this.Height = this.Image.Height;
             }
             catch (Exception ex) 
             { 
@@ -421,6 +548,32 @@ namespace ImageViewer.Helpers
         #endregion
 
         #region | Public Encode Functions |
+
+        public override void Save(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentException("Webp.Save(string)\n\tPath cannot be null or empty");
+            if (this.Image == null)
+                throw new ArgumentException("Webp.Save(string)\n\tImage cannot be null");
+
+            byte[] rawWebP;
+
+            switch (EncodingFormat.Format)
+            {
+                default:
+                case WebpEncodingFormat.EncodeLossless:
+                    rawWebP = EncodeLossless(this.Image, EncodingFormat.Speed);
+                    break;
+                case WebpEncodingFormat.EncodeNearLossless:
+                    rawWebP = EncodeNearLossless(this.Image, EncodingFormat.Quality, EncodingFormat.Speed);
+                    break;
+                case WebpEncodingFormat.EncodeLossy:
+                    rawWebP = EncodeLossy(this.Image, EncodingFormat.Quality, EncodingFormat.Speed);
+                    break;
+            }
+
+            File.WriteAllBytes(path, rawWebP);
+        }
 
         /// <summary>
         /// Save bitmap to file in WebP format
@@ -1159,11 +1312,56 @@ namespace ImageViewer.Helpers
         #endregion
 
 
+        public static implicit operator Bitmap(Webp webp)
+        {
+            return webp.Image;
+        }
+
+        public static implicit operator Webp(Bitmap bitmap)
+        {
+            return new Webp(bitmap);
+        }
+
+        public static implicit operator Image(Webp webp)
+        {
+            return webp.Image;
+        }
+
+        public static implicit operator Webp(Image bitmap)
+        {
+            return new Webp(bitmap);
+        }
+
+
+        public override ImgFormat GetImageFormat()
+        {
+            return Webp.ImageFormat;
+        }
+
+        public override string GetMimeType()
+        {
+            return Webp.MimeType;
+        }
+
+        /// <summary>
+        /// Dispose of the image.
+        /// </summary>
+        public void Clear()
+        {
+            if (Image != null)
+                Image.Dispose();
+
+            Image = null;
+            Width = 0;
+            Height = 0;
+        }
+
         /// <summary>
         /// Free memory
         /// </summary>
-        public void Dispose()
+        public new void Dispose()
         {
+            Clear();
             GC.SuppressFinalize(this);
         }
     }
