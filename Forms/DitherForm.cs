@@ -291,8 +291,8 @@ namespace ImageViewer
                 MessageBox.Show(this, "cannot save while worker thread is running", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            
-            ImageHelper.UpdateBitmapSafe(originalImage, (Bitmap)ibMain.Image);
+
+            ImageProcessor.CopyPixelsSafe(originalImage, (Bitmap)ibMain.Image);
             Close();
         }
 

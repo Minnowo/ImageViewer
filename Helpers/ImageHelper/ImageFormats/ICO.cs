@@ -136,6 +136,10 @@ namespace ImageViewer.Helpers
         { 
             get 
             { 
+                if(selectedImageIndex < 0 && this.Images != null)
+                {
+                    selectedImageIndex = 0;
+                }
                 return selectedImageIndex; 
             }
             set 
@@ -179,6 +183,23 @@ namespace ImageViewer.Helpers
 
 
         #region Static Functions
+
+        /// <summary>
+        /// Loads a ICO image and returns it as a bitmap object.
+        /// </summary>
+        /// <param name="path">The path of the image.</param>
+        /// <returns>A <see cref="Bitmap"/> object.</returns>
+        public static Bitmap FromFileAsBitmap(string path)
+        {
+            try
+            {
+                return ImageBase.StandardLoad(path);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\nIn ICO.FromFileAsBitmap(string)");
+            }
+        }
 
         /// <summary>
         /// Gets the number of images stored in a .ico file.
@@ -280,6 +301,7 @@ namespace ImageViewer.Helpers
                 int imageCount = ByteHelper.ReadInt16LE(bytes, 4);
 
                 this.Images = new Bitmap[imageCount];
+                this.selectedImageIndex = 0;
 
                 long streamPosition = -1;
                 for (int i = 0; i < imageCount; i++)
@@ -331,7 +353,7 @@ namespace ImageViewer.Helpers
                         fileStream.Seek(streamPosition, SeekOrigin.Begin);
 
                         // if the image is stored as a png, use a memory stream to read the image
-                        if (ByteHelper.StartsWith(imageData, ImageBinaryReader.PNG_IDENTIFIER))
+                        if (ByteHelper.StartsWith(imageData, PNG.IdentifierBytes_1))
                         {
                             MemoryStream mem = new MemoryStream();
                             mem.Write(imageData, 0, imageData.Length);
@@ -398,6 +420,78 @@ namespace ImageViewer.Helpers
         public override void Save(string path)
         {
             throw new Exception("ICO.Save(string)\n\tCurrently doesn't support the saving of .ico files");
+        }
+
+        public override void RotateRight90()
+        {
+            if (this.Images == null)
+                return;
+
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this.Images[i] != null)
+                    this.Images[i].RotateFlip(RotateFlipType.Rotate90FlipNone);
+            }
+        }
+
+        public override void RotateLeft90()
+        {
+            if (this.Images == null)
+                return;
+
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this.Images[i] != null)
+                    this.Images[i].RotateFlip(RotateFlipType.Rotate270FlipNone);
+            }
+        }
+
+        public override void FlipHorizontal()
+        {
+            if (this.Images == null)
+                return;
+
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this.Images[i] != null)
+                    this.Images[i].RotateFlip(RotateFlipType.RotateNoneFlipX);
+            }
+        }
+
+        public override void FlipVertical()
+        {
+            if (this.Images == null)
+                return;
+
+            for (int i = 0; i < this.Count; i++)
+            {
+                if(this.Images[i] != null)
+                    this.Images[i].RotateFlip(RotateFlipType.RotateNoneFlipY);
+            }
+        }
+
+        public override void ConvertGrayscale()
+        {
+            if (this.Images == null)
+                return;
+
+            for(int i = 0; i < this.Count; i++)
+            {
+                if (this.Images[i] != null)
+                    ImageProcessor.GrayscaleBitmapSafe(this.Images[i]);
+            }
+        }
+
+        public override void InvertColor()
+        {
+            if (this.Images == null)
+                return;
+
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this.Images[i] != null)
+                    ImageProcessor.InvertBitmapSafe(this.Images[i]);
+            }
         }
 
         public override void Clear()

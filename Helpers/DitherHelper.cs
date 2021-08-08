@@ -26,7 +26,7 @@ namespace ImageViewer.Helpers
             using (Bitmap image = workerData.Image)
             {
                 size = image.Size;
-                pixelData = ImageHelper.GetBitmapColors(image); //image.GetPixelsFrom32BitArgbImage();
+                pixelData = ImageProcessor.GetBitmapColors(image); //image.GetPixelsFrom32BitArgbImage();
             }
 
             if (dither != null && dither.Prescan)
@@ -42,7 +42,7 @@ namespace ImageViewer.Helpers
             ProcessPixels(pixelData, size, transform, dither, workerData);
 
             // create the final bitmap
-            return ImageHelper.GetBitmapFromArray(pixelData, size);//pixelData.ToBitmap(size);
+            return ImageProcessor.GetBitmapFromArray(pixelData, size);//pixelData.ToBitmap(size);
         }
 
         public static void ProcessPixels(Color[] pixelData, Size size, IPixelTransform pixelTransform, IErrorDiffusion dither, WorkerData bw = null)

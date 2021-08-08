@@ -51,7 +51,7 @@ namespace ImageViewer.Helpers
 
             if (color.A < 255)
             {
-                using(Bitmap bmp = ImageHelper.GetCheckeredBitmap(e.Bounds.Width, e.Bounds.Height, e.Bounds.Height/2, SystemColors.ControlLight, SystemColors.ControlLightLight))
+                using(Bitmap bmp = ImageProcessor.GetCheckeredBitmap(e.Bounds.Width, e.Bounds.Height, e.Bounds.Height/2, SystemColors.ControlLight, SystemColors.ControlLightLight))
                 {
                     g.DrawImage(bmp, e.Bounds);
                 }

@@ -220,7 +220,7 @@ namespace ImageViewer.Controls
 
                     bmp = new Bitmap(clientWidth, clientHeight, PixelFormat.Format24bppRgb);
 
-                    ImageHelper.DrawCheckers(bmp,32, 
+                    ImageProcessor.DrawCheckers(bmp,32, 
                         SystemColors.ControlLight,
                         SystemColors.ControlLightLight);
 

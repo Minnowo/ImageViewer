@@ -49,27 +49,9 @@ namespace ImageViewer.Helpers
 
         public static Bitmap Copy(this Image image)
         {
-            Bitmap copy;
-
-            copy = new Bitmap(image.Size.Width, image.Size.Height, PixelFormat.Format32bppArgb);
-
-            using (Graphics g = Graphics.FromImage(copy))
-            {
-                g.Clear(Color.Transparent);
-                g.PageUnit = GraphicsUnit.Pixel;
-                g.DrawImage(image, new Rectangle(Point.Empty, image.Size));
-            }
-
-            return copy;
+            return ImageProcessor.DeepCloneImageFrame(image, PixelFormat.Format32bppArgb);
         }
 
-        public static Bitmap Resize(this Bitmap bmp, ResizeImage ri)
-        {
-            using (Bitmap b = bmp)
-            {
-                return ImageHelper.ResizeImage(b, ri);
-            }
-        }
 
         public static byte[] ToByteArray(this Image x)
         {

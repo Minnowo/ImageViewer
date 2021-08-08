@@ -1346,7 +1346,7 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// Dispose of the image.
         /// </summary>
-        public void Clear()
+        public new void Clear()
         {
             if (Image != null)
                 Image.Dispose();

@@ -44,6 +44,37 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <returns>The MimeType of the image.</returns>
         string GetMimeType();
+
+        /// <summary>
+        /// Rotate the image 90 degrees to the left.
+        /// </summary>
+        void RotateLeft90();
+
+        /// <summary>
+        /// Rotate the image 90 degrees to the right.
+        /// </summary>
+        void RotateRight90();
+
+        /// <summary>
+        /// Flip the image horizontally.
+        /// </summary>
+        void FlipHorizontal();
+
+        /// <summary>
+        /// Flip the image vertically.
+        /// </summary>
+        void FlipVertical();
+
+        /// <summary>
+        /// Inverts the image colors.
+        /// </summary>
+        void InvertColor();
+
+        /// <summary>
+        /// Covnerts the image to gray.
+        /// </summary>
+        void ConvertGrayscale();
+
     }
 
 
@@ -99,13 +130,63 @@ namespace ImageViewer.Helpers
         /// </summary>
         public abstract int Height { get; protected set; }
 
+        #region Static Functions 
 
+
+        /// <summary>
+        /// Loads an image using the standard method.
+        /// </summary>
+        /// <param name="path">The path to the file.</param>
+        /// <returns>A <see cref="Bitmap"/> object.</returns>
+        public static Bitmap StandardLoad(string path)
+        {
+            return (Bitmap)System.Drawing.Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+        }
+
+
+        /// <summary>
+        /// Casts an image to its given image type and returns its base class.
+        /// </summary>
+        /// <param name="image">The image to cast.</param>
+        /// <param name="format">The format to cast.</param>
+        /// <returns>The image as <see cref="ImageBase"/> of its proper format.</returns>
+        public static ImageBase ProperCast(Image image, ImgFormat format)
+        {
+            switch (format)
+            {
+                case ImgFormat.png:
+                    return new PNG(image);
+
+                case ImgFormat.bmp:
+                    return new BMP(image);
+
+                case ImgFormat.gif:
+                    return new Gif(image);
+
+                case ImgFormat.jpg:
+                    return new JPEG(image);
+
+                case ImgFormat.tif:
+                    return new TIFF(image);
+
+                case ImgFormat.webp:
+                    return new Webp(image);
+
+                case ImgFormat.wrm:
+                    return new WORM(image);
+
+                case ImgFormat.ico:
+                    return new ICO(image);
+            }
+            return null;
+        }
+        #endregion
 
         public virtual void Load(string path)
         {
             if (this.Image != null)
                 this.Image.Dispose();
-            this.Image = ImageHelper.LoadImage(path);
+            this.Image = ImageHelper.LoadImageAsBitmap(path);
         }
 
 
@@ -115,6 +196,23 @@ namespace ImageViewer.Helpers
             ImageHelper.SaveImage(this.Image, path, false);
         }
 
+        public virtual Bitmap DeepClone(Image source, PixelFormat targetFormat, bool preserveMetaData)
+        {
+            Bitmap copy = ImageProcessor.DeepCloneImageFrame(source, targetFormat);
+            /*if (ImageHelper.IsIndexed(targetFormat))
+            {
+                Bitmap quantized = this.Quantizer.Quantize(copy);
+                copy.Dispose();
+                copy = quantized;
+            }*/
+
+            if (preserveMetaData)
+            {
+                ImageHelper.CopyMetadata(source, copy);
+            }
+
+            return copy;
+        }
 
         public virtual ImgFormat GetImageFormat()
         {
@@ -126,6 +224,48 @@ namespace ImageViewer.Helpers
             return ImageBase.MimeType;
         }
 
+        public virtual void RotateRight90()
+        {
+            if (this.Image == null)
+                return;
+            this.Image.RotateFlip(RotateFlipType.Rotate90FlipNone); 
+        }
+
+        public virtual void RotateLeft90()
+        {
+            if (this.Image == null)
+                return;
+            this.Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+        }
+
+        public virtual void FlipHorizontal()
+        {
+            if (this.Image == null)
+                return;
+            this.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+        }
+
+        public virtual void FlipVertical()
+        {
+            if (this.Image == null)
+                return;
+            this.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+        }
+
+        public virtual void InvertColor()
+        {
+            if (this.Image == null)
+                return;
+            ImageProcessor.InvertBitmapSafe(this.Image);
+        }
+
+        public virtual void ConvertGrayscale()
+        {
+            if (this.Image == null)
+                return;
+            ImageProcessor.GrayscaleBitmapSafe(this.Image);
+        }
+
         /// <summary>
         /// Loads an iamge using the standard method.
         /// </summary>
@@ -135,11 +275,12 @@ namespace ImageViewer.Helpers
             if (string.IsNullOrEmpty(path))
                 return;
 
-            Dispose();
-            this.Image = (Bitmap)System.Drawing.Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+            Clear();
+            this.Image = ImageBase.StandardLoad(path);
             this.Width = this.Image.Width;
             this.Height = this.Image.Height;
         }
+
 
         /// <summary>
         /// Dispose of the image.
@@ -151,6 +292,8 @@ namespace ImageViewer.Helpers
 
             this.Image.Dispose();
             this.Image = null;
+            this.Width = 0;
+            this.Height = 0;
         }
 
         /// <summary>

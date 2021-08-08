@@ -277,7 +277,7 @@ namespace ImageViewer.Controls
 
             if (BitmapChangeTracker.CurrentBitmap == null)
             {
-                BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(imagePath.FullName);
+                BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(ImagePath.FullName); //ImageHelper.LoadImageAsBitmap(imagePath.FullName);
             }
 
             if(InternalSettings.Show_Default_Transparent_Colors)
@@ -291,7 +291,7 @@ namespace ImageViewer.Controls
                 ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
             }
 
-            if (ImageAnimator.CanAnimate(BitmapChangeTracker.CurrentBitmap))
+            if (ImageAnimator.CanAnimate(BitmapChangeTracker.CurrentBitmap.Image))
             {
                 int curFrame = 0;
                 
@@ -300,7 +300,7 @@ namespace ImageViewer.Controls
                     curFrame = GifDecoder.ActiveFrameIndex;
                 }
                 
-                GifDecoder = new GifDecoder(BitmapChangeTracker.CurrentBitmap);
+                GifDecoder = new GifDecoder(BitmapChangeTracker.CurrentBitmap.Image);
 
                 if (curFrame != 0)
                     GifDecoder.SetFrame(curFrame);
@@ -310,7 +310,7 @@ namespace ImageViewer.Controls
                 GifDecoder = null;
             }
 
-            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap.Image;
             ImageShown = true;
 
             OnImageLoad();
@@ -382,7 +382,7 @@ namespace ImageViewer.Controls
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
                     ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
-                    ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+                    //ibMain.Image = BitmapChangeTracker.CurrentBitmap;
                     ibMain.DisposeImageBeforeChange = true;
                     break;
                 case BitmapChanges.Inverted:
@@ -399,7 +399,7 @@ namespace ImageViewer.Controls
         private void UpdateReference()
         {
             ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
-            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
+            //ibMain.Image = BitmapChangeTracker.CurrentBitmap;
             ibMain.DisposeImageBeforeChange = true;
         }
     }

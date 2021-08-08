@@ -95,7 +95,24 @@ namespace ImageViewer.Helpers
 
         #region Static Functions
 
-        public static Bitmap DeepClone(Image source, PixelFormat targetFormat, bool preserveMetaData)
+        /// <summary>
+        /// Loads a Gif image and returns it as a bitmap object.
+        /// </summary>
+        /// <param name="path">The path of the image.</param>
+        /// <returns>A <see cref="Bitmap"/> object.</returns>
+        public static Bitmap FromFileAsBitmap(string path)
+        {
+            try
+            {
+                return ImageBase.StandardLoad(path);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\nIn Gif.FromFileAsBitmap(string)");
+            }
+        }
+
+        public new static Bitmap DeepClone(Image source, PixelFormat targetFormat, bool preserveMetaData)
         {
             GifDecoder decoder = new GifDecoder(source);
             GifEncoder encoder = new GifEncoder(decoder.LoopCount);
@@ -185,7 +202,89 @@ namespace ImageViewer.Helpers
             encoder.EncodeToStream(stream);
         }
 
+        public override void RotateRight90()
+        {
+            if (this.Image == null)
+                return;
 
+            Bitmap gray = ImageProcessor.RotateFlipGif(this.Image, RotateFlipType.Rotate90FlipNone);
+
+            if (gray == null)
+                return;
+
+            this.Image.Dispose();
+            this.Image = gray;
+        }
+
+        public override void RotateLeft90()
+        {
+            if (this.Image == null)
+                return;
+
+            Bitmap gray = ImageProcessor.RotateFlipGif(this.Image, RotateFlipType.Rotate270FlipNone);
+
+            if (gray == null)
+                return;
+
+            this.Image.Dispose();
+            this.Image = gray;
+        }
+
+        public override void FlipHorizontal()
+        {
+            if (this.Image == null)
+                return;
+
+            Bitmap gray = ImageProcessor.RotateFlipGif(this.Image, RotateFlipType.RotateNoneFlipX);
+
+            if (gray == null)
+                return;
+
+            this.Image.Dispose();
+            this.Image = gray;
+        }
+
+        public override void FlipVertical()
+        {
+            if (this.Image == null)
+                return;
+
+            Bitmap gray = ImageProcessor.RotateFlipGif(this.Image, RotateFlipType.RotateNoneFlipY);
+
+            if (gray == null)
+                return;
+
+            this.Image.Dispose();
+            this.Image = gray;
+        }
+
+        public override void ConvertGrayscale()
+        {
+            if (this.Image == null)
+                return;
+
+            Bitmap gray = ImageProcessor.GrayscaleGif(this.Image);
+            
+            if (gray == null)
+                return;
+
+            this.Image.Dispose();
+            this.Image = gray;
+        }
+
+        public override void InvertColor()
+        {
+            if (this.Image == null)
+                return;
+
+            Bitmap inverted = ImageProcessor.InvertGif(this.Image);
+
+            if (inverted == null)
+                return;
+
+            this.Image.Dispose();
+            this.Image = inverted;
+        }
 
         public override ImgFormat GetImageFormat()
         {

@@ -26,7 +26,7 @@ namespace ImageViewer
 
             CurrentFile = new FileInfo(path);
 
-            using (Image image = ImageHelper.LoadImage(path))
+            using (Image image = ImageHelper.LoadImageAsBitmap(path))
             {
                 tbLocationDisplay.Text = path;
                 tbSizeDisplay.Text = Helper.SizeSuffix(CurrentFile.Length);

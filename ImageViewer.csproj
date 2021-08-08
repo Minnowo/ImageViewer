@@ -202,20 +202,28 @@
       <DependentUpon>ImagePropertiesForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Helpers\ImageHelper\ByteHelper.cs" />
+    <Compile Include="Helpers\ImageHelper\Enums\BitDepth.cs" />
     <Compile Include="Helpers\ImageHelper\Enums\ExifPropertyTag.cs" />
+    <Compile Include="Helpers\ImageHelper\GraphicsExtensions.cs" />
     <Compile Include="Helpers\ImageHelper\ImageBinaryReader.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\BMP.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\Gif.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifDecoder.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifEncoder.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Gif\GifFrame.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\ICO.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\ImageBase.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\JPEG.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\PNG.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageFormats\TIFF.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Enums.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\LibWebpStructs.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\UnsafeNativeMethods.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\Webp.cs" />
     <Compile Include="Helpers\ImageHelper\Enums\ImgFormat.cs" />
     <Compile Include="Helpers\ImageHelper\ImageFormats\Webp\WebpQuality.cs" />
+    <Compile Include="Helpers\ImageHelper\ImageProcessor.cs" />
+    <Compile Include="Helpers\ImageHelper\Structs\ResizeImage.cs" />
     <Compile Include="Helpers\Transforms\IPixelTransform.cs" />
     <Compile Include="Helpers\Transforms\MonochromePixelTransform.cs" />
     <Compile Include="Helpers\Transforms\SimpleIndexedPalettePixelTransform.cs" />

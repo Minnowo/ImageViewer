@@ -125,9 +125,16 @@ namespace ImageViewer.Helpers
         /// <returns>A new instance of the WORM class.</returns>
         public static WORM FromFile(string file)
         {
-            WORM wrm = new WORM();
-            wrm.Load(file);
-            return wrm;
+            try
+            {
+                WORM wrm = new WORM();
+                wrm.Load(file);
+                return wrm;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\nIn WORM.FromFile(string)");
+            }
         }
 
 
@@ -142,9 +149,9 @@ namespace ImageViewer.Helpers
             {
                 return WORM.FromFile(file).Image;
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                throw new Exception(ex.Message + "\r\nIn WORM.FromFileAsBitmap(string)");
             }
         }
 

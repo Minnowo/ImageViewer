@@ -12,43 +12,34 @@ namespace ImageViewer.Helpers
     {
         const byte MAX_MAGIC_BYTE_LENGTH = 8;
 
-        public static readonly byte[] BMP_IDENTIFIER = new byte[2] { 0x42, 0x4D };
-        public static readonly byte[] JPG_IDENTIFIER = new byte[3] { 0xFF, 0xD8, 0xFF };
-        public static readonly byte[] TIFF_LE_IDENTIFIER = new byte[3] { 0x49, 0x49, 0x2A };
-        public static readonly byte[] WEBP_IDENTIFIER = new byte[4] { 0x52, 0x49, 0x46, 0x46 };
-        public static readonly byte[] TIFF_BE_IDENTIFIER = new byte[4] { 0x4D, 0x4D, 0x00, 0x2A };
-        public static readonly byte[] GIF_IDENTIFIER_1 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 };
-        public static readonly byte[] GIF_IDENTIFIER_2 = new byte[6] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 };
-        public static readonly byte[] PNG_IDENTIFIER = new byte[8] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-        public static readonly byte[] WRM_IDENTIFIER = WORM.IdentifierBytes_1;
-        public static readonly byte[] DWRM_IDENTIFIER = WORM.IdentifierBytes_2;
 
         public static readonly Dictionary<byte[], ImgFormat> Image_Byte_Identifiers = new Dictionary<byte[], ImgFormat>()
         {
-            { PNG_IDENTIFIER, ImgFormat.png },
-            { JPG_IDENTIFIER, ImgFormat.jpg },
-            { WEBP_IDENTIFIER, ImgFormat.webp },
-            { GIF_IDENTIFIER_1, ImgFormat.gif },
-            { GIF_IDENTIFIER_2, ImgFormat.gif },
-            { TIFF_BE_IDENTIFIER, ImgFormat.tif },
-            { TIFF_LE_IDENTIFIER, ImgFormat.tif },
-            { BMP_IDENTIFIER, ImgFormat.bmp },
-            { WRM_IDENTIFIER, ImgFormat.wrm },
-            { DWRM_IDENTIFIER, ImgFormat.wrm }
+            { PNG.IdentifierBytes_1, ImgFormat.png },
+            { JPEG.IdentifierBytes_1, ImgFormat.jpg },
+            { Webp.IdentifierBytes_1, ImgFormat.webp },
+            { Gif.IdentifierBytes_1, ImgFormat.gif },
+            { Gif.IdentifierBytes_2, ImgFormat.gif },
+            { TIFF.IdentifierBytes_2, ImgFormat.tif },
+            { TIFF.IdentifierBytes_1, ImgFormat.tif },
+            { BMP.IdentifierBytes_1, ImgFormat.bmp },
+            { ICO.IdentifierBytes_1, ImgFormat.ico },
+            { WORM.IdentifierBytes_1, ImgFormat.wrm },
+            { WORM.IdentifierBytes_2, ImgFormat.wrm }
         };
 
         static readonly Dictionary<byte[], Func<BinaryReader, Size>> Image_Format_Decoders = new Dictionary<byte[], Func<BinaryReader, Size>>()
         {
-            { BMP_IDENTIFIER, DecodeBitmap },
-            { GIF_IDENTIFIER_1, DecodeGif },
-            { GIF_IDENTIFIER_2, DecodeGif },
-            { PNG_IDENTIFIER, DecodePng },
-            { JPG_IDENTIFIER, DecodeJfif },
-            { WEBP_IDENTIFIER, DecodeWebP },
-            { TIFF_LE_IDENTIFIER,  DecodeTiffLE }, // little endian
-            { TIFF_BE_IDENTIFIER,  DecodeTiffBE },  // big endian
-            { WRM_IDENTIFIER, DecodeWORM },
-            { DWRM_IDENTIFIER, DecodeDWORM }
+            { BMP.IdentifierBytes_1, DecodeBitmap },
+            { Gif.IdentifierBytes_1, DecodeGif },
+            { Gif.IdentifierBytes_2, DecodeGif },
+            { PNG.IdentifierBytes_1, DecodePng },
+            { JPEG.IdentifierBytes_1, DecodeJfif },
+            { Webp.IdentifierBytes_1, DecodeWebP },
+            { TIFF.IdentifierBytes_1,  DecodeTiffLE },
+            { TIFF.IdentifierBytes_2,  DecodeTiffBE },
+            { WORM.IdentifierBytes_1, DecodeWORM },
+            { WORM.IdentifierBytes_2, DecodeDWORM }
         };
 
 
@@ -65,21 +56,23 @@ namespace ImageViewer.Helpers
             switch (GetImageFormat(path))
             {
                 case ImgFormat.png:
-                    return "image/png";
+                    return PNG.MimeType;
                 case ImgFormat.jpg:
-                    return "image/jpg";
+                    return JPEG.MimeType;
                 case ImgFormat.tif:
-                    return "image/tiff";
+                    return TIFF.MimeType;
                 case ImgFormat.bmp:
-                    return "iamge/bmp";
+                    return BMP.MimeType;
                 case ImgFormat.gif:
                     return Gif.MimeType;
                 case ImgFormat.webp:
                     return Webp.MimeType;
                 case ImgFormat.wrm:
                     return WORM.MimeType;
+                case ImgFormat.ico:
+                    return ICO.MimeType;
             }
-            return "image/unknown";
+            return ImageBase.MimeType;
         }
 
         /// <summary>
@@ -181,12 +174,12 @@ namespace ImageViewer.Helpers
 
         private static Size DecodeWORM(BinaryReader binaryReader)
         {
-            return WORM.GetDimensions(binaryReader);
+            return WORM.GetDimensions(binaryReader, false);
         }
 
         private static Size DecodeDWORM(BinaryReader binaryReader)
         {
-            return WORM.GetDimensions(binaryReader);
+            return WORM.GetDimensions(binaryReader, false);
         }
 
         private static Size DecodeTiffLE(BinaryReader binaryReader)
