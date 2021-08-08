@@ -75,7 +75,7 @@ namespace ImageViewer.Helpers
         {
             get 
             { 
-                if (Images == null || selectedImageIndex < 0) 
+                if (Images == null || selectedImageIndex < 0 || Images.Length == 0) 
                     return null; 
                 else 
                     return Images[selectedImageIndex]; 

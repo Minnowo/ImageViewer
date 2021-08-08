@@ -25,11 +25,11 @@ namespace ImageViewer
         public bool Canceled = false;
 
         private Color[] customPalette;
-        private Bitmap originalImage;
+        private ImageBase originalImage;
         private Stopwatch fitToScreenLimiter = new Stopwatch();
         private System.Windows.Forms.Timer updateThresholdTimer = new System.Windows.Forms.Timer();
 
-        public DitherForm(Bitmap img)
+        public DitherForm(ImageBase img)
         {
             if (img == null)
                 return;
@@ -96,7 +96,7 @@ namespace ImageViewer
 
             transform = GetPixelTransform();
             ditherer = GetDitheringInstance();
-            image = originalImage.CloneSafe();//.CopyTo32bppArgb();
+            image = ImageProcessor.DeepCloneImageFrame(originalImage.Image, PixelFormat.Format32bppArgb);//.CopyTo32bppArgb();
 
             if (image == null)
                 return;
@@ -134,7 +134,7 @@ namespace ImageViewer
             }
             else if(!e.Cancelled )
             {
-                ibMain.Image = e.Result as Bitmap;
+                ibMain.Image = ImageBase.ProperCast(e.Result as Bitmap, originalImage.GetImageFormat());
             }
 
             Cursor.Current = Cursors.Default;

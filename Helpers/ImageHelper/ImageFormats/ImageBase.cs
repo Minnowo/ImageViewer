@@ -305,6 +305,19 @@ namespace ImageViewer.Helpers
             GC.SuppressFinalize(this);
         }
 
+        public static implicit operator Image(ImageBase bas)
+        {
+            if (bas == null)
+                return null;
+            return bas.Image;
+        }
+
+        public static implicit operator Bitmap(ImageBase bas)
+        {
+            if (bas == null)
+                return null;
+            return bas.Image;
+        }
 
 
         public override bool Equals(object obj) => obj is IImage format && this.Equals(format);

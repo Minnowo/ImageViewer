@@ -162,15 +162,30 @@ namespace ImageViewer
 
         public void UpdateFramePicker()
         {
-            if (currentPage == null || currentPage.GifDecoder == null)
+            if (currentPage == null || currentPage.BitmapChangeTracker.CurrentBitmap == null)
             {
                 nudGifFrame.Enabled = false;
                 return;
             }
-            
-            nudGifFrame.Enabled = true;
-            nudGifFrame.Maximum = currentPage.GifDecoder.FrameCount - 1;
-            nudGifFrame.Value = currentPage.GifDecoder.ActiveFrameIndex;
+
+            ImgFormat fmt = currentPage.BitmapChangeTracker.CurrentBitmap.GetImageFormat();
+            if (fmt == ImgFormat.gif)
+            {
+                nudGifFrame.Enabled = true;
+                nudGifFrame.Maximum = currentPage.GifDecoder.FrameCount - 1;
+                nudGifFrame.Value = currentPage.GifDecoder.ActiveFrameIndex;
+                return;
+            }
+
+            if(fmt == ImgFormat.ico)
+            {
+                ICO i = currentPage.BitmapChangeTracker.CurrentBitmap as ICO;
+                if (i == null || i.Images == null || i.Images.Length < 1)
+                    return;
+                nudGifFrame.Enabled = true;
+                nudGifFrame.Maximum = i.Count - 1;
+                nudGifFrame.Value = i.SelectedImageIndex;
+            }
         }
 
         public void UpdateGridCellSize(bool suppressRedraw = false)
@@ -787,16 +802,14 @@ namespace ImageViewer
 
         private void GifFrame_ValueChanged(object sender, EventArgs e)
         {
-            if (currentPage == null || currentPage.GifDecoder == null)
+            if (currentPage == null)
             {
                 nudGifFrame.Enabled = false;
                 return;
             }
 
-            if (!currentPage.ibMain.AnimationPaused)
-                return;
-            
             currentPage.SetFrame((int)nudGifFrame.Value);
+            UpdateBottomInfoLabel();
         }
 
         private void AnimationPaused_CheckChanged(object sender, EventArgs e)
@@ -1115,7 +1128,6 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
             currentPage.BitmapChangeTracker.CurrentBitmap.RotateRight90();
-            //currentPage.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
             currentPage.ibMain.Invalidate();
         }
 
@@ -1126,7 +1138,6 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
             currentPage.BitmapChangeTracker.CurrentBitmap.FlipHorizontal();
-            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipX);
             currentPage.ibMain.Invalidate();
         }
 
@@ -1137,7 +1148,6 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
             currentPage.BitmapChangeTracker.CurrentBitmap.FlipVertical();
-            //currentPage.Image.RotateFlip(RotateFlipType.RotateNoneFlipY);
             currentPage.ibMain.Invalidate();
         }
 
@@ -1185,32 +1195,9 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            if (currentPage.ibMain.HasAnimationFrames)
-            {
-                /*Bitmap newBmp = ImageProcessor.GrayscaleGif((Bitmap)currentPage.Image);
-
-                if (newBmp == null)
-                {
-                    MessageBox.Show(this,
-                        InternalSettings.Unable_To_Convert_To_Grey_Image_Message,
-                        InternalSettings.Unable_To_Convert_To_Grey_Image_Title,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
-                }*/
-
-
-                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
-                //currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
-                currentPage.BitmapChangeTracker.CurrentBitmap.ConvertGrayscale();
-                //currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                currentPage.ibMain.Invalidate();
-                return;
-            }
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
             currentPage.BitmapChangeTracker.CurrentBitmap.ConvertGrayscale();
-            //ImageProcessor.GrayscaleBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
             currentPage.ibMain.Invalidate();
         }
 
@@ -1219,32 +1206,8 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            if (currentPage.ibMain.HasAnimationFrames)
-            {
-                /*Bitmap newBmp = ImageProcessor.InvertGif((Bitmap)currentPage.Image);
-
-                if (newBmp == null)
-                {
-                    MessageBox.Show(this,
-                        InternalSettings.Unable_To_Invert_Image_Message,
-                        InternalSettings.Unable_To_Invert_Image_Title,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
-                }*/
-
-                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
-                currentPage.BitmapChangeTracker.CurrentBitmap.InvertColor();
-                //currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
-                //currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                currentPage.ibMain.Invalidate();
-                return;
-            }
-
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
             currentPage.BitmapChangeTracker.CurrentBitmap.InvertColor();
-            //currentPage.BitmapChangeTracker.ReplaceBitmap(newBmp);
-            //ImageProcessor.InvertBitmapSafe(currentPage.BitmapChangeTracker.CurrentBitmap);
             currentPage.ibMain.Invalidate();
         }
 
@@ -1268,7 +1231,7 @@ namespace ImageViewer
 
                 if (f.result == SimpleDialogResult.Success)
                 {
-                    ImageProcessor.ReplaceTransparentPixelsSafe((Bitmap)currentPage.ibMain.Image, f.Color, f.Alpha);
+                    ImageProcessor.ReplaceTransparentPixelsSafe(currentPage.ibMain.Image, f.Color, f.Alpha);
                     currentPage.ibMain.Invalidate();
                 }
             }
@@ -1286,7 +1249,7 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
 
-            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap.Image))
+            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
             {
                 df.Owner = this;
                 df.TopMost = this.TopMost;

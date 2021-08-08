@@ -128,7 +128,7 @@ namespace ImageViewer.Controls
 
         /// <summary>
         /// The <see cref="ImageBoxEx"/> responsible for displaying the image. Should be used to set the image via 
-        /// "<see cref="ImageBox.Image"/> = <see cref="BitmapUndo.CurrentBitmap"/>", 
+        /// "<see cref="ImageBox._Image"/> = <see cref="BitmapUndo.CurrentBitmap"/>", 
         /// AFTER calling <see cref="BitmapUndo.ReplaceBitmap(Bitmap)"/> or <see cref="BitmapUndo.UpdateBitmapReferance(Bitmap)"/> 
         /// depending on the situation.
         /// </summary>
@@ -205,7 +205,6 @@ namespace ImageViewer.Controls
 
             BitmapUndo.RedoHappened += OnUndoRedo;
             BitmapUndo.UndoHappened += OnUndoRedo;
-            BitmapUndo.UpdateReferences += UpdateReference;
         }
 
         
@@ -237,11 +236,24 @@ namespace ImageViewer.Controls
         /// <param name="index">The index of the frame.</param>
         public void SetFrame(int index)
         {
-            if (GifDecoder == null)
+            if (BitmapChangeTracker.CurrentBitmap == null)
                 return;
 
-            GifDecoder.SetFrame(index);
-            Invalidate();
+            ImgFormat fmt = BitmapChangeTracker.CurrentBitmap.GetImageFormat();
+
+            if (fmt == ImgFormat.gif)
+            {
+                if (GifDecoder == null || !ibMain.AnimationPaused)
+                    return;
+
+                GifDecoder.SetFrame(index);
+            }
+            else if(fmt == ImgFormat.ico)
+            {
+                ICO i = BitmapChangeTracker.CurrentBitmap as ICO;
+                i.SelectedImageIndex = index;
+            }
+            ibMain.Invalidate();
         }
 
 
@@ -300,7 +312,7 @@ namespace ImageViewer.Controls
                     curFrame = GifDecoder.ActiveFrameIndex;
                 }
                 
-                GifDecoder = new GifDecoder(BitmapChangeTracker.CurrentBitmap.Image);
+                GifDecoder = new GifDecoder(BitmapChangeTracker.CurrentBitmap as Gif);
 
                 if (curFrame != 0)
                     GifDecoder.SetFrame(curFrame);
@@ -310,7 +322,7 @@ namespace ImageViewer.Controls
                 GifDecoder = null;
             }
 
-            ibMain.Image = BitmapChangeTracker.CurrentBitmap.Image;
+            ibMain.Image = BitmapChangeTracker.CurrentBitmap;
             ImageShown = true;
 
             OnImageLoad();
@@ -374,33 +386,10 @@ namespace ImageViewer.Controls
 
         private void OnUndoRedo(BitmapChanges change)
         {
-            switch (change)
-            {
-                case BitmapChanges.Cropped:
-                case BitmapChanges.Dithered:
-                case BitmapChanges.Resized:
-                case BitmapChanges.SetGray:
-                case BitmapChanges.TransparentFilled:
-                    ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
-                    //ibMain.Image = BitmapChangeTracker.CurrentBitmap;
-                    ibMain.DisposeImageBeforeChange = true;
-                    break;
-                case BitmapChanges.Inverted:
-                case BitmapChanges.RotatedLeft:
-                case BitmapChanges.RotatedRight:
-                case BitmapChanges.FlippedHorizontal:
-                case BitmapChanges.FlippedVirtical:
-                    break;
-            }
-
-            ibMain.Invalidate();
-        }
-
-        private void UpdateReference()
-        {
-            ibMain.DisposeImageBeforeChange = false; // let the change tracker handle disposing
-            //ibMain.Image = BitmapChangeTracker.CurrentBitmap;
-            ibMain.DisposeImageBeforeChange = true;
+            if (ibMain == null)
+                return;
+            ibMain.Zoom++;
+            ibMain.Zoom--;
         }
     }
 }

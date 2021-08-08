@@ -149,7 +149,7 @@ namespace Cyotek.Windows.Forms
 
         private Bitmap _gridTile;
 
-        private Image _image;
+        private ImageBase _image;
 
         private Color _imageBorderColor;
 
@@ -767,7 +767,7 @@ namespace Cyotek.Windows.Forms
         {
             get
             {
-                return ImageAnimator.CanAnimate(this.Image);
+                return ImageAnimator.CanAnimate(this._Image);
             }
         }
 
@@ -1168,7 +1168,7 @@ namespace Cyotek.Windows.Forms
                     g.InterpolationMode = this.GetInterpolationMode();
 
                     g.DrawImage(
-                        _image,
+                        _Image,
                         new Rectangle(0, 0, visibleSize.Width, visibleSize.Height),
                         srcRect,
                         GraphicsUnit.Pixel);
@@ -1178,23 +1178,74 @@ namespace Cyotek.Windows.Forms
             }
         }
 
+
         /// <summary>
         ///   Gets or sets the image.
         /// </summary>
         /// <value>The image.</value>
         [Category("Appearance")]
         [DefaultValue(null)]
-        public virtual Image Image
+        public ImageBase Image
         {
-            get { return _image; }
+            get
+            {
+                return _image;
+            }
             set
             {
-                if (_image != value)
+                if (_image == value)
+                    return;
+
+                if (this.IsAnimating)
+                {
+                    if (_image != null)
+                    {
+                        if (_image.GetImageFormat() == ImgFormat.gif)
+                        {
+                            Gif g = _image as Gif;
+                            g.StopAnimate();
+                        }
+                        else
+                        {
+                            ImageAnimator.StopAnimate(this._Image, this.OnFrameChangedHandler);
+                        }
+                    }
+                }
+
+                if (_disposeImageBeforeChange && _image != null)
+                {
+                    _image.Dispose();
+                }
+
+                _image = value;
+                this.OnImageChanged(EventArgs.Empty);
+            }
+        }
+       
+
+        /// <summary>
+        ///   Gets or sets the image.
+        /// </summary>
+        /// <value>The image.</value>
+        //[Category("Appearance")]
+        //[DefaultValue(null)]
+        private Image _Image
+        {
+            get 
+            {
+                if (Image == null)
+                    return null;
+                return Image.Image;
+                //return _image; 
+            }
+            set
+            {
+                /*if (_image != value)
                 {
                     // disable animations
                     if (this.IsAnimating)
                     {
-                        ImageAnimator.StopAnimate(this.Image, this.OnFrameChangedHandler);
+                        ImageAnimator.StopAnimate(this._Image, this.OnFrameChangedHandler);
                     }
 
                     if (_disposeImageBeforeChange && _image != null)
@@ -1204,7 +1255,7 @@ namespace Cyotek.Windows.Forms
 
                     _image = value;
                     this.OnImageChanged(EventArgs.Empty);
-                }
+                }*/
             }
         }
 
@@ -1883,6 +1934,19 @@ namespace Cyotek.Windows.Forms
 
         #region Methods
 
+/*        public virtual void RefreshGifAnimation()
+        {
+            if (this.Image == null)
+                return;
+            if (!ImageAnimator.CanAnimate(this.Image))
+            {
+                this.IsAnimating = false;
+                ImageAnimator.StopAnimate(this.Image, this.OnFrameChangedHandler);
+                return;
+            }
+            this.IsAnimating = true;
+        }*/
+
         /// <summary>
         ///   Resets the zoom to 100%.
         /// </summary>
@@ -2083,6 +2147,7 @@ namespace Cyotek.Windows.Forms
 
             }
 
+            //return new Rectangle(0,0, ScaledImageWidth, ScaledImageHeight);
             return new Rectangle(offset.X + this.AutoScrollPosition.X, offset.Y + this.AutoScrollPosition.Y, ScaledImageWidth, ScaledImageHeight);
         }
 
@@ -2130,13 +2195,13 @@ namespace Cyotek.Windows.Forms
         /// </summary>
         public void CropImageToSelection()
         {
-            if (!this.SelectionBoxVisible || this.Image == null)
+            if (!this.SelectionBoxVisible || this._Image == null)
                 return;
 
             Image newIm = this.GetSelectedImage(false, true);
             this.SelectionRegion = Rectangle.Empty;
-            this.Image.Dispose();
-            this.Image = newIm;
+            this._Image.Dispose();
+            this._Image = newIm;
             this.ZoomToFit();
         }
 
@@ -2460,7 +2525,7 @@ namespace Cyotek.Windows.Forms
         /// <remarks>The caller is responsible for disposing of the returned image</remarks>
         public Image GetSelectedImage(bool fitRectangle = true, bool fromActualImageSize = false)
         {
-            if (_image == null || this.SelectionRegion.IsEmpty)
+            if (this._Image == null || this.SelectionRegion.IsEmpty)
                 return null;
             
             Rectangle srcRect;
@@ -2502,7 +2567,7 @@ namespace Cyotek.Windows.Forms
                 g.InterpolationMode = GetInterpolationMode();
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                g.DrawImage(_image, destRect, srcRect, GraphicsUnit.Pixel);
+                g.DrawImage(this._Image, destRect, srcRect, GraphicsUnit.Pixel);
             }
 
             return result;
@@ -2977,7 +3042,18 @@ namespace Cyotek.Windows.Forms
             {
                 if (this.IsAnimating)
                 {
-                    ImageAnimator.StopAnimate(this.Image, this.OnFrameChangedHandler);
+                    if (this.Image != null)
+                    {
+                        if (this.Image.GetImageFormat() == ImgFormat.gif)
+                        {
+                            Gif g = this.Image as Gif;
+                            g.StopAnimate();
+                        }
+                    }
+                    else
+                    {
+                        ImageAnimator.StopAnimate(this._Image, this.OnFrameChangedHandler);
+                    }
                 }
 
                 if (_texture != null)
@@ -3116,10 +3192,10 @@ namespace Cyotek.Windows.Forms
                 // Animation. Thanks to teamalpha5441 for the contribution
                 if (this.IsAnimating && !this.DesignMode && !AnimationPaused)
                 {
-                    ImageAnimator.UpdateFrames(this.Image);
+                    ImageAnimator.UpdateFrames(this._Image);
                 }
 
-                g.DrawImage(this.Image, this.GetImageViewPort(), this.GetSourceImageRegion(), GraphicsUnit.Pixel);
+                g.DrawImage(this._Image, this.GetImageViewPort(), this.GetSourceImageRegion(), GraphicsUnit.Pixel);
             }
             catch (Exception ex)
             {
@@ -3881,14 +3957,22 @@ namespace Cyotek.Windows.Forms
 
             this.IsAnimating = false;
 
-            if (this.Image != null)
+            if (this._Image != null)
             {
                 try
                 {
-                    this.IsAnimating = ImageAnimator.CanAnimate(this.Image);
+                    this.IsAnimating = ImageAnimator.CanAnimate(this._Image);
                     if (this.IsAnimating)
                     {
-                        ImageAnimator.Animate(this.Image, this.OnFrameChangedHandler);
+                        if (this.Image.GetImageFormat() == ImgFormat.gif)
+                        {
+                            Gif g = this.Image as Gif;
+                            g.Animate(this.OnFrameChangedHandler);
+                        }
+                        else
+                        {
+                            ImageAnimator.Animate(this._Image, this.OnFrameChangedHandler);
+                        }
                     }
                 }
                 catch (ArgumentException)
@@ -4158,7 +4242,7 @@ namespace Cyotek.Windows.Forms
                 {
                     this.OnVirtualDraw(e);
                 }
-                else if (this.Image != null)
+                else if (this._Image != null)
                 {
                     this.DrawImage(e.Graphics);
                 }
@@ -4916,27 +5000,21 @@ namespace Cyotek.Windows.Forms
         /// <returns>Size.</returns>
         private Size GetImageSize()
         {
-            Size result;
-
             // HACK: This whole thing stinks. Hey MS, how about an IsDisposed property for images?
 
-            if (this.Image != null)
+            if (this._Image != null)
             {
                 try
                 {
-                    result = this.Image.Size;
+                    return this.Image.Image.Size;
                 }
                 catch
                 {
-                    result = Size.Empty;
+                    return Size.Empty;
                 }
             }
-            else
-            {
-                result = Size.Empty;
-            }
 
-            return result;
+            return Size.Empty;
         }
 
         /// <summary>
@@ -5000,6 +5078,8 @@ namespace Cyotek.Windows.Forms
         /// <param name="eventArgs">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void OnFrameChangedHandler(object sender, EventArgs eventArgs)
         {
+            if (this.AnimationPaused)
+                return;
             this.Invalidate();
         }
 

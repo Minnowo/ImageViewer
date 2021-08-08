@@ -12,7 +12,7 @@ namespace ImageViewer.Helpers
     /// <summary>
     /// Provides the necessary information to support gif images.
     /// </summary>
-    public sealed class Gif : ImageBase
+    public class Gif : ImageBase
     {
         #region Readonly / Const / Static 
 
@@ -70,11 +70,31 @@ namespace ImageViewer.Helpers
 
         public override Bitmap Image { get; protected set; }
 
-        public override int Width { get; protected set; }
+        public override int Width 
+        {
+            get 
+            {
+                if (this.Image == null)
+                    return 0;
+                return Image.Width;
+            } 
+            protected set { }
+        }
 
-        public override int Height { get; protected set; }
+        public override int Height
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return Image.Height;
+            }
+            protected set { }
+        }
 
+        public virtual bool IsAnimating { get; protected set; }
 
+        private List<EventHandler> FrameChangedHandlerCallbacks = new List<EventHandler>();
 
         public Gif()
         {
@@ -87,8 +107,6 @@ namespace ImageViewer.Helpers
         public Gif(Bitmap bmp)
         {
             this.Image = bmp;
-            Width = bmp.Width;
-            Height = bmp.Height;
         }
 
 
@@ -136,6 +154,46 @@ namespace ImageViewer.Helpers
         }
 
         #endregion
+
+        /// <summary>
+        /// Get a bool indicating if the current gif can be animated.
+        /// </summary>
+        /// <returns>True if this gif can be animated; otherwise False;</returns>
+        public bool CanAnimate()
+        {
+            if (this.Image == null)
+                return false;
+            return ImageAnimator.CanAnimate(this.Image);
+        }
+
+        /// <summary>
+        /// Animate the current gif if possible.
+        /// </summary>
+        /// <param name="onFrameChangedHandler">The even handler for on frame changing.</param>
+        /// <returns>True if the image animation has been started; otherwise False.</returns>
+        public bool Animate(EventHandler onFrameChangedHandler)
+        {
+            if (this.Image == null)
+                return false;
+
+            this.IsAnimating = CanAnimate();
+            if (this.IsAnimating)
+            {
+                FrameChangedHandlerCallbacks.Add(onFrameChangedHandler);
+                ImageAnimator.Animate(this.Image, onFrameChangedHandler);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Stop animating the current gif if possible.
+        /// </summary>
+        /// <returns>True if the animation was stopped; otherwise False.</returns>
+        public bool StopAnimate()
+        {
+            return StopAnimate(false);
+        }
 
         public override void Load(string path)
         {
@@ -212,8 +270,12 @@ namespace ImageViewer.Helpers
             if (gray == null)
                 return;
 
+            bool wasAnimating = StopAnimate(true);
             this.Image.Dispose();
             this.Image = gray;
+
+            if (wasAnimating)
+                _StartAnimate();
         }
 
         public override void RotateLeft90()
@@ -226,8 +288,12 @@ namespace ImageViewer.Helpers
             if (gray == null)
                 return;
 
+            bool wasAnimating = StopAnimate(true);
             this.Image.Dispose();
             this.Image = gray;
+
+            if (wasAnimating)
+                _StartAnimate();
         }
 
         public override void FlipHorizontal()
@@ -240,8 +306,12 @@ namespace ImageViewer.Helpers
             if (gray == null)
                 return;
 
+            bool wasAnimating = StopAnimate(true);
             this.Image.Dispose();
             this.Image = gray;
+
+            if (wasAnimating)
+                _StartAnimate();
         }
 
         public override void FlipVertical()
@@ -254,8 +324,12 @@ namespace ImageViewer.Helpers
             if (gray == null)
                 return;
 
+            bool wasAnimating = StopAnimate(true);
             this.Image.Dispose();
             this.Image = gray;
+
+            if (wasAnimating)
+                _StartAnimate();
         }
 
         public override void ConvertGrayscale()
@@ -268,8 +342,12 @@ namespace ImageViewer.Helpers
             if (gray == null)
                 return;
 
+            bool wasAnimating = StopAnimate(true);
             this.Image.Dispose();
             this.Image = gray;
+
+            if (wasAnimating)
+                _StartAnimate();
         }
 
         public override void InvertColor()
@@ -282,8 +360,12 @@ namespace ImageViewer.Helpers
             if (inverted == null)
                 return;
 
+            bool wasAnimating = StopAnimate(true);
             this.Image.Dispose();
             this.Image = inverted;
+
+            if (wasAnimating)
+                _StartAnimate();
         }
 
         public override ImgFormat GetImageFormat()
@@ -301,12 +383,13 @@ namespace ImageViewer.Helpers
         /// </summary>
         public new void Dispose()
         {
+            if (this.IsAnimating)
+                StopAnimate();
+
             if (Image != null)
                 Image.Dispose();
 
             Image = null;
-            Width = 0;
-            Height = 0;
         }
 
 
@@ -328,6 +411,54 @@ namespace ImageViewer.Helpers
         public static implicit operator Gif(Image bitmap)
         {
             return new Gif(bitmap);
+        }
+
+
+        private bool StopAnimate(bool rememberCallbacks)
+        {
+            if (this.Image == null)
+                return false;
+
+            if (!this.IsAnimating)
+                return false;
+
+            for (int i = 0; i < FrameChangedHandlerCallbacks.Count; i++)
+            {
+                try
+                {
+                    ImageAnimator.StopAnimate(this.Image, FrameChangedHandlerCallbacks[i]);
+                }
+                catch { }
+            }
+            this.IsAnimating = false;
+            
+            if(!rememberCallbacks)
+                FrameChangedHandlerCallbacks.Clear();
+
+            return true;
+        }
+
+        private bool _StartAnimate()
+        {
+            if (this.Image == null)
+                return false;
+            if (this.FrameChangedHandlerCallbacks == null || this.FrameChangedHandlerCallbacks.Count == 0)
+                return false;
+
+            this.IsAnimating = CanAnimate();
+            if (this.IsAnimating)
+            {
+                foreach (EventHandler h in FrameChangedHandlerCallbacks)
+                {
+                    try
+                    {
+                        ImageAnimator.Animate(this.Image, h);
+                    }
+                    catch { }
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

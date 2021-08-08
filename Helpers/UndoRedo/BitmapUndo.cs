@@ -30,9 +30,6 @@ namespace ImageViewer.Helpers.UndoRedo
         public delegate void RedoEvent(BitmapChanges change);
         public static event RedoEvent RedoHappened;
 
-        public delegate void UpdateReferencesEvent();
-        public static event UpdateReferencesEvent UpdateReferences;
-
         public int UndoCount
         {
             get { return undos.Count; }
@@ -199,7 +196,6 @@ namespace ImageViewer.Helpers.UndoRedo
                     bmp = bitmapRedoHistoryData.Pop();
                     bitmapUndoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
                     ReplaceBitmap(bmp);
-                    OnUpdateReferences();
                     break;
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
@@ -210,10 +206,7 @@ namespace ImageViewer.Helpers.UndoRedo
 
                         if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
                         {
-                            CurrentBitmap.ConvertGrayscale(); // not sure how this is going to work yet 
-                            //Bitmap newBmp = ImageProcessor.GrayscaleGif((Bitmap)CurrentBitmap.Image);
-                            //ReplaceBitmap(newBmp);
-                            OnUpdateReferences();
+                            CurrentBitmap.ConvertGrayscale();
                             OnRedo(change);
                             return;
                         }
@@ -224,16 +217,6 @@ namespace ImageViewer.Helpers.UndoRedo
 
                 // changes are easily undone and do not need to be kept in memory
                 case BitmapChanges.Inverted:
-                    if (ImageAnimator.CanAnimate(CurrentBitmap.Image))
-                    {
-                        CurrentBitmap.InvertColor();
-                        //Bitmap newBmp = ImageProcessor.InvertGif((Bitmap)CurrentBitmap.Image);
-                        //ReplaceBitmap(newBmp);
-                        OnUpdateReferences();
-                        OnRedo(change);
-                        return;
-                    }
-
                     CurrentBitmap.InvertColor();
                     break;
                 case BitmapChanges.RotatedLeft:
@@ -309,7 +292,6 @@ namespace ImageViewer.Helpers.UndoRedo
                     bmp = bitmapUndoHistoryData.Pop();
                     bitmapRedoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
                     ReplaceBitmap(bmp);
-                    OnUpdateReferences();
                     break;
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
@@ -319,11 +301,8 @@ namespace ImageViewer.Helpers.UndoRedo
                         bitmapRedoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
 
                         if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
-                        {   // can't update a gif using pointers so we need to update the references
-                            //Bitmap newBmp = ImageProcessor.GrayscaleGif((Bitmap)CurrentBitmap);
-                            //ReplaceBitmap(newBmp);
-                            CurrentBitmap.ConvertGrayscale(); // not sure how this affects referances because its in a class.
-                            OnUpdateReferences();
+                        {   
+                            CurrentBitmap.ConvertGrayscale(); 
                             OnUndo(change);
                             return;
                         }
@@ -334,16 +313,6 @@ namespace ImageViewer.Helpers.UndoRedo
 
                 // changes are easily undone and do not need to be kept in memory
                 case BitmapChanges.Inverted:
-                    if (ImageAnimator.CanAnimate(CurrentBitmap.Image))
-                    {   // can't update a gif using pointers so we need to update the references
-                        //Bitmap newBmp = ImageProcessor.InvertGif((Bitmap)CurrentBitmap);
-                        //ReplaceBitmap(newBmp);
-                        CurrentBitmap.InvertColor();
-                        OnUpdateReferences();
-                        OnUndo(change);
-                        return;
-                    }
-
                     CurrentBitmap.InvertColor();    
                     break;
                 case BitmapChanges.RotatedLeft:
@@ -392,12 +361,6 @@ namespace ImageViewer.Helpers.UndoRedo
         {
             if (RedoHappened != null)
                 RedoHappened(change);
-        }
-
-        private void OnUpdateReferences()
-        {
-            if (UpdateReferences != null)
-                UpdateReferences();
         }
     }
 }

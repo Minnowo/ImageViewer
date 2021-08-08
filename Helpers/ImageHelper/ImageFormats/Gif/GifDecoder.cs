@@ -13,7 +13,7 @@ namespace ImageViewer.Helpers
     /// </summary>
     public class GifDecoder
     {
-        private readonly Image image;
+        private readonly ImageBase image;
         private readonly byte[] times = new byte[4];
 
 
@@ -21,8 +21,7 @@ namespace ImageViewer.Helpers
         /// Initializes a new instance of the <see cref="GifDecoder"/> class.
         /// </summary>
         /// <param name="image">The image to decode.</param>
-        /// <param name="frameProcessingMode">The frame processing mode.</param>
-        public GifDecoder(Image image)
+        public GifDecoder(Gif image)
         {
             this.image = image;
             this.ActiveFrameIndex = 0;
@@ -30,19 +29,19 @@ namespace ImageViewer.Helpers
             if (ImageAnimator.CanAnimate(image))
             {
                 this.IsAnimated = true;
-                this.FrameCount = image.GetFrameCount(FrameDimension.Time);
+                this.FrameCount = image.Image.GetFrameCount(FrameDimension.Time);
                 const int LoopCount = (int)ExifPropertyTag.LoopCount;
                 const int FrameDelay = (int)ExifPropertyTag.FrameDelay;
 
                 // Loop info is stored at byte 20737. Default to infinite loop if not found.
-                this.LoopCount = Array.IndexOf(image.PropertyIdList, LoopCount) != -1
-                    ? BitConverter.ToInt16(image.GetPropertyItem(LoopCount).Value, 0)
+                this.LoopCount = Array.IndexOf(image.Image.PropertyIdList, LoopCount) != -1
+                    ? BitConverter.ToInt16(image.Image.GetPropertyItem(LoopCount).Value, 0)
                     : 0;
 
                 // Get the times stored in the gif. Default to 0 if not found.
-                if (Array.IndexOf(this.image.PropertyIdList, FrameDelay) != -1)
+                if (Array.IndexOf(this.image.Image.PropertyIdList, FrameDelay) != -1)
                 {
-                    this.times = this.image.GetPropertyItem(FrameDelay).Value;
+                    this.times = this.image.Image.GetPropertyItem(FrameDelay).Value;
                 }
             }
             else
@@ -50,6 +49,7 @@ namespace ImageViewer.Helpers
                 this.FrameCount = 1;
             }
         }
+
 
         /// <summary>
         /// Gets the input image.
@@ -97,12 +97,12 @@ namespace ImageViewer.Helpers
             TimeSpan delay = TimeSpan.FromMilliseconds(BitConverter.ToInt32(this.times, (4 * index) % this.times.Length) * 10);
 
             // Find the frame
-            this.image.SelectActiveFrame(FrameDimension.Time, index);
+            this.image.Image.SelectActiveFrame(FrameDimension.Time, index);
 
             GifFrame frame = new GifFrame(this.image, delay);
 
             // Reset the image
-            this.image.SelectActiveFrame(FrameDimension.Time, 0);
+            this.image.Image.SelectActiveFrame(FrameDimension.Time, 0);
             this.ActiveFrameIndex = 0;
 
             return frame;
@@ -123,7 +123,7 @@ namespace ImageViewer.Helpers
             TimeSpan delay = TimeSpan.FromMilliseconds(BitConverter.ToInt32(this.times, (4 * index) % this.times.Length) * 10);
 
             // Find the frame
-            this.image.SelectActiveFrame(FrameDimension.Time, index);
+            this.image.Image.SelectActiveFrame(FrameDimension.Time, index);
             this.ActiveFrameIndex = index;
         }
     }
