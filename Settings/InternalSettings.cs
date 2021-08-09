@@ -283,22 +283,37 @@ namespace ImageViewer.Settings
         // because of how we load the image there is extra memory that doesn't get disposed
         // and calling GC.Collect removes that, but since garbage collection can cause problems
         // gonna allow the user to disable it as the please 
-        // i also just hate when stuff doesn't get cleared from meory so i like to GC a lot
+        // i also just hate when stuff doesn't get cleared from meory so i like to GC a lot 
         public static bool Garbage_Collect_On_Image_Unload 
         { 
             get { return CurrentUserSettings.Garbage_Collect_On_Image_Unload; }
             set { CurrentUserSettings.Garbage_Collect_On_Image_Unload = value; }
         }
+
+        public static bool Garbage_Collect_After_Gif_Encode
+        {
+            get { return CurrentUserSettings.Garbage_Collect_After_Gif_Encode; }
+            set { CurrentUserSettings.Garbage_Collect_After_Gif_Encode = value; }
+        }
+
+        public static bool Garbage_Collect_After_Disposing_Gif
+        {
+            get { return CurrentUserSettings.Garbage_Collect_After_Disposing_Gif; }
+            set { CurrentUserSettings.Garbage_Collect_After_Disposing_Gif = value; }
+        }
+
         public static bool Garbage_Collect_On_Dither_Form_Cancel
         {
             get { return CurrentUserSettings.Garbage_Collect_On_Dither_Form_Cancel; }
             set { CurrentUserSettings.Garbage_Collect_On_Dither_Form_Cancel = value; }
         }
+
         public static bool Garbage_Collect_After_Unmanaged_Image_Manipulation
         {
             get { return CurrentUserSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation; }
             set { CurrentUserSettings.Garbage_Collect_After_Unmanaged_Image_Manipulation = value; }
         }
+
         public static bool Garbage_Collect_After_Gif_Export
         {
             get { return CurrentUserSettings.Garbage_Collect_After_Gif_Export; }
@@ -416,6 +431,11 @@ namespace ImageViewer.Settings
         [Description("Should the garbage collecter be called after every image unloads."), DisplayName("Garbage Collect On Image Unload")]
         public bool Garbage_Collect_On_Image_Unload { get; set; } = false;
 
+        [Description("Should the garbage collecter be called after a gif is encoded."), DisplayName("Garbage Collect After Gif Encode")]
+        public bool Garbage_Collect_After_Gif_Encode { get; set; } = true;
+
+        [Description("Should the garbage collecter be called after a gif is disposed."), DisplayName("Garbage Collect After Gif Dispose")]
+        public bool Garbage_Collect_After_Disposing_Gif { get; set; } = true;
 
         [Description("Should the garbage collecter be called after the dither form."), DisplayName("Garbage Collect After Dither")]
         public bool Garbage_Collect_On_Dither_Form_Cancel { get; set; } = true;

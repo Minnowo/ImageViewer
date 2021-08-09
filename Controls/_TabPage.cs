@@ -73,6 +73,8 @@ namespace ImageViewer.Controls
             }
         }
 
+        public bool IsClosing { get; set; } = false;
+
         /// <summary>
         /// Set true after the image is loaded, set false after unloaded.
         /// </summary>
@@ -257,9 +259,6 @@ namespace ImageViewer.Controls
 
         private void LoadImage()
         {
-            // dispose of old image
-            ibMain.Image = null;
-
             if (PreventLoadImage)
                 return;
 
@@ -282,7 +281,7 @@ namespace ImageViewer.Controls
 
             if (changingImagePath)
             {
-                BitmapChangeTracker?.Dispose();
+                BitmapChangeTracker?.Clear();
             }
 
             if (BitmapChangeTracker.CurrentBitmap == null)
@@ -329,12 +328,16 @@ namespace ImageViewer.Controls
 
         public void UnloadImage()
         {
-            imageCached = BitmapChangeTracker.UndoCount != 0;
+            if (IsClosing)
+                return;
+            imageCached = BitmapChangeTracker.UndoCount != 0 || BitmapChangeTracker.RedoCount != 0;
 
+            bool isGif = BitmapChangeTracker.Format == ImgFormat.gif;
+            
             if (!imageCached)
             {
                 ibMain.Image = null;
-                BitmapChangeTracker.Dispose();
+                BitmapChangeTracker.Clear();
             }
             else
             {

@@ -13,6 +13,7 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            bool isGif = BitmapChangeTracker.Format == Helpers.ImgFormat.gif;
             BitmapChangeTracker.Dispose();
             ibMain.Dispose();
 
@@ -22,6 +23,10 @@
             }
 
             if (ImageViewer.Settings.InternalSettings.Garbage_Collect_On_Image_Unload)
+            {
+                System.GC.Collect();
+            }
+            else if (ImageViewer.Settings.InternalSettings.Garbage_Collect_After_Disposing_Gif && isGif)
             {
                 System.GC.Collect();
             }

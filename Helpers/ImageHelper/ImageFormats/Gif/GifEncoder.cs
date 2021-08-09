@@ -101,11 +101,21 @@ namespace ImageViewer.Helpers
         /// <returns>The completed animated gif.</returns>
         public Image Encode()
         {
-            this.Terminate();
+            try
+            {
+                this.Terminate();
 
-            // Push the data
-            this.imageStream.Position = 0;
-            return Image.FromStream(this.imageStream);
+                // Push the data
+                this.imageStream.Position = 0;
+                return Image.FromStream(this.imageStream);
+            }
+            finally
+            {
+                if (ImageViewer.Settings.InternalSettings.Garbage_Collect_After_Gif_Encode)
+                {
+                    GC.Collect();
+                }
+            }
         }
 
         /// <summary>

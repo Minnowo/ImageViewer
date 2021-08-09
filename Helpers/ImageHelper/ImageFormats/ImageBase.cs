@@ -218,6 +218,17 @@ namespace ImageViewer.Helpers
             return copy;
         }
 
+        /// <summary>
+        /// Uses the built in Clone to copy the image.
+        /// </summary>
+        /// <returns>A <see cref="Bitmap"/> copy of the image.</returns>
+        public virtual Bitmap CloneSafe()
+        {
+            if (this.Image == null)
+                return null;
+            return this.Image.CloneSafe();
+        }
+
         public virtual ImgFormat GetImageFormat()
         {
             return ImageBase.ImageFormat;

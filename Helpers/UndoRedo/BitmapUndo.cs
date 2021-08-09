@@ -126,7 +126,7 @@ namespace ImageViewer.Helpers.UndoRedo
                 case BitmapChanges.Resized:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    //bitmapUndoHistoryData.Push(currentBitmap.DeepClone());
+                    bitmapUndoHistoryData.Push(CloneProper());
                     break;
 
                 // changes are easily undone and do not need to be kept in memory
@@ -195,7 +195,7 @@ namespace ImageViewer.Helpers.UndoRedo
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    bitmapUndoHistoryData.Push(CurrentBitmap.DeepClone());
+                    bitmapUndoHistoryData.Push(CloneProper());
                     CurrentBitmap.UpdateImage(bitmapRedoHistoryData.Pop());
                     break;
 
@@ -275,7 +275,7 @@ namespace ImageViewer.Helpers.UndoRedo
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    bitmapRedoHistoryData.Push(CurrentBitmap.DeepClone());
+                    bitmapRedoHistoryData.Push(CloneProper());
                     CurrentBitmap.UpdateImage(bitmapUndoHistoryData.Pop());
                     break;
 
@@ -308,15 +308,30 @@ namespace ImageViewer.Helpers.UndoRedo
             ClearRedos();
         }
 
-        /// <summary>
-        /// Dispose of the undos, redos, and the current bitmap.
-        /// </summary>
-        public void Dispose()
+        public void Clear()
         {
             ClearHistory();
             if (CurrentBitmap != null)
                 CurrentBitmap.Dispose();
             CurrentBitmap = null;
+        }
+
+        /// <summary>
+        /// Dispose of the undos, redos, and the current bitmap.
+        /// </summary>
+        public void Dispose()
+        {
+            Clear();
+            GC.SuppressFinalize(this);
+        }
+
+        private Bitmap CloneProper()
+        {
+            if(this.Format == ImgFormat.gif)
+            {
+                return currentBitmap.CloneSafe(); // this avoid re-encoding the gif, don't know if it keeps meta or not
+            }
+            return CurrentBitmap.DeepClone();
         }
 
         private void OnUndo(BitmapChanges change)

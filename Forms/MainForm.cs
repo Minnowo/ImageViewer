@@ -339,6 +339,8 @@ namespace ImageViewer
             SuspendLayout();
 
             _TabPage tmp = currentPage;
+            tmp.IsClosing = true;
+
             int index = tcMain.SelectedIndex;
 
             // if the current tab was the last index, 

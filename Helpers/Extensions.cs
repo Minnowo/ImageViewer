@@ -207,7 +207,7 @@ namespace ImageViewer.Helpers
 
             try
             {
-                    return obj.Clone() as T;
+                return obj.Clone() as T;
             }
             catch {}
 
