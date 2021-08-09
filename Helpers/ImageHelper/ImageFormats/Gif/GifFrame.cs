@@ -34,7 +34,7 @@ namespace ImageViewer.Helpers
         /// <param name="y">The frame top position.</param>
         public GifFrame(Image source, TimeSpan delay, int x, int y)
         {
-            this.Image = ImageProcessor.DeepCloneImageFrame(source, PixelFormat.Format32bppArgb);
+            this.Image = ImageProcessor.DeepClone(source, PixelFormat.Format32bppArgb);
             this.Delay = delay;
             this.X = x;
             this.Y = y;

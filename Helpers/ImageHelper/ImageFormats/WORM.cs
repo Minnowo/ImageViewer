@@ -81,9 +81,31 @@ namespace ImageViewer.Helpers
 
         public override Bitmap Image { get; protected set; }
 
-        public override int Width { get; protected set; }
+        public override int Width
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Width;
+            }
+            protected set
+            {
+            }
+        }
 
-        public override int Height { get; protected set; }
+        public override int Height
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Height;
+            }
+            protected set
+            {
+            }
+        }
 
         /// <summary>
         /// Get the <see cref="WormFormat"/> of the image.
@@ -110,8 +132,6 @@ namespace ImageViewer.Helpers
                 throw new Exception($"WORM images do not support width or height larger than {MAX_SIZE}");
 
             this.Image = bmp;
-            this.Width = (ushort)bmp.Width;
-            this.Height = (ushort)bmp.Height;
             this.Format = WormFormat.nil;
         }
 
@@ -242,16 +262,16 @@ namespace ImageViewer.Helpers
                 if(Format == WormFormat.nil)
                     throw new Exception("WORM.Load(string)\n\tInvalid WORM file cannot read");
 
-                Width = binaryReader.ReadUInt16();
-                Height = binaryReader.ReadUInt16();
+                int width = binaryReader.ReadUInt16();
+                int height = binaryReader.ReadUInt16();
 
                 if (this.Image != null)
                     this.Image.Dispose();
-                Image = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);
+                Image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
                 Image.Tag = ImgFormat.wrm;
 
                 BitmapData dstBD = null;
-                byte[] decompressedData = new byte[Width * Height * 2];
+                byte[] decompressedData = new byte[width * height * 2];
                 decompressor.Read(decompressedData, 0, decompressedData.Length);
 
                 dstBD = Image.LockBits(
@@ -261,7 +281,7 @@ namespace ImageViewer.Helpers
                 {
                     byte* pDst = (byte*)(void*)dstBD.Scan0;
 
-                    for (int i = 0; i < Width * Height; i += 1)
+                    for (int i = 0; i < width * height; i += 1)
                     {
                         int index = i << 1;
                         int dec = (ushort)((decompressedData[index]) | (decompressedData[index + 1] << 8));
@@ -339,20 +359,20 @@ namespace ImageViewer.Helpers
                         break;
                 }
                 
-                binaryWriter.Write(Width);
-                binaryWriter.Write(Height);
+                binaryWriter.Write(this.Image.Width);
+                binaryWriter.Write(this.Image.Height);
 
                 BitmapData dstBD = null;
-                byte[] data = new byte[Width * Height * 2];
+                byte[] data = new byte[this.Image.Width * this.Image.Height* 2];
 
                 dstBD = Image.LockBits(
-                        new Rectangle(0, 0, Image.Width, Image.Height),
+                        new Rectangle(0, 0, this.Image.Width, this.Image.Height),
                         ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
                 try
                 {
                     byte* pDst = (byte*)(void*)dstBD.Scan0;
 
-                    for (int i = 0; i < Width * Height; i++)
+                    for (int i = 0; i < this.Image.Width * this.Image.Height; i++)
                     {
                         int Decimal = ColorToDecimal(*(pDst + 2), *(pDst + 1), *(pDst));
                         ushort StorageValue = (ushort)Math.Round(ushort.MaxValue * (Decimal / MAX_DEC));
@@ -390,8 +410,6 @@ namespace ImageViewer.Helpers
                 Image.Dispose();
             Format = WormFormat.nil;
             Image = null;
-            Width = 0;
-            Height = 0;
         }
 
         /// <summary>

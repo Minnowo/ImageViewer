@@ -26,7 +26,7 @@ namespace ImageViewer.Helpers
         /// <param name="source">The source image frame.</param>
         /// <param name="targetFormat">The target pixel format.</param>
         /// <returns>The <see cref="Bitmap"/>.</returns>
-        public static Bitmap DeepCloneImageFrame(Image source, PixelFormat targetFormat)
+        public static Bitmap DeepClone(Image source, PixelFormat targetFormat, bool preserveMetaData = true)
         {
             // Create a new image and draw the original pixel data over the top.
             // This will automatically remap the pixel layout.
@@ -45,9 +45,36 @@ namespace ImageViewer.Helpers
                 g.DrawImageUnscaled(source, 0, 0);
             }
 
+            if (preserveMetaData)
+            {
+                ImageHelper.CopyMetadata(source, copy);
+            }
+
             return copy;
         }
 
+        public static Bitmap DeepCloneGif(Image source, bool preserveMetaData = true)
+        {
+            GifDecoder decoder = new GifDecoder(source);
+            GifEncoder encoder = new GifEncoder(decoder.LoopCount);
+
+            for (int i = 0; i < decoder.FrameCount; i++)
+            {
+                using (GifFrame frame = decoder.GetFrame(i))
+                {
+                    encoder.EncodeFrame(frame);
+                }
+            }
+
+            Image copy = encoder.Encode();
+
+            if (preserveMetaData)
+            {
+                ImageHelper.CopyMetadata(source, copy);
+            }
+
+            return (Bitmap)copy;
+        }
 
         /// <summary>
         /// Creates a solid color bitmap.
@@ -306,7 +333,7 @@ namespace ImageViewer.Helpers
         /// <returns>an gray scaled <see cref="System.Drawing.Imaging.PixelFormat.Format32bppArgb"/> clone of the given image.</returns>
         public static Bitmap GetGrayscaledBitmap(Image srcImg)
         {
-            Bitmap newBitmap = ImageProcessor.DeepCloneImageFrame(srcImg, PixelFormat.Format32bppArgb);
+            Bitmap newBitmap = ImageProcessor.DeepClone(srcImg, PixelFormat.Format32bppArgb);
             GrayscaleBitmapSafe(newBitmap);
             return newBitmap;
         }
@@ -430,7 +457,7 @@ namespace ImageViewer.Helpers
         /// <returns>an inverted <see cref="System.Drawing.Imaging.PixelFormat.Format32bppArgb"/> clone of the given image.</returns>
         public static Bitmap GetInvertedBitmap(Image srcImg)
         {
-            Bitmap newBitmap = ImageProcessor.DeepCloneImageFrame(srcImg, PixelFormat.Format32bppArgb);
+            Bitmap newBitmap = ImageProcessor.DeepClone(srcImg, PixelFormat.Format32bppArgb);
             InvertBitmapSafe(newBitmap);
             return newBitmap;
         }

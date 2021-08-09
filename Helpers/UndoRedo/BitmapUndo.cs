@@ -126,7 +126,7 @@ namespace ImageViewer.Helpers.UndoRedo
                 case BitmapChanges.Resized:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    bitmapUndoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
+                    //bitmapUndoHistoryData.Push(currentBitmap.DeepClone());
                     break;
 
                 // changes are easily undone and do not need to be kept in memory
@@ -187,32 +187,16 @@ namespace ImageViewer.Helpers.UndoRedo
             BitmapChanges change = redos.Pop();
             undos.Push(change);
 
-            Bitmap bmp;
             switch (change)
             {
                 // need to track history data
                 case BitmapChanges.Cropped:
                 case BitmapChanges.Resized:
-                    bmp = bitmapRedoHistoryData.Pop();
-                    bitmapUndoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
-                    ReplaceBitmap(bmp);
-                    break;
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    using (bmp = bitmapRedoHistoryData.Pop())
-                    {
-                        bitmapUndoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
-
-                        if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
-                        {
-                            CurrentBitmap.ConvertGrayscale();
-                            OnRedo(change);
-                            return;
-                        }
-
-                        ImageProcessor.CopyPixelsSafe(CurrentBitmap.Image, bmp);
-                    }
+                    bitmapUndoHistoryData.Push(CurrentBitmap.DeepClone());
+                    CurrentBitmap.UpdateImage(bitmapRedoHistoryData.Pop());
                     break;
 
                 // changes are easily undone and do not need to be kept in memory
@@ -283,37 +267,21 @@ namespace ImageViewer.Helpers.UndoRedo
             BitmapChanges change = undos.Pop();
             redos.Push(change);
 
-            Bitmap bmp;
             switch (change)
             {
                 // need to track history data
                 case BitmapChanges.Cropped:
                 case BitmapChanges.Resized:
-                    bmp = bitmapUndoHistoryData.Pop();
-                    bitmapRedoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
-                    ReplaceBitmap(bmp);
-                    break;
                 case BitmapChanges.Dithered:
                 case BitmapChanges.SetGray:
                 case BitmapChanges.TransparentFilled:
-                    using (bmp = bitmapUndoHistoryData.Pop())
-                    {
-                        bitmapRedoHistoryData.Push(ImageProcessor.DeepCloneImageFrame(CurrentBitmap.Image, CurrentBitmap.Image.PixelFormat));
-
-                        if (ImageAnimator.CanAnimate(bmp) && change == BitmapChanges.SetGray)
-                        {   
-                            CurrentBitmap.ConvertGrayscale(); 
-                            OnUndo(change);
-                            return;
-                        }
-
-                        ImageProcessor.CopyPixelsSafe(CurrentBitmap.Image, bmp);
-                    }
+                    bitmapRedoHistoryData.Push(CurrentBitmap.DeepClone());
+                    CurrentBitmap.UpdateImage(bitmapUndoHistoryData.Pop());
                     break;
 
                 // changes are easily undone and do not need to be kept in memory
                 case BitmapChanges.Inverted:
-                    CurrentBitmap.InvertColor();    
+                    CurrentBitmap.InvertColor();
                     break;
                 case BitmapChanges.RotatedLeft:
                     CurrentBitmap.RotateRight90();

@@ -54,7 +54,7 @@ namespace ImageViewer.Helpers
         /// <summary>
         /// Gets the input image.
         /// </summary>
-        public Image Image { get; }
+        public Image Image { get { return this.image.Image; } }
 
         /// <summary>
         /// Gets a value indicating whether the image is animated.

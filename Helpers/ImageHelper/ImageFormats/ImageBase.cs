@@ -196,9 +196,16 @@ namespace ImageViewer.Helpers
             ImageHelper.SaveImage(this.Image, path, false);
         }
 
-        public virtual Bitmap DeepClone(Image source, PixelFormat targetFormat, bool preserveMetaData)
+        /// <summary>
+        /// Makes a copy of the image and returns a <see cref="Bitmap"/>.
+        /// </summary>
+        /// <returns>A <see cref="Bitmap"/> copy of the image.</returns>
+        public virtual Bitmap DeepClone()
         {
-            Bitmap copy = ImageProcessor.DeepCloneImageFrame(source, targetFormat);
+            if (this.Image == null)
+                return null;
+
+            Bitmap copy = ImageProcessor.DeepClone(this.Image, this.Image.PixelFormat, true);
             /*if (ImageHelper.IsIndexed(targetFormat))
             {
                 Bitmap quantized = this.Quantizer.Quantize(copy);
@@ -206,10 +213,7 @@ namespace ImageViewer.Helpers
                 copy = quantized;
             }*/
 
-            if (preserveMetaData)
-            {
-                ImageHelper.CopyMetadata(source, copy);
-            }
+            
 
             return copy;
         }
@@ -281,6 +285,16 @@ namespace ImageViewer.Helpers
             this.Height = this.Image.Height;
         }
 
+        /// <summary>
+        /// Dispose of the previous image and replace it with the given image.
+        /// </summary>
+        /// <param name="image"></param>
+        public virtual void UpdateImage(Image image)
+        {
+            this.Clear();
+            this.Image = (Bitmap)image;
+        }
+
 
         /// <summary>
         /// Dispose of the image.
@@ -292,8 +306,6 @@ namespace ImageViewer.Helpers
 
             this.Image.Dispose();
             this.Image = null;
-            this.Width = 0;
-            this.Height = 0;
         }
 
         /// <summary>

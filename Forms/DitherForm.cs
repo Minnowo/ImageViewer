@@ -96,7 +96,7 @@ namespace ImageViewer
 
             transform = GetPixelTransform();
             ditherer = GetDitheringInstance();
-            image = ImageProcessor.DeepCloneImageFrame(originalImage.Image, PixelFormat.Format32bppArgb);//.CopyTo32bppArgb();
+            image = ImageProcessor.DeepClone(originalImage.Image, PixelFormat.Format32bppArgb);//.CopyTo32bppArgb();
 
             if (image == null)
                 return;

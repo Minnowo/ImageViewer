@@ -83,9 +83,7 @@ namespace ImageViewer.Helpers
             protected set { }
         }
 
-        /// <summary>
-        /// Get the width of the selected image, or 0 if null.
-        /// </summary>
+
         public override int Width 
         { 
             get
@@ -99,9 +97,7 @@ namespace ImageViewer.Helpers
             }
         }
 
-        /// <summary>
-        /// Get the height of the selected image, or 0 if null.
-        /// </summary>
+
         public override int Height
         {
             get

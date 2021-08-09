@@ -62,9 +62,32 @@ namespace ImageViewer.Helpers
 
         public override Bitmap Image { get; protected set; }
 
-        public override int Width { get; protected set; }
+        public override int Width
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Width;
+            }
+            protected set
+            {
+            }
+        }
 
-        public override int Height { get; protected set; }
+
+        public override int Height
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Height;
+            }
+            protected set
+            {
+            }
+        }
 
         /// <summary>
         /// Get or Set the quality to encode the jpeg.
@@ -83,8 +106,6 @@ namespace ImageViewer.Helpers
         public JPEG(Bitmap bmp)
         {
             this.Image = bmp;
-            this.Width = bmp.Width;
-            this.Height = bmp.Height;
             this.Quality = 75;
         }
 
@@ -206,8 +227,6 @@ namespace ImageViewer.Helpers
                 Image.Dispose();
 
             Image = null;
-            Width = 0;
-            Height = 0;
             Quality = 75;
         }
 

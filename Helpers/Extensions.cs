@@ -49,7 +49,7 @@ namespace ImageViewer.Helpers
 
         public static Bitmap Copy(this Image image)
         {
-            return ImageProcessor.DeepCloneImageFrame(image, PixelFormat.Format32bppArgb);
+            return ImageProcessor.DeepClone(image, PixelFormat.Format32bppArgb);
         }
 
 

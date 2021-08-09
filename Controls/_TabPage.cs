@@ -239,16 +239,14 @@ namespace ImageViewer.Controls
             if (BitmapChangeTracker.CurrentBitmap == null)
                 return;
 
-            ImgFormat fmt = BitmapChangeTracker.CurrentBitmap.GetImageFormat();
-
-            if (fmt == ImgFormat.gif)
+            if (BitmapChangeTracker.Format == ImgFormat.gif)
             {
                 if (GifDecoder == null || !ibMain.AnimationPaused)
                     return;
 
                 GifDecoder.SetFrame(index);
             }
-            else if(fmt == ImgFormat.ico)
+            else if(BitmapChangeTracker.Format == ImgFormat.ico)
             {
                 ICO i = BitmapChangeTracker.CurrentBitmap as ICO;
                 i.SelectedImageIndex = index;
@@ -388,8 +386,13 @@ namespace ImageViewer.Controls
         {
             if (ibMain == null)
                 return;
-            ibMain.Zoom++;
-            ibMain.Zoom--;
+
+            if (this.BitmapChangeTracker.Format == ImgFormat.gif ||
+                this.BitmapChangeTracker.Format == ImgFormat.ico)
+            {
+                ibMain.Zoom++;
+                ibMain.Zoom--;
+            }
         }
     }
 }

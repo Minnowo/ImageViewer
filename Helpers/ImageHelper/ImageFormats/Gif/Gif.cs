@@ -70,15 +70,17 @@ namespace ImageViewer.Helpers
 
         public override Bitmap Image { get; protected set; }
 
-        public override int Width 
+        public override int Width
         {
-            get 
+            get
             {
                 if (this.Image == null)
                     return 0;
-                return Image.Width;
-            } 
-            protected set { }
+                return this.Image.Width;
+            }
+            protected set
+            {
+            }
         }
 
         public override int Height
@@ -87,14 +89,17 @@ namespace ImageViewer.Helpers
             {
                 if (this.Image == null)
                     return 0;
-                return Image.Height;
+                return this.Image.Height;
             }
-            protected set { }
+            protected set
+            {
+            }
         }
 
         public virtual bool IsAnimating { get; protected set; }
 
         private List<EventHandler> FrameChangedHandlerCallbacks = new List<EventHandler>();
+
 
         public Gif()
         {
@@ -130,28 +135,7 @@ namespace ImageViewer.Helpers
             }
         }
 
-        public new static Bitmap DeepClone(Image source, PixelFormat targetFormat, bool preserveMetaData)
-        {
-            GifDecoder decoder = new GifDecoder(source);
-            GifEncoder encoder = new GifEncoder(decoder.LoopCount);
-
-            for (int i = 0; i < decoder.FrameCount; i++)
-            {
-                using (GifFrame frame = decoder.GetFrame(i))
-                {
-                    encoder.EncodeFrame(frame);
-                }
-            }
-
-            Image copy = encoder.Encode();
-
-            if (preserveMetaData)
-            {
-                ImageHelper.CopyMetadata(source, copy);
-            }
-
-            return (Bitmap)copy;
-        }
+        
 
         #endregion
 
@@ -258,6 +242,14 @@ namespace ImageViewer.Helpers
             }
 
             encoder.EncodeToStream(stream);
+        }
+
+
+        public override Bitmap DeepClone()
+        {
+            if (this.Image == null)
+                return null;
+            return ImageProcessor.DeepCloneGif(this.Image, false);
         }
 
         public override void RotateRight90()
