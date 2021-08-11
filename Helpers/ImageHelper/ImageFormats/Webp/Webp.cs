@@ -120,7 +120,7 @@ namespace ImageViewer.Helpers
         /// <param name="img">The image to save.</param>
         /// <param name="Path">The path to the file.</param>
         /// <param name="quality">The encoding settings.</param>
-        public static void Save(Bitmap img, string Path, WebPQuality quality)
+        public static void Save(Image img, string Path, WebPQuality quality)
         {
             try
             {
@@ -132,13 +132,13 @@ namespace ImageViewer.Helpers
                     {
                         default:
                         case WebpEncodingFormat.EncodeLossless:
-                            rawWebP = webp.EncodeLossless(img, quality.Speed);
+                            rawWebP = webp.EncodeLossless((Bitmap)img, quality.Speed);
                             break;
                         case WebpEncodingFormat.EncodeNearLossless:
-                            rawWebP = webp.EncodeNearLossless(img, quality.Quality, quality.Speed);
+                            rawWebP = webp.EncodeNearLossless((Bitmap)img, quality.Quality, quality.Speed);
                             break;
                         case WebpEncodingFormat.EncodeLossy:
-                            rawWebP = webp.EncodeLossy(img, quality.Quality, quality.Speed);
+                            rawWebP = webp.EncodeLossy((Bitmap)img, quality.Quality, quality.Speed);
                             break;
                     }
 

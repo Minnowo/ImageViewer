@@ -147,10 +147,8 @@ namespace ImageViewer.Helpers
             try
             {
                 PathHelper.CreateDirectoryFromFilePath(path);
-                using(TIFF t = new TIFF(image))
-                {
-                    t.Save(path);
-                }
+                TIFF t = new TIFF(image);
+                t.Save(path);
             }
             catch (Exception ex)
             {

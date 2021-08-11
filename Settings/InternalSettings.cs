@@ -551,7 +551,11 @@ namespace ImageViewer.Settings
 
         [Description("The size of the transparent back grid cells."), DisplayName("Transparent Grid Cell Size")]
         public int Grid_Cell_Size { get; set; } = 8;
-        
+
+
+        [Description("The jpg encoding quality."), DisplayName("Jpeg Quality")]
+        public long Jpeg_Quality { get; set; } = 75L;
+
 
         [XmlIgnore]
         [Description("The color that fills the transparent pixels when copying an image."), DisplayName("Fill Transparency On Copy Color")]

@@ -283,31 +283,33 @@ namespace ImageViewer.Helpers
                 return false;
 
             PathHelper.CreateDirectoryFromFilePath(path);
-            Program.mainForm.UseWaitCursor = true;
+
             try
             {
                 switch (GetImageFormatFromPath(path))
                 {
                     default:
                     case ImgFormat.png:
-                        img.Save(path, ImageFormat.Png);
+                        PNG.Save(img, path);
                         return true;
                     case ImgFormat.jpg:
-                        img.Save(path, ImageFormat.Jpeg);
+                        JPEG.Save(img, path);
                         return true;
                     case ImgFormat.bmp:
-                        img.Save(path, ImageFormat.Bmp);
+                        BMP.Save(img, path);
                         return true;
                     case ImgFormat.gif:
-                        img.Save(path, ImageFormat.Gif);
+                        Gif.Save(img, path);
                         return true;
                     case ImgFormat.tif:
-                        img.Save(path, ImageFormat.Tiff);
+                        TIFF.Save(img, path);
                         return true;
                     case ImgFormat.wrm:
-                        return SaveWrm(img, path);
+                        WORM.Save(img, path);
+                        return true;
                     case ImgFormat.webp:
-                        return SaveWebp(img, path, InternalSettings.WebpQuality_Default);
+                        Webp.Save(img, path, InternalSettings.WebpQuality_Default);
+                        return true;
                 }
             }
             catch (Exception e)
@@ -317,7 +319,6 @@ namespace ImageViewer.Helpers
             }
             finally
             {
-                Program.mainForm.UseWaitCursor = false;
                 if (collectGarbage)
                 {
                     GC.Collect();
@@ -406,48 +407,6 @@ namespace ImageViewer.Helpers
 
 
         /// <summary>
-        /// Load a wemp image. (Requires the libwebp_x64.dll or libwebp_x86.dll)
-        /// </summary>
-        /// <param name="path"> The path to the image. </param>
-        /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
-        public static Bitmap LoadWebP(string path, bool supressError = false)
-        {
-            if (!InternalSettings.WebP_Plugin_Exists || string.IsNullOrEmpty(path) || !File.Exists(path))
-                return null;
-
-            try
-            {
-                return Webp.FromFileAsBitmap(path);
-            }
-            catch (Exception e)
-            {
-                if (supressError)
-                    return null;
-                e.ShowError();
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Loads a wrm image.
-        /// </summary>
-        /// <param name="path">The path of the image.</param>
-        /// <returns>A bitmap.</returns>
-        public static Bitmap LoadWORM(string path)
-        {
-            try
-            {
-                return WORM.FromFileAsBitmap(path);
-            }
-            catch (Exception e)
-            {
-                e.ShowError();
-            }
-            return null;
-        }
-
-
-        /// <summary>
         /// Opens a file dialog to select an image.
         /// </summary>
         /// <param name="multiselect"> A bool indicating if multiple files should be allowed. </param>
@@ -490,8 +449,8 @@ namespace ImageViewer.Helpers
 
             ImgFormat fmt = GetImageFormat(path);
 
-            //if (fmt == ImgFormat.nil)
-            //    fmt = GetImageFormatFromPath(path);
+            if (fmt == ImgFormat.nil)
+                fmt = GetImageFormatFromPath(path);
 
             try
             {

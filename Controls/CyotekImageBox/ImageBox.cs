@@ -1934,6 +1934,12 @@ namespace Cyotek.Windows.Forms
 
         #region Methods
 
+
+        public virtual void UpdateLayout()
+        {
+            this.AdjustViewPort();
+            this.ZoomToFit();
+        }
 /*        public virtual void RefreshGifAnimation()
         {
             if (this.Image == null)
@@ -2144,6 +2150,7 @@ namespace Cyotek.Windows.Forms
                 height = Math.Min(this.ScaledImageHeight - Math.Abs(this.AutoScrollPosition.Y), innerRectangle.Height);
                 //return new Rectangle(viewX,viewY, width, height);
                 return new Rectangle(offset.X + innerRectangle.Left, offset.Y + innerRectangle.Top, width, height);
+                //return new Rectangle(0,0, width, height);
 
             }
 
@@ -2200,8 +2207,7 @@ namespace Cyotek.Windows.Forms
 
             Image newIm = this.GetSelectedImage(false, true);
             this.SelectionRegion = Rectangle.Empty;
-            this._Image.Dispose();
-            this._Image = newIm;
+            this.Image.UpdateImage(newIm);
             this.ZoomToFit();
         }
 

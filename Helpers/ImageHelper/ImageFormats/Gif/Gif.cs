@@ -135,7 +135,19 @@ namespace ImageViewer.Helpers
             }
         }
 
-        
+        public static void Save(Image image, string path)
+        {
+            try
+            {
+                PathHelper.CreateDirectoryFromFilePath(path);
+                Gif g = new Gif(image);
+                g.Save(path);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\nIn Gif.Save(Image, string)");
+            }
+        }
 
         #endregion
 

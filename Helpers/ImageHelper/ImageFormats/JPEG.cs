@@ -134,15 +134,15 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="image">The image to save.</param>
         /// <param name="path">The path to save the image.</param>
-        public static void Save(Image image, string path)
+        public static void Save(Image image, string path, long quality = 75L)
         {
             try
             {
                 PathHelper.CreateDirectoryFromFilePath(path);
-                using (JPEG t = new JPEG(image))
-                {
-                    t.Save(path);
-                }
+                JPEG t = new JPEG(image);
+                t.Quality = quality;
+                t.Save(path);
+                
             }
             catch (Exception ex)
             {
@@ -167,7 +167,6 @@ namespace ImageViewer.Helpers
                 throw new ArgumentException("JPEG.Save(string)\n\tPath cannot be null or empty");
             if (this.Image == null)
                 throw new ArgumentException("JPEG.Save(string)\n\tImage cannot be null");
-
 
             this.Save(path, this.Quality);
         }

@@ -122,6 +122,21 @@ namespace ImageViewer
 
         #region public helpers
 
+        public bool Save(Image img, string path, bool collectGarbage = false)
+        {
+            try
+            {
+                this.UseWaitCursor = true;
+                this.Cursor = Cursors.WaitCursor;
+                return ImageHelper.SaveImage(img, path, collectGarbage);
+            }
+            finally
+            {
+                this.UseWaitCursor = false;
+                this.Cursor = Cursors.Default;
+            }
+        }
+
         public void UpdateAll(bool updateWatcherIndex = false)
         {
             UpdateZoomNumericUpDown();
@@ -136,7 +151,7 @@ namespace ImageViewer
 
             if (currentPage != null)
             {
-                currentPage.ibMain.Invalidate();
+                currentPage.InvalidateImageBox();
             }
 
             if (updateWatcherIndex)
@@ -197,7 +212,7 @@ namespace ImageViewer
 
             if (suppressRedraw)
                 return;
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         public void UpdateCurrentPageTransparentBackColor(bool suppressRedraw = false)
@@ -215,7 +230,7 @@ namespace ImageViewer
                 currentPage.ibMain.GridColor = InternalSettings.Default_Transparent_Grid_Color;
                 currentPage.ibMain.GridColorAlternate = InternalSettings.Default_Transparent_Grid_Color_Alternate;
                 if (!suppressRedraw)
-                    currentPage.ibMain.Invalidate();
+                    currentPage.InvalidateImageBox();
                 return;
             }
 
@@ -224,7 +239,7 @@ namespace ImageViewer
                 currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
                 currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color;
                 if (!suppressRedraw)
-                    currentPage.ibMain.Invalidate();
+                    currentPage.InvalidateImageBox();
                 return;
 
             }
@@ -232,7 +247,7 @@ namespace ImageViewer
             currentPage.ibMain.GridColor = InternalSettings.Current_Transparent_Grid_Color;
             currentPage.ibMain.GridColorAlternate = InternalSettings.Current_Transparent_Grid_Color_Alternate;
             if (!suppressRedraw)
-                currentPage.ibMain.Invalidate();
+                currentPage.InvalidateImageBox();
         }
 
         public void UpdatePixelGrid(bool suppressRedraw = false)
@@ -244,7 +259,7 @@ namespace ImageViewer
 
             if (suppressRedraw)
                 return;
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         public void UpdateZoomNumericUpDown()
@@ -282,7 +297,7 @@ namespace ImageViewer
 
             if (suppressRedraw)
                 return;
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         public void UpdateSelectionLock(bool suppressRedraw = false)
@@ -294,7 +309,7 @@ namespace ImageViewer
 
             if (suppressRedraw)
                 return;
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         public void UpdateImageBoxBackColor(bool suppressRedraw = false)
@@ -306,7 +321,7 @@ namespace ImageViewer
 
             if (suppressRedraw)
                 return;
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         private void UpdateBottomInfoLabel()
@@ -426,7 +441,7 @@ namespace ImageViewer
             string dir = InternalSettings.Temp_Image_Folder;
             string imagePath = Helper.GetNewFileName(dir);
             
-            if(!ImageHelper.SaveImage(img, imagePath, false))
+            if(!Save(img, imagePath))
                 return;
 
             _TabPage tp = new _TabPage(imagePath)
@@ -459,7 +474,6 @@ namespace ImageViewer
                 return;
 
             currentPage.ibMain.ZoomToFit();
-            currentPage.ibMain.Invalidate();
         }  
 
         public void NextImage()
@@ -741,7 +755,6 @@ namespace ImageViewer
                         return;
 
                     currentPage.BitmapChangeTracker.Redo();
-                    currentPage.ibMain.Invalidate();
                     break;
 
                 case (Keys.Z | Keys.Control):
@@ -752,7 +765,6 @@ namespace ImageViewer
                         return;
 
                     currentPage.BitmapChangeTracker.Undo();
-                    currentPage.ibMain.Invalidate();
                     break;
             }
         }
@@ -1049,7 +1061,7 @@ namespace ImageViewer
                     {
                         using (GifFrame gf = g.GetFrame(i))
                         {
-                            if (ImageHelper.SaveImage(gf.Image,
+                            if (Save(gf.Image,
                                 string.Format("{0}\\{1}.{2}", dir, i,
                                 InternalSettings.Default_Image_Format), false))
                             {
@@ -1120,7 +1132,7 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedLeft);
             currentPage.BitmapChangeTracker.CurrentBitmap.RotateLeft90();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox(true);
         }
 
         private void rotateRightToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1130,7 +1142,7 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
             currentPage.BitmapChangeTracker.CurrentBitmap.RotateRight90();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox(true);
         }
 
         private void flipHorizontallyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1140,7 +1152,7 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
             currentPage.BitmapChangeTracker.CurrentBitmap.FlipHorizontal();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         private void flipVerticallyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1150,7 +1162,7 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
             currentPage.BitmapChangeTracker.CurrentBitmap.FlipVertical();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1189,7 +1201,6 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Cropped);
             currentPage.ibMain.CropImageToSelection();
-            currentPage.BitmapChangeTracker.ReplaceBitmap((Bitmap)currentPage.Image);
         }
 
         private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1197,10 +1208,9 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
             currentPage.BitmapChangeTracker.CurrentBitmap.ConvertGrayscale();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1210,7 +1220,7 @@ namespace ImageViewer
 
             currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
             currentPage.BitmapChangeTracker.CurrentBitmap.InvertColor();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
 
@@ -1234,7 +1244,7 @@ namespace ImageViewer
                 if (f.result == SimpleDialogResult.Success)
                 {
                     ImageProcessor.ReplaceTransparentPixelsSafe(currentPage.ibMain.Image, f.Color, f.Alpha);
-                    currentPage.ibMain.Invalidate();
+                    currentPage.InvalidateImageBox();
                 }
             }
 
@@ -1269,7 +1279,7 @@ namespace ImageViewer
                     currentPage.BitmapChangeTracker.DisposeLastUndo();
                 }
 
-                currentPage.ibMain.Invalidate();
+                currentPage.InvalidateImageBox();
             }
 
             Location = p;
@@ -1318,7 +1328,7 @@ namespace ImageViewer
 
             preventOverflow = false;
 
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         private void FitImageToScreen_Click(object sender, EventArgs e)
@@ -1327,7 +1337,7 @@ namespace ImageViewer
                 return;
 
             currentPage.ibMain.ZoomToFit();
-            currentPage.ibMain.Invalidate();
+            currentPage.InvalidateImageBox();
         }
 
         private void ImageBackingColors_Click(object sender, EventArgs e)

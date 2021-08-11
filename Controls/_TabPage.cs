@@ -253,9 +253,24 @@ namespace ImageViewer.Controls
                 ICO i = BitmapChangeTracker.CurrentBitmap as ICO;
                 i.SelectedImageIndex = index;
             }
-            ibMain.Invalidate();
+            InvalidateImageBox(true);
         }
 
+        public void InvalidateImageBox(bool force = false)
+        {
+            if (ibMain == null)
+                return;
+
+            if (force && (this.BitmapChangeTracker.Format == ImgFormat.gif ||
+                this.BitmapChangeTracker.Format == ImgFormat.ico))
+            {
+                InvalidateImageForce();
+            }
+            else
+            {
+                ibMain.Invalidate();
+            }
+        }
 
         private void LoadImage()
         {
@@ -390,12 +405,16 @@ namespace ImageViewer.Controls
             if (ibMain == null)
                 return;
 
-            if (this.BitmapChangeTracker.Format == ImgFormat.gif ||
-                this.BitmapChangeTracker.Format == ImgFormat.ico)
-            {
-                ibMain.Zoom++;
-                ibMain.Zoom--;
-            }
+            //InvalidateImageBox();
+            ibMain.UpdateLayout();
+        }
+
+        private void InvalidateImageForce()
+        {
+            if (ibMain == null)
+                return;
+
+            ibMain.UpdateLayout();
         }
     }
 }

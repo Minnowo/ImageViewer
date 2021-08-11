@@ -242,6 +242,19 @@ namespace ImageViewer.Helpers
         }
 
 
+        public static void Save(Image image, string path)
+        {
+            try
+            {
+                WORM wrm = new WORM(image);
+                wrm.Save(path);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message + "\r\tIn WORM.Save(Image, string)");
+            }
+        }
+
         #endregion
 
 
@@ -265,8 +278,6 @@ namespace ImageViewer.Helpers
                 int width = binaryReader.ReadUInt16();
                 int height = binaryReader.ReadUInt16();
 
-                if (this.Image != null)
-                    this.Image.Dispose();
                 Image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
                 Image.Tag = ImgFormat.wrm;
 
@@ -359,8 +370,8 @@ namespace ImageViewer.Helpers
                         break;
                 }
                 
-                binaryWriter.Write(this.Image.Width);
-                binaryWriter.Write(this.Image.Height);
+                binaryWriter.Write((ushort)this.Image.Width);
+                binaryWriter.Write((ushort)this.Image.Height);
 
                 BitmapData dstBD = null;
                 byte[] data = new byte[this.Image.Width * this.Image.Height* 2];
