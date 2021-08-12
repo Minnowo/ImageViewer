@@ -245,6 +245,17 @@ namespace ImageViewer.Helpers
             return filePath.Substring(pos + 1).ToLowerInvariant().Trim();
         }
 
+        public static string GetRandomString(string initial = "", int length = 8)
+        {
+            string text = string.Format("{0}{1}", initial, DateTime.Now.Ticks.GetHashCode().ToString("x").ToUpper());
+
+            if (text.Length == length)
+                return text;
+            if (text.Length > length)
+                return text.Substring(0, length);
+            return GetRandomString(text, length);
+        }
+
         public static bool IsValidFilePath(string path)
         {
             try

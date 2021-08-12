@@ -146,6 +146,12 @@ namespace ImageViewer.Settings
         }
         private static int fill_Alpha_Less_Than = 128;
 
+        public static long Jpeg_Quality
+        {
+            get { return CurrentUserSettings.Jpeg_Quality; }
+            set { CurrentUserSettings.Jpeg_Quality = value; }
+        }
+
         public static int Grid_Cell_Size
         {
             get { return CurrentUserSettings.Grid_Cell_Size; }
@@ -239,6 +245,12 @@ namespace ImageViewer.Settings
         {
             get { return CurrentUserSettings.Fit_Image_On_Resize; }
             set { CurrentUserSettings.Fit_Image_On_Resize = value; }
+        }
+
+        public static bool Generate_Random_File_Names
+        {
+            get { return CurrentUserSettings.Generate_Random_File_Names; }
+            set { CurrentUserSettings.Generate_Random_File_Names = value; }
         }
 
         public static bool Lock_Selection_To_Image
@@ -516,6 +528,9 @@ namespace ImageViewer.Settings
 
         [Description("Should async be used when dithering."), DisplayName("Use Async When Dithering")]
         public bool Use_Async_Dither { get; set; } = true;
+
+        [Description("Should save file dialogs have randomly generated file names."), DisplayName("Generate Dialog File Names")]
+        public bool Generate_Random_File_Names { get; set; } = true;
 
 
         [Description("Copy image in a way that keeps transparency."), DisplayName("Alternate Image Copy Method (keeps transparency)")]

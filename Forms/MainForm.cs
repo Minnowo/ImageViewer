@@ -186,6 +186,8 @@ namespace ImageViewer
             ImgFormat fmt = currentPage.BitmapChangeTracker.CurrentBitmap.GetImageFormat();
             if (fmt == ImgFormat.gif)
             {
+                if (currentPage.GifDecoder == null || currentPage.GifDecoder.FrameCount < 1)
+                    return;
                 nudGifFrame.Enabled = true;
                 nudGifFrame.Maximum = currentPage.GifDecoder.FrameCount - 1;
                 nudGifFrame.Value = currentPage.GifDecoder.ActiveFrameIndex;
@@ -507,7 +509,15 @@ namespace ImageViewer
             if (currentPage == null)
                 return;
 
-            string path = ImageHelper.SaveImageFileDialog(currentPage.Image);
+            string path;
+            if (InternalSettings.Generate_Random_File_Names)
+            {
+                path = ImageHelper.SaveImageFileDialog(currentPage.Image, Helper.GetRandomString());
+            }
+            else
+            {
+                path = ImageHelper.SaveImageFileDialog(currentPage.Image);
+            }
 
             if (InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
             {
@@ -522,7 +532,15 @@ namespace ImageViewer
 
             using (Image img = currentPage.ibMain.VisibleImage)
             {
-                string path = ImageHelper.SaveImageFileDialog(img);
+                string path;
+                if (InternalSettings.Generate_Random_File_Names)
+                {
+                    path = ImageHelper.SaveImageFileDialog(img, Helper.GetRandomString());
+                }
+                else
+                {
+                    path = ImageHelper.SaveImageFileDialog(img);
+                }
 
                 if (InternalSettings.Open_Explorer_After_SaveAs && !string.IsNullOrEmpty(path))
                 {

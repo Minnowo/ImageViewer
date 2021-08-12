@@ -293,7 +293,7 @@ namespace ImageViewer.Helpers
                         PNG.Save(img, path);
                         return true;
                     case ImgFormat.jpg:
-                        JPEG.Save(img, path);
+                        JPEG.Save(img, path, InternalSettings.Jpeg_Quality);
                         return true;
                     case ImgFormat.bmp:
                         BMP.Save(img, path);
