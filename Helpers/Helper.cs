@@ -245,6 +245,16 @@ namespace ImageViewer.Helpers
             return filePath.Substring(pos + 1).ToLowerInvariant().Trim();
         }
 
+        public static bool IsOnlyModifiers(Keys hotkey)
+        {
+            return hotkey == Keys.ControlKey || hotkey == Keys.ShiftKey || hotkey == Keys.Menu || hotkey == Keys.LWin || hotkey == Keys.RWin;
+        }
+
+        public static bool IsValidHotkey(Keys hotkey)
+        {
+            return hotkey != Keys.None && !IsOnlyModifiers(hotkey);
+        }
+
         public static string GetRandomString(string initial = "", int length = 8)
         {
             string text = string.Format("{0}{1}", initial, DateTime.Now.Ticks.GetHashCode().ToString("x").ToUpper());

@@ -28,25 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pgMain = new System.Windows.Forms.PropertyGrid();
             this.cbProfiles = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
+            this.tcMain = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.pgMain = new System.Windows.Forms.PropertyGrid();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.btnRestoreDefaultHotkeys = new System.Windows.Forms.Button();
+            this.btnRemoveHotkey = new System.Windows.Forms.Button();
+            this.btnAddHotkey = new System.Windows.Forms.Button();
+            this.hcMain = new ImageViewer.Controls.HotkeyControl();
+            this.tcMain.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // pgMain
-            // 
-            this.pgMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pgMain.HelpVisible = false;
-            this.pgMain.Location = new System.Drawing.Point(12, 60);
-            this.pgMain.Name = "pgMain";
-            this.pgMain.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.pgMain.Size = new System.Drawing.Size(364, 378);
-            this.pgMain.TabIndex = 0;
-            this.pgMain.ToolbarVisible = false;
             // 
             // cbProfiles
             // 
@@ -87,29 +84,128 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.AddButton_Click);
             // 
+            // tcMain
+            // 
+            this.tcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tcMain.Controls.Add(this.tabPage1);
+            this.tcMain.Controls.Add(this.tabPage2);
+            this.tcMain.Location = new System.Drawing.Point(3, 60);
+            this.tcMain.Name = "tcMain";
+            this.tcMain.SelectedIndex = 0;
+            this.tcMain.Size = new System.Drawing.Size(383, 390);
+            this.tcMain.TabIndex = 8;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.pgMain);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(375, 364);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Internals";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // pgMain
+            // 
+            this.pgMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pgMain.HelpVisible = false;
+            this.pgMain.Location = new System.Drawing.Point(3, 3);
+            this.pgMain.Name = "pgMain";
+            this.pgMain.PropertySort = System.Windows.Forms.PropertySort.NoSort;
+            this.pgMain.Size = new System.Drawing.Size(369, 358);
+            this.pgMain.TabIndex = 0;
+            this.pgMain.ToolbarVisible = false;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.hcMain);
+            this.tabPage2.Controls.Add(this.btnRestoreDefaultHotkeys);
+            this.tabPage2.Controls.Add(this.btnRemoveHotkey);
+            this.tabPage2.Controls.Add(this.btnAddHotkey);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(375, 364);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "KeyBinds";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // btnRestoreDefaultHotkeys
+            // 
+            this.btnRestoreDefaultHotkeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRestoreDefaultHotkeys.Location = new System.Drawing.Point(236, 6);
+            this.btnRestoreDefaultHotkeys.Name = "btnRestoreDefaultHotkeys";
+            this.btnRestoreDefaultHotkeys.Size = new System.Drawing.Size(133, 23);
+            this.btnRestoreDefaultHotkeys.TabIndex = 3;
+            this.btnRestoreDefaultHotkeys.Text = "Restore Default";
+            this.btnRestoreDefaultHotkeys.UseVisualStyleBackColor = true;
+            this.btnRestoreDefaultHotkeys.Click += new System.EventHandler(this.RestoreDefaultHotkeys_Click);
+            // 
+            // btnRemoveHotkey
+            // 
+            this.btnRemoveHotkey.Location = new System.Drawing.Point(89, 6);
+            this.btnRemoveHotkey.Name = "btnRemoveHotkey";
+            this.btnRemoveHotkey.Size = new System.Drawing.Size(75, 23);
+            this.btnRemoveHotkey.TabIndex = 2;
+            this.btnRemoveHotkey.Text = "Remove";
+            this.btnRemoveHotkey.UseVisualStyleBackColor = true;
+            this.btnRemoveHotkey.Click += new System.EventHandler(this.RemoveHotkey_Click);
+            // 
+            // btnAddHotkey
+            // 
+            this.btnAddHotkey.Location = new System.Drawing.Point(8, 6);
+            this.btnAddHotkey.Name = "btnAddHotkey";
+            this.btnAddHotkey.Size = new System.Drawing.Size(75, 23);
+            this.btnAddHotkey.TabIndex = 1;
+            this.btnAddHotkey.Text = "Add";
+            this.btnAddHotkey.UseVisualStyleBackColor = true;
+            this.btnAddHotkey.Click += new System.EventHandler(this.AddHotkey_Click);
+            // 
+            // hcMain
+            // 
+            this.hcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hcMain.Location = new System.Drawing.Point(8, 35);
+            this.hcMain.Name = "hcMain";
+            this.hcMain.Size = new System.Drawing.Size(361, 321);
+            this.hcMain.TabIndex = 4;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(388, 450);
+            this.Controls.Add(this.tcMain);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbProfiles);
-            this.Controls.Add(this.pgMain);
             this.Name = "SettingsForm";
             this.Text = "SettingsForm";
+            this.tcMain.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.PropertyGrid pgMain;
         private System.Windows.Forms.ComboBox cbProfiles;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.TabControl tcMain;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.PropertyGrid pgMain;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.Button btnRestoreDefaultHotkeys;
+        private System.Windows.Forms.Button btnRemoveHotkey;
+        private System.Windows.Forms.Button btnAddHotkey;
+        private Controls.HotkeyControl hcMain;
     }
 }

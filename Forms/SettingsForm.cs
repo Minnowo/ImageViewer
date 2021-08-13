@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ImageViewer.Settings;
+using ImageViewer.Controls;
 using ImageViewer.Helpers;
 namespace ImageViewer
 {
@@ -28,6 +29,8 @@ namespace ImageViewer
 
             FormClosing += SettingsForm_FormClosing;
         }
+
+        #region Profiles / Internals
 
         private void cbProfiles_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -64,5 +67,26 @@ namespace ImageViewer
         {
             SettingsLoader.Save();
         }
+
+
+        #endregion
+        #region KeyBinds
+
+        private void AddHotkey_Click(object sender, EventArgs e)
+        {
+            hcMain.AddRebind();
+        }
+
+        private void RemoveHotkey_Click(object sender, EventArgs e)
+        {
+            hcMain.RemoveRebind();
+        }
+
+        private void RestoreDefaultHotkeys_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion
     }
 }
