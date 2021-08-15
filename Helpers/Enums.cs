@@ -9,16 +9,19 @@ namespace ImageViewer.Helpers
 {
     public enum Command
     {
+        Nothing,
         SaveImage,
         SaveVisibleImage,
         ExportGifFrames,
         CopyImage,
         CopyVisibleImage,
         CopySelectedImage,
-        PaseImage,
+        PasteImage,
         PauseGif,
         NextFrame,
         PreviousFrame,
+        NextTab,
+        PreviousTab,
         NextImage,
         PreviousImage,
         CloseTab,
@@ -47,7 +50,9 @@ namespace ImageViewer.Helpers
         ViewDefaultTransparentGrid,
         ViewColor1TransparentGrid,
         OpenColorPicker,
-        OpenSettings
+        OpenSettings,
+        Undo,
+        Redo
     }
 
     public enum HashType

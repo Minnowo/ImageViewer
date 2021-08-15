@@ -33,6 +33,10 @@ namespace ImageViewer.Settings
             if (!File.Exists(InternalSettings.User_Settings_Path))
             {
                 InternalSettings.SettingProfiles.Add(InternalSettings.CurrentUserSettings);
+                foreach (UserControlledSettings s in InternalSettings.SettingProfiles)
+                {
+                    s.UpdateBinds();
+                }
                 return;
             }
 
@@ -57,6 +61,11 @@ namespace ImageViewer.Settings
                     });
                     
                 }
+            }
+
+            foreach(UserControlledSettings s in InternalSettings.SettingProfiles)
+            {
+                s.UpdateBinds();
             }
         }
     }

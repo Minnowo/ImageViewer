@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ImageViewer.Helpers;
+using ImageViewer.Misc;
+
 namespace ImageViewer.Controls
 {
     public partial class HotkeyControl : UserControl
@@ -26,20 +28,61 @@ namespace ImageViewer.Controls
         {
             InitializeComponent();
             Size = new Size(50, 50);
-
-            panel1.SizeChanged += myFlowLayoutPannel_SizeChanged;
         }
 
+        public void LoadBindings(List<Hotkey> binds)
+        {
+            if (binds == null)
+                return;
+
+            m_selectedItem = null;
+            int c = panel1.Controls.Count;
+            for(int i = 0; i < c; i++)
+            {
+                Control ct = panel1.Controls[0];
+                panel1.Controls.RemoveAt(0);
+                ct?.Dispose();
+            }
+
+            foreach(Hotkey kb in binds)
+            {
+                KeyRebind krb = new KeyRebind();
+                krb.Function = kb.Function;
+                krb.KeyBind = new Misc.Hotkey(kb.Keys);
+                AddRebind(krb);
+                krb.UpdateText();
+            }
+        }
+
+        public void GetBindings(List<Hotkey> binds)
+        {
+            if (binds == null)
+                return;
+
+            binds.Clear();
+
+            foreach(KeyRebind krb in panel1.Controls)
+            {
+                binds.Add(new Hotkey(krb.KeyBind.Keys, krb.Function));
+            }
+        }
+
+        public void AddRebind(KeyRebind bind)
+        {
+            bind.SelectionChanged += Krb_SelectionChanged;
+            bind.Dock = DockStyle.Top;
+            panel1.Controls.Add(bind);
+        }
 
         public void AddRebind()
         {
             KeyRebind krb = new KeyRebind();
             krb.SelectionChanged += Krb_SelectionChanged;
             krb.Dock = DockStyle.Top;
-            //krb.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
-            //krb.AutoSize = true;
             panel1.Controls.Add(krb);
         }
+
+
 
         public void RemoveRebind()
         {
@@ -60,16 +103,6 @@ namespace ImageViewer.Controls
             if (m_selectedItem != null)
                 m_selectedItem.IsSelected = false;
             m_selectedItem = sender as KeyRebind;
-        }
-
-        private void myFlowLayoutPannel_SizeChanged(object sender, EventArgs e)
-        {
-            /*panel1.SuspendLayout();
-            foreach (Control ctrl in panel1.Controls)
-            {
-                if (ctrl is Button) ctrl.Width = panel1.ClientSize.Width;
-            }
-            panel1.ResumeLayout();*/
         }
     }
 }

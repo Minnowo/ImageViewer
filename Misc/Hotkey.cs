@@ -1,9 +1,12 @@
-﻿using System;
+﻿using ImageViewer.Helpers;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace ImageViewer.Misc
 {
@@ -17,24 +20,52 @@ namespace ImageViewer.Misc
         Win = 8
     }
 
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class Hotkey
     {
-        public Keys KeyBinds { get; set; }
+        [XmlIgnore]
+        public Command Function { get; set; }
 
-        public ushort ID { get; set; }
+        [XmlIgnore]
+        public Keys Keys { get; set; }
 
-        public Keys KeyCode => KeyBinds & Keys.KeyCode;
+        [Browsable(false)]
+        [XmlElement("Keybind_Callback")]
+        public int Function_AsInt
+        {
+            get { return (int)Function; }
+            set { Function = (Command)value; }
+        }
 
-        public Keys ModifiersKeys => KeyBinds & Keys.Modifiers;
+        [Browsable(false)]
+        [XmlElement("Keys")]
+        public int Keys_AsInt
+        {
+            get { return (int)Keys; }
+            set { Keys = (Keys)value; }
+        }
 
-        public bool Control => KeyBinds.HasFlag(Keys.Control);
 
-        public bool Shift => KeyBinds.HasFlag(Keys.Shift);
+        [XmlIgnore]
+        public Keys KeyCode => Keys & Keys.KeyCode;
 
-        public bool Alt => KeyBinds.HasFlag(Keys.Alt);
+        [XmlIgnore]
+        public Keys ModifiersKeys => Keys & Keys.Modifiers;
 
+        [XmlIgnore]
+        public bool Control => Keys.HasFlag(Keys.Control);
+
+        [XmlIgnore]
+        public bool Shift => Keys.HasFlag(Keys.Shift);
+
+        [XmlIgnore]
+        public bool Alt => Keys.HasFlag(Keys.Alt);
+
+        [XmlIgnore]
         public bool Win { get; set; }
 
+        [XmlIgnore]
         public Modifiers Modifiers
         {
             get
@@ -50,8 +81,10 @@ namespace ImageViewer.Misc
             }
         }
 
+        [XmlIgnore]
         public bool IsOnlyModifiers => KeyCode == Keys.ControlKey || KeyCode == Keys.ShiftKey || KeyCode == Keys.Menu || (KeyCode == Keys.None && Win);
 
+        [XmlIgnore]
         public bool IsValidHotkey => KeyCode != Keys.None && !IsOnlyModifiers;
 
         public Hotkey()
@@ -60,12 +93,12 @@ namespace ImageViewer.Misc
 
         public Hotkey(Keys hotkey) : this()
         {
-            KeyBinds = hotkey;
+            Keys = hotkey;
         }
 
-        public Hotkey(Keys hotkey, ushort id) : this(hotkey)
+        public Hotkey(Keys hotkey, Command function) : this(hotkey)
         {
-            ID = id;
+            Function = function;
         }
 
         public override string ToString()

@@ -53,7 +53,6 @@
             this.cbProfiles.Name = "cbProfiles";
             this.cbProfiles.Size = new System.Drawing.Size(198, 21);
             this.cbProfiles.TabIndex = 1;
-            this.cbProfiles.SelectedIndexChanged += new System.EventHandler(this.cbProfiles_SelectedIndexChanged);
             // 
             // label1
             // 

@@ -26,8 +26,10 @@ namespace ImageViewer
             cbProfiles.SelectedItem = InternalSettings.CurrentUserSettings;
 
             pgMain.SelectedObject = InternalSettings.CurrentUserSettings;
+            hcMain.LoadBindings(InternalSettings.CurrentUserSettings._Binds);
 
             FormClosing += SettingsForm_FormClosing;
+            cbProfiles.SelectedIndexChanged += new System.EventHandler(this.cbProfiles_SelectedIndexChanged);
         }
 
         #region Profiles / Internals
@@ -35,15 +37,20 @@ namespace ImageViewer
         private void cbProfiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             pgMain.SelectedObject = (UserControlledSettings)cbProfiles.SelectedItem;
+
+            hcMain.GetBindings(InternalSettings.CurrentUserSettings._Binds);
+            InternalSettings.CurrentUserSettings.UpdateBinds();
             InternalSettings.CurrentUserSettings = (UserControlledSettings)cbProfiles.SelectedItem;
+
+            hcMain.LoadBindings(InternalSettings.CurrentUserSettings._Binds);
         }
 
         private void AddButton_Click(object sender, EventArgs e)
         {
             UserControlledSettings newProfile = new UserControlledSettings();
-
+            newProfile._Binds = InternalSettings.Default_Key_Binds.ToList();
             newProfile.ProfileName = "new profile " + (InternalSettings.SettingProfiles.Count + 1).ToString();
-
+            newProfile.UpdateBinds();
             InternalSettings.SettingProfiles.Add(newProfile);
             cbProfiles.Items.Add(newProfile);
 
@@ -65,11 +72,14 @@ namespace ImageViewer
 
         private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            hcMain.GetBindings(InternalSettings.CurrentUserSettings._Binds);
+            InternalSettings.CurrentUserSettings.UpdateBinds();
             SettingsLoader.Save();
         }
 
 
         #endregion
+
         #region KeyBinds
 
         private void AddHotkey_Click(object sender, EventArgs e)

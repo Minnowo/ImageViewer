@@ -15,16 +15,27 @@ namespace ImageViewer.Controls
 {
     public  partial class KeyRebind : UserControl
     {
-        public delegate void KeyBindingChangedEvent();
+        public delegate void KeyBindingChangedEvent(Hotkey keys);
         public event KeyBindingChangedEvent KeyBindingChanged;
 
-        public delegate void KeyFunctionChangedEvent();
+        public delegate void KeyFunctionChangedEvent(Command function);
         public event KeyFunctionChangedEvent KeyFunctionChanged;
 
         public delegate void SelectionChangedEvent(object sender, bool IsSelected);
         public event SelectionChangedEvent SelectionChanged;
 
         public Hotkey KeyBind { get; set; }
+        public Command Function 
+        {
+            get 
+            { 
+                return (Command)cbKeybindFunction.SelectedItem; 
+            }
+            set 
+            {
+                cbKeybindFunction.SelectedItem = value; 
+            } 
+        }
 
         public bool IsEditingKeybind { get; private set; }
         public bool IsSelected 
@@ -56,7 +67,18 @@ namespace ImageViewer.Controls
             KeyBind = new Hotkey();
             IsEditingKeybind = false;
 
+            SuspendLayout();
+
+            cbKeybindFunction.BeginUpdate();
+            foreach (Command c in Enum.GetValues(typeof(Command)))
+            {
+                cbKeybindFunction.Items.Add(c);
+            }
+            cbKeybindFunction.SelectedItem = Command.Nothing;
+            cbKeybindFunction.EndUpdate();
             MouseDown += KeyRebind_MouseDown;
+
+            ResumeLayout();
         }
 
         public void StartEditing()
@@ -66,7 +88,7 @@ namespace ImageViewer.Controls
             UpdateText("Select A Hotkey");
             this.BackColor = Color.White;
 
-            KeyBind.KeyBinds = Keys.None;
+            KeyBind.Keys = Keys.None;
             KeyBind.Win = false;
         }
 
@@ -75,7 +97,7 @@ namespace ImageViewer.Controls
             this.IsEditingKeybind = false;
 
             if (this.KeyBind.IsOnlyModifiers)
-                this.KeyBind.KeyBinds = Keys.None;
+                this.KeyBind.Keys = Keys.None;
 
             OnKeyBindingChanged();
             UpdateText();
@@ -93,6 +115,7 @@ namespace ImageViewer.Controls
                 this.btnInputButton.Text = text;
             }
         }
+
 
         private void KeyRebind_MouseDown(object sender, MouseEventArgs e)
         {
@@ -125,7 +148,7 @@ namespace ImageViewer.Controls
             
             if (e.KeyData == Keys.Escape)
             {
-                KeyBind.KeyBinds = Keys.None;
+                KeyBind.Keys = Keys.None;
                 StopEditing();
             }
             else if (e.KeyCode == Keys.LWin || e.KeyCode == Keys.RWin)
@@ -135,12 +158,12 @@ namespace ImageViewer.Controls
             }
             else if (new Hotkey(e.KeyData).IsValidHotkey)
             {
-                KeyBind.KeyBinds = e.KeyData;
+                KeyBind.Keys = e.KeyData;
                 StopEditing();
             }
             else
             {
-                KeyBind.KeyBinds = e.KeyData;
+                KeyBind.Keys = e.KeyData;
                 UpdateText();
             }
         }
@@ -153,7 +176,7 @@ namespace ImageViewer.Controls
         {
             if (KeyBindingChanged != null)
             {
-                this.Invoke(KeyBindingChanged);
+                this.Invoke(KeyBindingChanged, KeyBind);
             }
         }
 
@@ -161,7 +184,7 @@ namespace ImageViewer.Controls
         {
             if (KeyFunctionChanged != null)
             {
-                this.Invoke(KeyFunctionChanged);
+                this.Invoke(KeyFunctionChanged, (Command)cbKeybindFunction.SelectedItem);
             }
         }
 

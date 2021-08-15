@@ -135,7 +135,7 @@ namespace ImageViewer.Settings
 
         public static Font CloseButtonFont = new Font(new Font("Consolas", 10), FontStyle.Bold);
 
-        public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3};
+        public static double[] Grey_Scale_Multipliers = new double[] { 0.11, 0.59, 0.3 };
 
         public static Size TSMI_Generated_Icon_Size = new Size(16, 16);
 
@@ -296,8 +296,8 @@ namespace ImageViewer.Settings
         // and calling GC.Collect removes that, but since garbage collection can cause problems
         // gonna allow the user to disable it as the please 
         // i also just hate when stuff doesn't get cleared from meory so i like to GC a lot 
-        public static bool Garbage_Collect_On_Image_Unload 
-        { 
+        public static bool Garbage_Collect_On_Image_Unload
+        {
             get { return CurrentUserSettings.Garbage_Collect_On_Image_Unload; }
             set { CurrentUserSettings.Garbage_Collect_On_Image_Unload = value; }
         }
@@ -349,12 +349,30 @@ namespace ImageViewer.Settings
             get { return CurrentUserSettings.Replace_Transparency_On_Copy; }
             set { CurrentUserSettings.Replace_Transparency_On_Copy = value; }
         }
-        
+
         public static bool Always_On_Top
         {
             get { return CurrentUserSettings.Always_On_Top; }
             set { CurrentUserSettings.Always_On_Top = value; }
         }
+
+        public static readonly Hotkey[] Default_Key_Binds = new Hotkey[14]
+        {
+            new Hotkey(Keys.Right | Keys.Alt , Command.NextTab),
+            new Hotkey( Keys.Left | Keys.Alt , Command.PreviousTab),
+            new Hotkey(Keys.Right | Keys.Control , Command.NextImage),
+            new Hotkey( Keys.Left | Keys.Control , Command.PreviousImage),
+            new Hotkey(Keys.S | Keys.Control , Command.SaveImage),
+            new Hotkey( Keys.S | Keys.LControlKey , Command.SaveImage),
+            new Hotkey(Keys.V | Keys.LControlKey , Command.PasteImage),
+            new Hotkey(Keys.V | Keys.Control , Command.PasteImage),
+            new Hotkey(Keys.Z | Keys.Control | Keys.Shift , Command.Redo),
+            new Hotkey(Keys.Z | Keys.LControlKey | Keys.Shift, Command.Redo),
+            new Hotkey(Keys.Y | Keys.Control , Command.Redo),
+            new Hotkey(Keys.Y | Keys.LControlKey , Command.Redo),
+            new Hotkey(Keys.Z | Keys.Control , Command.Undo),
+            new Hotkey(Keys.Z | Keys.LControlKey , Command.Undo)
+        };
 
         public static bool WebP_Plugin_Exists = false;
 
@@ -366,10 +384,10 @@ namespace ImageViewer.Settings
 
         public static void UpdateDialogFilters()
         {
-           All_Image_Files_File_Dialog = string.Format(
-            "Graphic types ({0})|{1}",
-            string.Join(", ", Readable_Image_Formats_Dialog_Options),
-            string.Join(";", Readable_Image_Formats_Dialog_Options));
+            All_Image_Files_File_Dialog = string.Format(
+             "Graphic types ({0})|{1}",
+             string.Join(", ", Readable_Image_Formats_Dialog_Options),
+             string.Join(";", Readable_Image_Formats_Dialog_Options));
 
             Image_Dialog_Filters = string.Join("|",
                 new string[]
@@ -409,7 +427,7 @@ namespace ImageViewer.Settings
                     UpdateDialogFilters();
                 }
             }
-            
+
         }
     }
 
@@ -427,11 +445,38 @@ namespace ImageViewer.Settings
             this.AddRange(items);
         }
     }
-    
+
+
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class UserControlledSettings
     {
+        public void UpdateBinds()
+        {
+            Binds.Clear();
+
+            if (_Binds.Count < 1)
+                return;
+
+            foreach (Hotkey bk in _Binds)
+            {
+                if (Binds.ContainsKey(bk.Keys))
+                {
+                    Binds[bk.Keys] = bk.Function;
+                    continue;
+                }
+                Binds.Add(bk.Keys, bk.Function);
+            }
+        }
+
+        [Browsable(false)]
+        public List<Hotkey> _Binds { get; set; } = new List<Hotkey>();//InternalSettings.Default_Key_Binds.ToList();
+
+        [Browsable(false)]
+        [XmlIgnore]
+        public Dictionary<Keys, Command> Binds = new Dictionary<Keys, Command>();
+
+
         [Browsable(false)]
         [XmlIgnore]
         public Guid ID = Guid.NewGuid();
@@ -534,11 +579,11 @@ namespace ImageViewer.Settings
 
 
         [Description("Copy image in a way that keeps transparency."), DisplayName("Alternate Image Copy Method (keeps transparency)")]
-        public bool Use_Alternate_Copy_Method 
+        public bool Use_Alternate_Copy_Method
         {
             get { return use_Alternate_Copy_Method; }
-            set 
-            { 
+            set
+            {
                 use_Alternate_Copy_Method = value;
                 if (value)
                     Replace_Transparency_On_Copy = false;
@@ -546,7 +591,7 @@ namespace ImageViewer.Settings
         }
         [Browsable(false)]
         [XmlIgnore]
-        private bool use_Alternate_Copy_Method  = true;
+        private bool use_Alternate_Copy_Method = true;
 
         [Description("Fill transparency when copying image."), DisplayName("Fill Transparency On Copy")]
         public bool Replace_Transparency_On_Copy
@@ -561,7 +606,7 @@ namespace ImageViewer.Settings
         }
         [Browsable(false)]
         [XmlIgnore]
-        private bool replace_Transparency_On_Copy  = false;
+        private bool replace_Transparency_On_Copy = false;
 
 
         [Description("The size of the transparent back grid cells."), DisplayName("Transparent Grid Cell Size")]
@@ -569,7 +614,12 @@ namespace ImageViewer.Settings
 
 
         [Description("The jpg encoding quality."), DisplayName("Jpeg Quality")]
-        public long Jpeg_Quality { get; set; } = 75L;
+        public long Jpeg_Quality
+        {
+            get { return jpeg_Quality; }
+            set { jpeg_Quality = value.Clamp(0, 100); }
+        }
+        private long jpeg_Quality = 75L;
 
 
         [XmlIgnore]
@@ -611,7 +661,7 @@ namespace ImageViewer.Settings
         public int WebpQuality_DefaultAsInt
         {
             get { return (int)Default_Image_Format; }
-            set { Default_Image_Format = (ImgFormat)value.Clamp(0,5); }
+            set { Default_Image_Format = (ImgFormat)value.Clamp(0, 5); }
         }
 
 

@@ -138,39 +138,43 @@ namespace ImageViewer
                 case Command.CopyVisibleImage: break;
                 case Command.CopySelectedImage: break;
 
-                case Command.PaseImage: PasteImage(); break;
-                case Command.PauseGif: TogglePaused(); break;
-                case Command.NextFrame: NextFrame(); break;
-                case Command.PreviousFrame: PreviousFrame(); break;
-                case Command.NextImage: NextImage(); break;
-                case Command.PreviousImage: PreviousImage(); break;
-                case Command.CloseTab: CloseCurrentTabPage(); break;
-                case Command.LockSelectionToImage: ToggleSelectionLock(); break;
-                case Command.ToggleAlwaysOnTop: ToggleTopMost(); break;
-                case Command.OpenNewInstance: SpawnNewInstance(); break;
-                case Command.OpenImage: OpenImages(); break;
-                case Command.MoveImage: MoveImage(); break;
-                case Command.RenameImage: RenameImage(); break;
-                case Command.DeleteImage: DeleteImage(); break;
-                case Command.ViewProperties: ViewImageProperties(); break;
-                case Command.FillTransparentColors: ReplaceTransparent(); break;
-                case Command.RotateLeft: RotateLeft(); break;
-                case Command.RotateRight: RotateRight(); break;
-                case Command.FlipHorizontal: FlipHorizontal(); break;
-                case Command.FlipVertical: FlipVertical(); break;
-                case Command.Resize: ResizeImage(); break;
-                case Command.CropToSelection: CropToSelection(); break;
-                case Command.InvertColor: InvertImage(); break;
-                case Command.Grayscale: GrayscaleImage(); break;
-                case Command.Dither: DitherImage(); break;
-                case Command.Fullscreen: ShowFullscreen(); break;
-                case Command.ViewActualSize: ViewActualSize(); break;
-                case Command.FitToViewport: FitCurrentToScreen(); break;
-                case Command.ViewPixelGrid: TogglePixelGrid(); break;
-                case Command.ViewDefaultTransparentGrid: ShowDefaultTransparentGridColors(); break;
-                case Command.ViewColor1TransparentGrid: ShowTransparentGridColor1(); break;
-                case Command.OpenColorPicker: OpenColorPicker(); break;
-                case Command.OpenSettings: OpenSettings(); break;
+                case Command.Undo: Undo(); break;
+                case Command.Redo: Redo(); break;
+                case Command.Dither:                        DitherImage();  break;
+                case Command.Resize:                        ResizeImage();  break;
+                case Command.NextImage:                     NextImage();    break;
+                case Command.NextFrame:                     NextFrame();    break;
+                case Command.NextTab:                       NextTab(); break;
+                case Command.PreviousTab:                       NextTab(); break;
+                case Command.MoveImage:                     MoveImage();    break;
+                case Command.PasteImage:                     PasteImage();   break;
+                case Command.OpenImage:                     OpenImages();   break;
+                case Command.PauseGif:                      TogglePaused(); break;
+                case Command.RotateLeft:                    RotateLeft();   break;
+                case Command.DeleteImage:                   DeleteImage();  break;
+                case Command.RenameImage:                   RenameImage();  break;
+                case Command.InvertColor:                   InvertImage();  break;
+                case Command.RotateRight:                   RotateRight();  break;
+                case Command.Grayscale:                     GrayscaleImage();   break;
+                case Command.OpenSettings:                  OpenSettings();     break;
+                case Command.Fullscreen:                    ShowFullscreen();   break;
+                case Command.FlipVertical:                  FlipVertical();     break;
+                case Command.PreviousFrame:                 PreviousFrame();    break;
+                case Command.PreviousImage:                 PreviousImage();    break;
+                case Command.CloseTab:                      CloseCurrentTabPage(); break;
+                case Command.FlipHorizontal:                FlipHorizontal();   break;
+                case Command.ViewPixelGrid:                 TogglePixelGrid();  break;
+                case Command.ViewActualSize:                ViewActualSize();   break;
+                case Command.CropToSelection:               CropToSelection();  break;
+                case Command.OpenColorPicker:               OpenColorPicker();  break;
+                case Command.ToggleAlwaysOnTop:             ToggleTopMost();    break;
+                case Command.FitToViewport:                 FitCurrentToScreen();   break;
+                case Command.OpenNewInstance:               SpawnNewInstance();     break;
+                case Command.ViewProperties:                ViewImageProperties();  break;
+                case Command.LockSelectionToImage:          ToggleSelectionLock();  break;
+                case Command.FillTransparentColors:         ReplaceTransparent();   break;
+                case Command.ViewColor1TransparentGrid:     ShowTransparentGridColor1();        break;
+                case Command.ViewDefaultTransparentGrid:    ShowDefaultTransparentGridColors(); break;
             }
         }
 
@@ -962,6 +966,7 @@ namespace ImageViewer
                 return;
 
             currentPage.BitmapChangeTracker.Undo();
+            currentPage.InvalidateImageBox();
         }
 
         public void Redo()
@@ -972,6 +977,7 @@ namespace ImageViewer
                 return;
 
             currentPage.BitmapChangeTracker.Redo();
+            currentPage.InvalidateImageBox();
         }
 
         public void TogglePaused()
@@ -1176,7 +1182,13 @@ namespace ImageViewer
         {
             base.OnKeyDown(e);
 
-            switch (e.KeyData)
+            if (InternalSettings.CurrentUserSettings.Binds.ContainsKey(e.KeyData))
+                ExecuteCommand(InternalSettings.CurrentUserSettings.Binds[e.KeyData]);
+
+            //if (InternalSettings.CurrentUserSettings._Binds.Count > 0)
+            //    throw new Exception("has items in it bro");
+
+            /*switch (e.KeyData)
             {
                 case (Keys.Right | Keys.Alt):
                     NextTab();
@@ -1215,7 +1227,7 @@ namespace ImageViewer
                 case (Keys.Z | Keys.LControlKey):
                     Undo();
                     break;
-            }
+            }*/
         }
 
 
