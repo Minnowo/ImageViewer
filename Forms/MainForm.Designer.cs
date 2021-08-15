@@ -31,6 +31,8 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.pnlTopMain = new System.Windows.Forms.Panel();
+            this.cbAnimationPaused = new System.Windows.Forms.CheckBox();
+            this.nudGifFrame = new System.Windows.Forms.NumericUpDown();
             this.cbLockSelectionToImage = new System.Windows.Forms.CheckBox();
             this.cbInterpolationMode = new System.Windows.Forms.ComboBox();
             this.nudTopMain_ZoomPercentage = new System.Windows.Forms.NumericUpDown();
@@ -79,8 +81,6 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.nudGifFrame = new System.Windows.Forms.NumericUpDown();
-            this.cbAnimationPaused = new System.Windows.Forms.CheckBox();
             this.tcMain = new ImageViewer.Controls._TabControl();
             this.tsMain = new ImageViewer.Controls.ToolStripEx();
             this.tsbMain_File = new System.Windows.Forms.ToolStripButton();
@@ -90,12 +90,12 @@
             this.tsbAlwaysOnTop = new System.Windows.Forms.ToolStripButton();
             this.tsbNewInstance = new System.Windows.Forms.ToolStripButton();
             this.pnlTopMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudGifFrame)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).BeginInit();
             this.cmsFileBtn.SuspendLayout();
             this.cmsEditBtn.SuspendLayout();
             this.cmsViewBtn.SuspendLayout();
             this.statusStrip.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudGifFrame)).BeginInit();
             this.tsMain.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -113,6 +113,25 @@
             this.pnlTopMain.Name = "pnlTopMain";
             this.pnlTopMain.Size = new System.Drawing.Size(800, 28);
             this.pnlTopMain.TabIndex = 1;
+            // 
+            // cbAnimationPaused
+            // 
+            this.cbAnimationPaused.AutoSize = true;
+            this.cbAnimationPaused.Location = new System.Drawing.Point(347, 6);
+            this.cbAnimationPaused.Name = "cbAnimationPaused";
+            this.cbAnimationPaused.Size = new System.Drawing.Size(62, 17);
+            this.cbAnimationPaused.TabIndex = 7;
+            this.cbAnimationPaused.Text = "Paused";
+            this.cbAnimationPaused.UseVisualStyleBackColor = true;
+            this.cbAnimationPaused.CheckedChanged += new System.EventHandler(this.AnimationPaused_CheckChanged);
+            // 
+            // nudGifFrame
+            // 
+            this.nudGifFrame.Location = new System.Drawing.Point(268, 3);
+            this.nudGifFrame.Name = "nudGifFrame";
+            this.nudGifFrame.Size = new System.Drawing.Size(73, 20);
+            this.nudGifFrame.TabIndex = 6;
+            this.nudGifFrame.ValueChanged += new System.EventHandler(this.GifFrame_ValueChanged);
             // 
             // cbLockSelectionToImage
             // 
@@ -550,25 +569,6 @@
             this.toolStripDropDownButton2.ToolTipText = "Next Image";
             this.toolStripDropDownButton2.Click += new System.EventHandler(this.NextImage_Click);
             // 
-            // nudGifFrame
-            // 
-            this.nudGifFrame.Location = new System.Drawing.Point(268, 3);
-            this.nudGifFrame.Name = "nudGifFrame";
-            this.nudGifFrame.Size = new System.Drawing.Size(73, 20);
-            this.nudGifFrame.TabIndex = 6;
-            this.nudGifFrame.ValueChanged += new System.EventHandler(this.GifFrame_ValueChanged);
-            // 
-            // cbAnimationPaused
-            // 
-            this.cbAnimationPaused.AutoSize = true;
-            this.cbAnimationPaused.Location = new System.Drawing.Point(347, 6);
-            this.cbAnimationPaused.Name = "cbAnimationPaused";
-            this.cbAnimationPaused.Size = new System.Drawing.Size(62, 17);
-            this.cbAnimationPaused.TabIndex = 7;
-            this.cbAnimationPaused.Text = "Paused";
-            this.cbAnimationPaused.UseVisualStyleBackColor = true;
-            this.cbAnimationPaused.CheckedChanged += new System.EventHandler(this.AnimationPaused_CheckChanged);
-            // 
             // tcMain
             // 
             this.tcMain.AllowDrop = true;
@@ -644,7 +644,6 @@
             this.tsbMain_Settings.Text = "Settings";
             this.tsbMain_Settings.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.tsbMain_Settings.Click += new System.EventHandler(this.Settings_Click);
-            this.tsbMain_Settings.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbMain_Settings_MouseUp);
             // 
             // tsbAlwaysOnTop
             // 
@@ -684,13 +683,13 @@
             this.Resize += new System.EventHandler(this.MainWindow_Resize);
             this.pnlTopMain.ResumeLayout(false);
             this.pnlTopMain.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudGifFrame)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopMain_ZoomPercentage)).EndInit();
             this.cmsFileBtn.ResumeLayout(false);
             this.cmsEditBtn.ResumeLayout(false);
             this.cmsViewBtn.ResumeLayout(false);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudGifFrame)).EndInit();
             this.tsMain.ResumeLayout(false);
             this.tsMain.PerformLayout();
             this.ResumeLayout(false);

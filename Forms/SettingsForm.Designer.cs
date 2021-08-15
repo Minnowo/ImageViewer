@@ -36,10 +36,10 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.pgMain = new System.Windows.Forms.PropertyGrid();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.hcMain = new ImageViewer.Controls.HotkeyControl();
             this.btnRestoreDefaultHotkeys = new System.Windows.Forms.Button();
             this.btnRemoveHotkey = new System.Windows.Forms.Button();
             this.btnAddHotkey = new System.Windows.Forms.Button();
-            this.hcMain = new ImageViewer.Controls.HotkeyControl();
             this.tcMain.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -94,7 +94,7 @@
             this.tcMain.Location = new System.Drawing.Point(3, 60);
             this.tcMain.Name = "tcMain";
             this.tcMain.SelectedIndex = 0;
-            this.tcMain.Size = new System.Drawing.Size(383, 390);
+            this.tcMain.Size = new System.Drawing.Size(524, 386);
             this.tcMain.TabIndex = 8;
             // 
             // tabPage1
@@ -103,7 +103,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(375, 364);
+            this.tabPage1.Size = new System.Drawing.Size(516, 360);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Internals";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -115,7 +115,7 @@
             this.pgMain.Location = new System.Drawing.Point(3, 3);
             this.pgMain.Name = "pgMain";
             this.pgMain.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.pgMain.Size = new System.Drawing.Size(369, 358);
+            this.pgMain.Size = new System.Drawing.Size(510, 354);
             this.pgMain.TabIndex = 0;
             this.pgMain.ToolbarVisible = false;
             // 
@@ -132,6 +132,16 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "KeyBinds";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // hcMain
+            // 
+            this.hcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hcMain.Location = new System.Drawing.Point(8, 35);
+            this.hcMain.Name = "hcMain";
+            this.hcMain.Size = new System.Drawing.Size(361, 321);
+            this.hcMain.TabIndex = 4;
             // 
             // btnRestoreDefaultHotkeys
             // 
@@ -164,21 +174,11 @@
             this.btnAddHotkey.UseVisualStyleBackColor = true;
             this.btnAddHotkey.Click += new System.EventHandler(this.AddHotkey_Click);
             // 
-            // hcMain
-            // 
-            this.hcMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.hcMain.Location = new System.Drawing.Point(8, 35);
-            this.hcMain.Name = "hcMain";
-            this.hcMain.Size = new System.Drawing.Size(361, 321);
-            this.hcMain.TabIndex = 4;
-            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(388, 450);
+            this.ClientSize = new System.Drawing.Size(529, 446);
             this.Controls.Add(this.tcMain);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);

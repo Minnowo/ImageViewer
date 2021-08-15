@@ -64,7 +64,7 @@ namespace ImageViewer.Controls
             this.IsEditingKeybind = true;
             this.IsSelected = true;
             UpdateText("Select A Hotkey");
-            this.BackColor = SystemColors.ActiveBorder;
+            this.BackColor = Color.White;
 
             KeyBind.KeyBinds = Keys.None;
             KeyBind.Win = false;
@@ -79,7 +79,7 @@ namespace ImageViewer.Controls
 
             OnKeyBindingChanged();
             UpdateText();
-            this.BackColor = SystemColors.Control;
+            this.BackColor = Color.AliceBlue;
         }
 
         public void UpdateText(string text = "")

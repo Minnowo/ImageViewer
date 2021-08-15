@@ -51,7 +51,7 @@ namespace ImageViewer
             }
         }
         private _TabPage currentPage;
-        
+
         private bool preventOverflow = false;
         private bool isValidDrop = false;
         private bool isMaximized = false;
@@ -119,9 +119,62 @@ namespace ImageViewer
             UpdateCurrentPageTransparentBackColor(true);
         }
 
+        public static void ExecuteCommandS(Command cmd)
+        {
+            Program.mainForm.ExecuteCommand(cmd);
+        }
 
         #region public helpers
 
+        public void ExecuteCommand(Command cmd)
+        {
+            switch (cmd)
+            {
+                case Command.SaveImage: SaveUnscaledImage(); break;
+                case Command.SaveVisibleImage: SaveVisibleImage(); break;
+                case Command.ExportGifFrames: ExportGifFrames(); break;
+
+                case Command.CopyImage: break;
+                case Command.CopyVisibleImage: break;
+                case Command.CopySelectedImage: break;
+
+                case Command.PaseImage: PasteImage(); break;
+                case Command.PauseGif: TogglePaused(); break;
+                case Command.NextFrame: NextFrame(); break;
+                case Command.PreviousFrame: PreviousFrame(); break;
+                case Command.NextImage: NextImage(); break;
+                case Command.PreviousImage: PreviousImage(); break;
+                case Command.CloseTab: CloseCurrentTabPage(); break;
+                case Command.LockSelectionToImage: ToggleSelectionLock(); break;
+                case Command.ToggleAlwaysOnTop: ToggleTopMost(); break;
+                case Command.OpenNewInstance: SpawnNewInstance(); break;
+                case Command.OpenImage: OpenImages(); break;
+                case Command.MoveImage: MoveImage(); break;
+                case Command.RenameImage: RenameImage(); break;
+                case Command.DeleteImage: DeleteImage(); break;
+                case Command.ViewProperties: ViewImageProperties(); break;
+                case Command.FillTransparentColors: ReplaceTransparent(); break;
+                case Command.RotateLeft: RotateLeft(); break;
+                case Command.RotateRight: RotateRight(); break;
+                case Command.FlipHorizontal: FlipHorizontal(); break;
+                case Command.FlipVertical: FlipVertical(); break;
+                case Command.Resize: ResizeImage(); break;
+                case Command.CropToSelection: CropToSelection(); break;
+                case Command.InvertColor: InvertImage(); break;
+                case Command.Grayscale: GrayscaleImage(); break;
+                case Command.Dither: DitherImage(); break;
+                case Command.Fullscreen: ShowFullscreen(); break;
+                case Command.ViewActualSize: ViewActualSize(); break;
+                case Command.FitToViewport: FitCurrentToScreen(); break;
+                case Command.ViewPixelGrid: TogglePixelGrid(); break;
+                case Command.ViewDefaultTransparentGrid: ShowDefaultTransparentGridColors(); break;
+                case Command.ViewColor1TransparentGrid: ShowTransparentGridColor1(); break;
+                case Command.OpenColorPicker: OpenColorPicker(); break;
+                case Command.OpenSettings: OpenSettings(); break;
+            }
+        }
+
+        #region Updates
         public bool Save(Image img, string path, bool collectGarbage = false)
         {
             try
@@ -194,7 +247,7 @@ namespace ImageViewer
                 return;
             }
 
-            if(fmt == ImgFormat.ico)
+            if (fmt == ImgFormat.ico)
             {
                 ICO i = currentPage.BitmapChangeTracker.CurrentBitmap as ICO;
                 if (i == null || i.Images == null || i.Images.Length < 1)
@@ -347,6 +400,179 @@ namespace ImageViewer
 
             Text = string.Format("{0}", currentPage.ImagePath.FullName);
         }
+        #endregion
+
+        public void RenameImage()
+        {
+
+        }
+
+        public void CropToSelection()
+        {
+            if (currentPage == null || !currentPage.ibMain.SelectionBoxVisible)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Cropped);
+            currentPage.ibMain.CropImageToSelection();
+        }
+
+        public void GrayscaleImage()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
+            currentPage.BitmapChangeTracker.CurrentBitmap.ConvertGrayscale();
+            currentPage.InvalidateImageBox();
+        }
+
+        public void InvertImage()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
+            currentPage.BitmapChangeTracker.CurrentBitmap.InvertColor();
+            currentPage.InvalidateImageBox();
+        }
+
+        public void ReplaceTransparent()
+        {
+            if (currentPage == null)
+                return;
+
+            Point p = Location;
+
+            using (FillTransparentForm f = new FillTransparentForm())
+            {
+                f.Owner = this;
+                f.TopMost = this.TopMost;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                if (InternalSettings.Parent_Follow_Child)
+                    f.LocationChanged += ParentFollowChild;
+
+                f.ShowDialog();
+
+                if (f.result == SimpleDialogResult.Success)
+                {
+                    ImageProcessor.ReplaceTransparentPixelsSafe(currentPage.ibMain.Image, f.Color, f.Alpha);
+                    currentPage.InvalidateImageBox();
+                }
+            }
+
+            Location = p;
+        }
+
+        public void DitherImage()
+        {
+            if (currentPage == null)
+                return;
+
+            Point p = Location;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
+
+            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
+            {
+                df.Owner = this;
+                df.TopMost = this.TopMost;
+                df.StartPosition = FormStartPosition.CenterScreen;
+
+                if (InternalSettings.Parent_Follow_Child)
+                    df.LocationChanged += ParentFollowChild;
+
+                df.ShowDialog();
+
+                // since we track the change before it happens if the dither was canceled dispose of the kept change and 
+                // remove it from the undos list
+                if (df.Canceled)
+                {
+                    currentPage.BitmapChangeTracker.DisposeLastUndo();
+                }
+
+                currentPage.InvalidateImageBox();
+            }
+
+            Location = p;
+
+            if (InternalSettings.Garbage_Collect_On_Dither_Form_Cancel) { }
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        public void OpenColorPicker()
+        {
+            ColorPickerForm f = new ColorPickerForm();
+            f.Owner = this;
+            f.TopMost = this.TopMost;
+            f.StartPosition = FormStartPosition.Manual;
+            f.Location = Helper.GetCenteredPoint(this, f);
+            f.Show();
+        }
+
+        public void ShowFullscreen()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.ibMain.ShowFullScreen();
+        }
+
+        public void ViewActualSize()
+        {
+            if (CurrentPage == null)
+                return;
+
+            preventOverflow = true;
+
+            currentPage.ibMain.Zoom = 100;
+            nudTopMain_ZoomPercentage.Value = 100;
+
+            preventOverflow = false;
+
+            currentPage.InvalidateImageBox();
+        }
+
+
+        public void ShowDefaultTransparentGridColors()
+        {
+            if (tsmiShowDefaultTransparentGridColors.Checked)
+            {
+                tsmiShowTransparentColor1Only.Checked = false;
+                InternalSettings.Only_Show_Transparent_Color_1 = false;
+            }
+
+            InternalSettings.Show_Default_Transparent_Colors = tsmiShowDefaultTransparentGridColors.Checked;
+
+            UpdateCurrentPageTransparentBackColor();
+        }
+
+        public void TogglePixelGrid()
+        {
+            tsmiViewPixelGrid.Checked = !tsmiViewPixelGrid.Checked;
+        }
+
+        public void ShowTransparentGridColor1()
+        {
+            if (tsmiShowTransparentColor1Only.Checked)
+            {
+                tsmiShowDefaultTransparentGridColors.Checked = false;
+                InternalSettings.Show_Default_Transparent_Colors = false;
+            }
+
+            InternalSettings.Only_Show_Transparent_Color_1 = tsmiShowTransparentColor1Only.Checked;
+            UpdateCurrentPageTransparentBackColor();
+        }
+
+        public void PasteImage()
+        {
+            if (!Clipboard.ContainsImage())
+                return;
+
+            using (Image im = ClipboardHelper.GetImage())
+            {
+                NewPageFromImage(im);
+            }
+        }
 
         public void CloseCurrentTabPage()
         {
@@ -433,8 +659,6 @@ namespace ImageViewer
             UpdateBottomInfoLabel();
         }
 
-        
-
         public void NewPageFromImage(Image img)
         {
             if (img == null)
@@ -442,8 +666,8 @@ namespace ImageViewer
 
             string dir = InternalSettings.Temp_Image_Folder;
             string imagePath = Helper.GetNewFileName(dir);
-            
-            if(!Save(img, imagePath))
+
+            if (!Save(img, imagePath))
                 return;
 
             _TabPage tp = new _TabPage(imagePath)
@@ -476,7 +700,7 @@ namespace ImageViewer
                 return;
 
             currentPage.ibMain.ZoomToFit();
-        }  
+        }
 
         public void NextImage()
         {
@@ -502,6 +726,32 @@ namespace ImageViewer
                 return;
 
             currentPage.ImagePath = new FileInfo(newPath);
+        }
+
+        public void NextTab()
+        {
+            if (currentPage == null)
+                return;
+
+            if (tcMain.TabPages.Count - 1 > tcMain.SelectedIndex)
+            {
+                CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex + 1];
+                //currentPage.PreventLoadImage = false;
+                currentPage.LoadImageSafe();
+            }
+        }
+
+        public void PreviousTab()
+        {
+            if (currentPage == null)
+                return;
+
+            if (tcMain.SelectedIndex - 1 >= 0)
+            {
+                CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex - 1];
+                //currentPage.PreventLoadImage = false;
+                currentPage.LoadImageSafe();
+            }
         }
 
         public void SaveUnscaledImage()
@@ -549,6 +799,67 @@ namespace ImageViewer
             }
         }
 
+        public void ExportGifFrames()
+        {
+            if (CurrentPage == null)
+                return;
+
+            if (!currentPage.ibMain.HasAnimationFrames)
+            {
+                MessageBox.Show(this,
+                        InternalSettings.No_Animation_Frames_Found_Message,
+                        InternalSettings.No_Animation_Frames_Found_Title,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                return;
+            }
+
+            using (FolderSelectDialog dialog = new FolderSelectDialog())
+            {
+                dialog.Title = "Select a folder to export frames";
+
+                if (dialog.ShowDialog() && !string.IsNullOrEmpty(dialog.FileName))
+                {
+                    string dir = dialog.FileName;
+                    int totalFrames = 0;
+                    int framesSaved = 0;
+
+                    GifDecoder g = new GifDecoder(currentPage.Image);
+
+                    totalFrames = g.FrameCount;
+                    for (int i = 0; i < totalFrames; i++)
+                    {
+                        using (GifFrame gf = g.GetFrame(i))
+                        {
+                            if (Save(gf.Image,
+                                string.Format("{0}\\{1}.{2}", dir, i,
+                                InternalSettings.Default_Image_Format), false))
+                            {
+                                framesSaved++;
+                            }
+                        }
+                    }
+
+
+                    if (InternalSettings.Open_Explorer_After_Export)
+                    {
+                        Helper.OpenExplorerAtLocation(dir);
+                    }
+
+                    if (InternalSettings.Garbage_Collect_After_Gif_Export)
+                    {
+                        GC.Collect();
+                    }
+
+                    MessageBox.Show(
+                        this,
+                        string.Format("Exported {0} of {1} frames", framesSaved, totalFrames),
+                        InternalSettings.Gif_Export_Title,
+                        MessageBoxButtons.OK);
+                }
+            }
+        }
+
         public void MoveImage()
         {
             if (currentPage == null)
@@ -558,9 +869,9 @@ namespace ImageViewer
 
             if (!File.Exists(currentPage.ImagePath.FullName))
             {
-                MessageBox.Show(this, 
-                    InternalSettings.Item_Does_Not_Exist_Message, 
-                    InternalSettings.Delete_Item_Messagebox_Title, 
+                MessageBox.Show(this,
+                    InternalSettings.Item_Does_Not_Exist_Message,
+                    InternalSettings.Delete_Item_Messagebox_Title,
                     MessageBoxButtons.OK);
                 return;
             }
@@ -597,7 +908,6 @@ namespace ImageViewer
             }
         }
 
-
         public void ToggleTopMost()
         {
             this.TopMost = !this.TopMost;
@@ -611,6 +921,11 @@ namespace ImageViewer
             {
                 tsbAlwaysOnTop.BackColor = SystemColors.Control;
             }
+        }
+
+        public void ToggleSelectionLock()
+        {
+            cbLockSelectionToImage.Checked = !cbLockSelectionToImage.Checked;
         }
 
         public void SpawnNewInstance(bool includeCurrentImage = true)
@@ -637,6 +952,154 @@ namespace ImageViewer
                 }
             };
             newInstance.Start();
+        }
+
+        public void Undo()
+        {
+            if (currentPage == null)
+                return;
+            if (currentPage.BitmapChangeTracker.UndoCount == 0)
+                return;
+
+            currentPage.BitmapChangeTracker.Undo();
+        }
+
+        public void Redo()
+        {
+            if (currentPage == null)
+                return;
+            if (currentPage.BitmapChangeTracker.RedoCount == 0)
+                return;
+
+            currentPage.BitmapChangeTracker.Redo();
+        }
+
+        public void TogglePaused()
+        {
+            cbAnimationPaused.Checked = !cbAnimationPaused.Checked;
+        }
+
+        public void NextFrame()
+        {
+            if (!nudGifFrame.Enabled)
+                return;
+
+            nudGifFrame.Value = (nudGifFrame.Value + nudGifFrame.Increment).Clamp(nudGifFrame.Minimum, nudGifFrame.Maximum);
+        }
+
+        public void PreviousFrame()
+        {
+            if (!nudGifFrame.Enabled)
+                return;
+
+            nudGifFrame.Value = (nudGifFrame.Value - nudGifFrame.Increment).Clamp(nudGifFrame.Minimum, nudGifFrame.Maximum);
+        }
+
+        public void OpenImages()
+        {
+            string[] openImages = ImageHelper.OpenImageFileDialog(true, this);
+            LoadItems(openImages);
+        }
+
+        public void ViewImageProperties()
+        {
+            if (currentPage == null)
+                return;
+
+            ImagePropertiesForm f = new ImagePropertiesForm();
+
+            f.Owner = this;
+            f.StartPosition = FormStartPosition.CenterScreen;
+
+            f.Show();
+
+            f.UpdateImageInfo(currentPage.ImagePath.FullName);
+        }
+
+        public void RotateLeft()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedLeft);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateLeft90();
+            currentPage.InvalidateImageBox(true);
+        }
+
+        public void RotateRight()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
+            currentPage.BitmapChangeTracker.CurrentBitmap.RotateRight90();
+            currentPage.InvalidateImageBox(true);
+        }
+
+        public void FlipVertical()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
+            currentPage.BitmapChangeTracker.CurrentBitmap.FlipVertical();
+            currentPage.InvalidateImageBox();
+        }
+
+        public void FlipHorizontal()
+        {
+            if (currentPage == null)
+                return;
+
+            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
+            currentPage.BitmapChangeTracker.CurrentBitmap.FlipHorizontal();
+            currentPage.InvalidateImageBox();
+        }
+
+        public void ResizeImage()
+        {
+            /*if (currentPage == null)
+                return;
+
+            using (ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
+            {
+                f.Owner = this;
+                f.TopMost = this.TopMost;
+                f.StartPosition = FormStartPosition.CenterScreen;
+                if (InternalSettings.Parent_Follow_Child)
+                    f.LocationChanged += ParentFollowChild;
+                f.ShowDialog();
+
+                ResizeImageFormReturn r = f.GetReturnSize();
+
+                if (r.Result == ResizeImageResult.Cancel)
+                    return;
+
+                using (Image tmp = currentPage.Image)
+                {
+                    currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
+                    currentPage.BitmapChangeTracker.ReplaceBitmap(ImageProcessor.ResizeImage(tmp, r.NewImage));
+                    currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
+                }
+                UpdateBottomInfoLabel();
+            }*/
+        }
+
+        public void OpenSettings()
+        {
+            Point p = this.Location;
+
+            SettingsForm f = new SettingsForm();
+            f.Owner = this;
+            f.TopMost = this.TopMost;
+            f.StartPosition = FormStartPosition.CenterScreen;
+            if (InternalSettings.Parent_Follow_Child)
+                f.LocationChanged += ParentFollowChild;
+            f.ShowDialog();
+
+            this.Location = p;
+
+            UpdateAll();
         }
 
         #endregion
@@ -681,8 +1144,8 @@ namespace ImageViewer
                     f.LocationChanged += ParentFollowChild;
 
                 f.UpdateColors(c);
-                
-                if(f.ShowDialog() == DialogResult.Cancel)
+
+                if (f.ShowDialog() == DialogResult.Cancel)
                 {
                     Location = p;
                     return Color.Empty;
@@ -696,7 +1159,7 @@ namespace ImageViewer
             return c;
         }
 
-        
+
 
         #endregion
 
@@ -716,27 +1179,11 @@ namespace ImageViewer
             switch (e.KeyData)
             {
                 case (Keys.Right | Keys.Alt):
-                    if (currentPage == null)
-                        return;
-
-                    if (tcMain.TabPages.Count - 1 > tcMain.SelectedIndex)
-                    {
-                        CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex + 1];
-                        //currentPage.PreventLoadImage = false;
-                        currentPage.LoadImageSafe();
-                    }
+                    NextTab();
                     break;
 
                 case (Keys.Left | Keys.Alt):
-                    if (currentPage == null)
-                        return;
-
-                    if (tcMain.SelectedIndex - 1 >= 0)
-                    {
-                        CurrentPage = (_TabPage)tcMain.TabPages[tcMain.SelectedIndex - 1];
-                        //currentPage.PreventLoadImage = false;
-                        currentPage.LoadImageSafe();
-                    }
+                    PreviousTab();
                     break;
 
                 case (Keys.Right | Keys.Control):
@@ -754,35 +1201,19 @@ namespace ImageViewer
 
                 case (Keys.V | Keys.LControlKey):
                 case (Keys.V | Keys.Control):
-                    if (!Clipboard.ContainsImage())
-                        return;
-
-                    using(Image im = ClipboardHelper.GetImage())
-                    {
-                        NewPageFromImage(im);
-                    }
+                    PasteImage();
                     break;
 
                 case (Keys.Z | Keys.Control | Keys.Shift):
                 case (Keys.Z | Keys.LControlKey | Keys.Shift):
                 case (Keys.Y | Keys.Control):
                 case (Keys.Y | Keys.LControlKey):
-                    if (currentPage == null)
-                        return;
-                    if (currentPage.BitmapChangeTracker.RedoCount == 0)
-                        return;
-
-                    currentPage.BitmapChangeTracker.Redo();
+                    Redo();
                     break;
 
                 case (Keys.Z | Keys.Control):
                 case (Keys.Z | Keys.LControlKey):
-                    if (currentPage == null)
-                        return;
-                    if (currentPage.BitmapChangeTracker.UndoCount == 0)
-                        return;
-
-                    currentPage.BitmapChangeTracker.Undo();
+                    Undo();
                     break;
             }
         }
@@ -876,24 +1307,12 @@ namespace ImageViewer
 
         private void Settings_Click(object sender, EventArgs e)
         {
-            Point p = this.Location;
-
-            SettingsForm f = new SettingsForm();
-            f.Owner = this;
-            f.TopMost = this.TopMost;
-            f.StartPosition = FormStartPosition.CenterScreen;
-            if (InternalSettings.Parent_Follow_Child)
-                f.LocationChanged += ParentFollowChild;
-            f.ShowDialog();
-
-            this.Location = p;
-
-            UpdateAll();
+            OpenSettings();
         }
 
         private void tsbMain_Settings_MouseUp(object sender, MouseEventArgs e)
         {
-
+            OpenSettings();
         }
 
         private void AlwaysOnTop_Click(object sender, EventArgs e)
@@ -1003,8 +1422,7 @@ namespace ImageViewer
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string[] openImages = ImageHelper.OpenImageFileDialog(true, this);
-            LoadItems(openImages);
+            OpenImages();
         }
 
         private void saveUnscaledImageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1024,7 +1442,7 @@ namespace ImageViewer
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            RenameImage();
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1034,79 +1452,12 @@ namespace ImageViewer
 
         private void imagePropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            ImagePropertiesForm f = new ImagePropertiesForm();
-
-            f.Owner = this;
-            f.StartPosition = FormStartPosition.CenterScreen;
-
-            f.Show();
-
-            f.UpdateImageInfo(currentPage.ImagePath.FullName);
+            ViewImageProperties();
         }
 
         private void ExportGifFrames_Click(object sender, EventArgs e)
         {
-            if (CurrentPage == null)
-                return;
-
-            if (!currentPage.ibMain.HasAnimationFrames)
-            {
-                MessageBox.Show(this,
-                        InternalSettings.No_Animation_Frames_Found_Message,
-                        InternalSettings.No_Animation_Frames_Found_Title,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                return;
-            }
-
-            using (FolderSelectDialog dialog = new FolderSelectDialog())
-            {
-                dialog.Title = "Select a folder to export frames";
-
-                if (dialog.ShowDialog() && !string.IsNullOrEmpty(dialog.FileName))
-                {
-                    string dir = dialog.FileName;
-                    int totalFrames = 0;
-                    int framesSaved = 0;
-
-                    GifDecoder g = new GifDecoder(currentPage.Image);
-                    
-                    totalFrames = g.FrameCount;
-                    for (int i = 0; i < totalFrames; i++)
-                    {
-                        using (GifFrame gf = g.GetFrame(i))
-                        {
-                            if (Save(gf.Image,
-                                string.Format("{0}\\{1}.{2}", dir, i,
-                                InternalSettings.Default_Image_Format), false))
-                            {
-                                framesSaved++;
-                            }
-                        }
-                    }
-                    
-
-                    if (InternalSettings.Open_Explorer_After_Export)
-                    {
-                        Helper.OpenExplorerAtLocation(dir);
-                    }
-
-                    if (InternalSettings.Garbage_Collect_After_Gif_Export)
-                    {
-                        GC.Collect();
-                    }
-
-                    MessageBox.Show(
-                        this, 
-                        string.Format("Exported {0} of {1} frames", framesSaved, totalFrames), 
-                        InternalSettings.Gif_Export_Title, 
-                        MessageBoxButtons.OK);
-                }
-            }
-
+            ExportGifFrames();
         }
 
         #endregion
@@ -1145,165 +1496,54 @@ namespace ImageViewer
 
         private void rotateLeftToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedLeft);
-            currentPage.BitmapChangeTracker.CurrentBitmap.RotateLeft90();
-            currentPage.InvalidateImageBox(true);
+            RotateLeft();
         }
 
         private void rotateRightToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.RotatedRight);
-            currentPage.BitmapChangeTracker.CurrentBitmap.RotateRight90();
-            currentPage.InvalidateImageBox(true);
+            RotateRight();
         }
 
         private void flipHorizontallyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedHorizontal);
-            currentPage.BitmapChangeTracker.CurrentBitmap.FlipHorizontal();
-            currentPage.InvalidateImageBox();
+            FlipHorizontal();
         }
 
         private void flipVerticallyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.FlippedVirtical);
-            currentPage.BitmapChangeTracker.CurrentBitmap.FlipVertical();
-            currentPage.InvalidateImageBox();
+            FlipVertical();
         }
 
         private void resizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            /*using (ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
-            {
-                f.Owner = this;
-                f.TopMost = this.TopMost;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                if (InternalSettings.Parent_Follow_Child)
-                    f.LocationChanged += ParentFollowChild;
-                f.ShowDialog();
-
-                ResizeImageFormReturn r = f.GetReturnSize();
-
-                if (r.Result == ResizeImageResult.Cancel)
-                    return;
-
-                using (Image tmp = currentPage.Image)
-                {
-                    currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
-                    currentPage.BitmapChangeTracker.ReplaceBitmap(ImageProcessor.ResizeImage(tmp, r.NewImage));
-                    currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                }
-                UpdateBottomInfoLabel();
-            }*/
+            ResizeImage();
         }
 
         private void cropToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null || !currentPage.ibMain.SelectionBoxVisible)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Cropped);
-            currentPage.ibMain.CropImageToSelection();
+            CropToSelection();
         }
 
         private void grayScaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.SetGray);
-            currentPage.BitmapChangeTracker.CurrentBitmap.ConvertGrayscale();
-            currentPage.InvalidateImageBox();
+            GrayscaleImage();
         }
 
         private void invertColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Inverted);
-            currentPage.BitmapChangeTracker.CurrentBitmap.InvertColor();
-            currentPage.InvalidateImageBox();
+            InvertImage();
         }
 
 
         private void FillTransparent_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            Point p = Location;
-
-            using (FillTransparentForm f = new FillTransparentForm())
-            {
-                f.Owner = this;
-                f.TopMost = this.TopMost;
-                f.StartPosition = FormStartPosition.CenterScreen;
-                if (InternalSettings.Parent_Follow_Child)
-                    f.LocationChanged += ParentFollowChild;
-
-                f.ShowDialog();
-
-                if (f.result == SimpleDialogResult.Success)
-                {
-                    ImageProcessor.ReplaceTransparentPixelsSafe(currentPage.ibMain.Image, f.Color, f.Alpha);
-                    currentPage.InvalidateImageBox();
-                }
-            }
-
-            Location = p;
+            ReplaceTransparent();
         }
 
 
         private void ditherToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            Point p = Location;
-
-            currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Dithered);
-
-            using (DitherForm df = new DitherForm(currentPage.BitmapChangeTracker.CurrentBitmap))
-            {
-                df.Owner = this;
-                df.TopMost = this.TopMost;
-                df.StartPosition = FormStartPosition.CenterScreen;
-
-                if (InternalSettings.Parent_Follow_Child)
-                    df.LocationChanged += ParentFollowChild;
-
-                df.ShowDialog();
-
-                // since we track the change before it happens if the dither was canceled dispose of the kept change and 
-                // remove it from the undos list
-                if (df.Canceled)
-                {
-                    currentPage.BitmapChangeTracker.DisposeLastUndo();
-                }
-
-                currentPage.InvalidateImageBox();
-            }
-
-            Location = p;
-
-            if (InternalSettings.Garbage_Collect_On_Dither_Form_Cancel) { }
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+            DitherImage();
         }
         #endregion
 
@@ -1315,47 +1555,22 @@ namespace ImageViewer
 
         private void ViewColorPicker_Click(object sender, EventArgs e)
         {
-            ColorPickerForm f = new ColorPickerForm();
-            f.Owner = this;
-            f.TopMost = this.TopMost;
-            f.StartPosition = FormStartPosition.Manual;
-            f.Location = Helper.GetCenteredPoint(this, f);
-            f.Show();
+            OpenColorPicker();
         }
 
         private void ViewFullscreen_Click(object sender, EventArgs e)
         {
-            currentPage.ibMain.ShowFullScreen();
-        }
-
-        private void ViewSlideShow_Click(object sender, EventArgs e)
-        {
-            if (CurrentPage == null)
-                return;
+            ShowFullscreen();
         }
 
         private void ViewActualImageSize_Click(object sender, EventArgs e)
         {
-            if (CurrentPage == null)
-                return;
-
-            preventOverflow = true;
-
-            currentPage.ibMain.Zoom = 100;
-            nudTopMain_ZoomPercentage.Value = 100;
-
-            preventOverflow = false;
-
-            currentPage.InvalidateImageBox();
+            ViewActualSize();
         }
 
         private void FitImageToScreen_Click(object sender, EventArgs e)
         {
-            if (currentPage == null)
-                return;
-
-            currentPage.ibMain.ZoomToFit();
-            currentPage.InvalidateImageBox();
+            FitCurrentToScreen();
         }
 
         private void ImageBackingColors_Click(object sender, EventArgs e)
@@ -1388,15 +1603,7 @@ namespace ImageViewer
 
         private void ResetImageBacking_Click(object sender, EventArgs e)
         {
-            if (tsmiShowDefaultTransparentGridColors.Checked)
-            {
-                tsmiShowTransparentColor1Only.Checked = false;
-                InternalSettings.Only_Show_Transparent_Color_1 = false;
-            }
-
-            InternalSettings.Show_Default_Transparent_Colors = tsmiShowDefaultTransparentGridColors.Checked;
-
-            UpdateCurrentPageTransparentBackColor();
+            ShowDefaultTransparentGridColors();
         }
 
         private void ViewPixelGrid_Clicked(object sender, EventArgs e)
@@ -1413,14 +1620,7 @@ namespace ImageViewer
 
         private void GirdColor1Only_Click(object sender, EventArgs e)
         {
-            if (tsmiShowTransparentColor1Only.Checked)
-            {
-                tsmiShowDefaultTransparentGridColors.Checked = false;
-                InternalSettings.Show_Default_Transparent_Colors = false;
-            }
-
-            InternalSettings.Only_Show_Transparent_Color_1 = tsmiShowTransparentColor1Only.Checked;
-            UpdateCurrentPageTransparentBackColor();
+            ShowTransparentGridColor1();
         }
 
         #endregion
@@ -1529,6 +1729,6 @@ namespace ImageViewer
 
         #endregion
 
-        
+
     }
 }

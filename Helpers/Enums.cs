@@ -7,6 +7,49 @@ using System.Threading.Tasks;
 using ImageViewer.Settings;
 namespace ImageViewer.Helpers
 {
+    public enum Command
+    {
+        SaveImage,
+        SaveVisibleImage,
+        ExportGifFrames,
+        CopyImage,
+        CopyVisibleImage,
+        CopySelectedImage,
+        PaseImage,
+        PauseGif,
+        NextFrame,
+        PreviousFrame,
+        NextImage,
+        PreviousImage,
+        CloseTab,
+        LockSelectionToImage,
+        ToggleAlwaysOnTop,
+        OpenNewInstance,
+        OpenImage,
+        MoveImage,
+        RenameImage,
+        DeleteImage,
+        ViewProperties,
+        FillTransparentColors,
+        RotateLeft,
+        RotateRight,
+        FlipHorizontal,
+        FlipVertical,
+        Resize,
+        CropToSelection,
+        InvertColor,
+        Grayscale,
+        Dither,
+        Fullscreen,
+        ViewActualSize,
+        FitToViewport,
+        ViewPixelGrid,
+        ViewDefaultTransparentGrid,
+        ViewColor1TransparentGrid,
+        OpenColorPicker,
+        OpenSettings
+    }
+
     public enum HashType
     {
         MD5,
