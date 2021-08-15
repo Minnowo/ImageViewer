@@ -356,22 +356,19 @@ namespace ImageViewer.Settings
             set { CurrentUserSettings.Always_On_Top = value; }
         }
 
-        public static readonly Hotkey[] Default_Key_Binds = new Hotkey[14]
+        public static readonly Hotkey[] Default_Key_Binds = new Hotkey[11]
         {
             new Hotkey(Keys.Right | Keys.Alt , Command.NextTab),
-            new Hotkey( Keys.Left | Keys.Alt , Command.PreviousTab),
+            new Hotkey(Keys.Left | Keys.Alt , Command.PreviousTab),
             new Hotkey(Keys.Right | Keys.Control , Command.NextImage),
-            new Hotkey( Keys.Left | Keys.Control , Command.PreviousImage),
-            new Hotkey(Keys.S | Keys.Control , Command.SaveImage),
-            new Hotkey( Keys.S | Keys.LControlKey , Command.SaveImage),
-            new Hotkey(Keys.V | Keys.LControlKey , Command.PasteImage),
+            new Hotkey(Keys.Left | Keys.Control , Command.PreviousImage),
+            new Hotkey(Keys.A | Keys.Control, Command.PreviousImage),
+            new Hotkey(Keys.D | Keys.Control, Command.NextImage),
+            new Hotkey(Keys.S | Keys.Control , Command.SaveImage),            
             new Hotkey(Keys.V | Keys.Control , Command.PasteImage),
             new Hotkey(Keys.Z | Keys.Control | Keys.Shift , Command.Redo),
-            new Hotkey(Keys.Z | Keys.LControlKey | Keys.Shift, Command.Redo),
             new Hotkey(Keys.Y | Keys.Control , Command.Redo),
-            new Hotkey(Keys.Y | Keys.LControlKey , Command.Redo),
-            new Hotkey(Keys.Z | Keys.Control , Command.Undo),
-            new Hotkey(Keys.Z | Keys.LControlKey , Command.Undo)
+            new Hotkey(Keys.Z | Keys.Control , Command.Undo)
         };
 
         public static bool WebP_Plugin_Exists = false;

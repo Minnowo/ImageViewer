@@ -94,7 +94,7 @@ namespace ImageViewer
 
         private void RestoreDefaultHotkeys_Click(object sender, EventArgs e)
         {
-
+            hcMain.LoadBindings(InternalSettings.Default_Key_Binds.ToList());
         }
 
         #endregion

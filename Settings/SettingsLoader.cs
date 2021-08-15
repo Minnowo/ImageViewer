@@ -33,6 +33,7 @@ namespace ImageViewer.Settings
             if (!File.Exists(InternalSettings.User_Settings_Path))
             {
                 InternalSettings.SettingProfiles.Add(InternalSettings.CurrentUserSettings);
+                InternalSettings.CurrentUserSettings._Binds = InternalSettings.Default_Key_Binds.ToList();
                 foreach (UserControlledSettings s in InternalSettings.SettingProfiles)
                 {
                     s.UpdateBinds();

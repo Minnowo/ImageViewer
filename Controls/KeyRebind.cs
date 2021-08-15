@@ -24,18 +24,21 @@ namespace ImageViewer.Controls
         public delegate void SelectionChangedEvent(object sender, bool IsSelected);
         public event SelectionChangedEvent SelectionChanged;
 
+
         public Hotkey KeyBind { get; set; }
         public Command Function 
         {
             get 
             { 
-                return (Command)cbKeybindFunction.SelectedItem; 
+                return m_Function; 
             }
             set 
             {
-                cbKeybindFunction.SelectedItem = value; 
+                m_Function = value;
+                btnFunction.Text = value.ToString();
             } 
         }
+        private Command m_Function = Command.Nothing;
 
         public bool IsEditingKeybind { get; private set; }
         public bool IsSelected 
@@ -55,27 +58,24 @@ namespace ImageViewer.Controls
                     this.BackColor = Color.White;
 
                 this.m_IsSelected = value;
+                preventOverflow = true;
+                checkBox1.Checked = this.m_IsSelected;
+                preventOverflow = false;
                 OnSelectionChanged();
             } 
         }
         private bool m_IsSelected = false;
-
+        private bool preventOverflow = false;
         public KeyRebind()
         {
             InitializeComponent();
-
+            btnFunction.Text = m_Function.ToString();
             KeyBind = new Hotkey();
             IsEditingKeybind = false;
 
             SuspendLayout();
 
-            cbKeybindFunction.BeginUpdate();
-            foreach (Command c in Enum.GetValues(typeof(Command)))
-            {
-                cbKeybindFunction.Items.Add(c);
-            }
-            cbKeybindFunction.SelectedItem = Command.Nothing;
-            cbKeybindFunction.EndUpdate();
+            
             MouseDown += KeyRebind_MouseDown;
 
             ResumeLayout();
@@ -184,7 +184,7 @@ namespace ImageViewer.Controls
         {
             if (KeyFunctionChanged != null)
             {
-                this.Invoke(KeyFunctionChanged, (Command)cbKeybindFunction.SelectedItem);
+                this.Invoke(KeyFunctionChanged, m_Function);
             }
         }
 
@@ -194,6 +194,25 @@ namespace ImageViewer.Controls
             {
                 this.Invoke(SelectionChanged, this, this.m_IsSelected);
             }
+        }
+
+        private void FunctionButton_MouseClick(object sender, MouseEventArgs e)
+        {
+            Forms.FunctionSelectorForm f = new Forms.FunctionSelectorForm();
+            f.Location = Cursor.Position;
+            f.Size = new Size(200, 300);
+            f.MaximumSize = new Size(350, 500);
+            f.MinimumSize = new Size(50, 100);
+            if(f.ShowDialog(this) == DialogResult.OK)
+                Function = f.SelectedFunction;
+        }
+
+        private void Checkbox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (preventOverflow)
+                return;
+
+            this.IsSelected = checkBox1.Checked;
         }
     }
 }
