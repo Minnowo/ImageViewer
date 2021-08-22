@@ -164,6 +164,7 @@ namespace ImageViewer.Helpers
                 {
                     byte[] rawWebP = File.ReadAllBytes(path);
                     Bitmap image = webp.Decode(rawWebP);
+                    ImageHelper.RotateImageByExifOrientationData(image);
                     image.Tag = ImgFormat.webp;
                     return image;
                 }
@@ -186,6 +187,7 @@ namespace ImageViewer.Helpers
                 Clear();
                 byte[] rawWebP = File.ReadAllBytes(path);
                 this.Image = Decode(rawWebP);
+                ImageHelper.RotateImageByExifOrientationData(this.Image);
                 this.Width = this.Image.Width;
                 this.Height = this.Image.Height;
             }

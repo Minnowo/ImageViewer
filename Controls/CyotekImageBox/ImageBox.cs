@@ -3542,14 +3542,18 @@ namespace Cyotek.Windows.Forms
 
             rect = this.GetOffsetRectangle(this.SelectionRegion);
 
-            using (Brush brush = new SolidBrush(Color.FromArgb(128, this.SelectionColor)))
+            /*using (Brush brush = new SolidBrush(Color.FromArgb(128, this.SelectionColor)))
             {
                 e.Graphics.FillRectangle(brush, rect);
-            }
+            }*/
 
-            using (Pen pen = new Pen(this.SelectionColor))
+            using (Pen penWhite = new Pen(Color.White) { DashStyle = DashStyle.Dash})
+            using (Pen penBlack = new Pen(Color.Black))
+            //using (Pen pen = new Pen(this.SelectionColor))
             {
-                e.Graphics.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+                penWhite.DashPattern = new float[] { 5, 5 };
+                e.Graphics.DrawRectangle(penBlack, rect.X, rect.Y, rect.Width, rect.Height);
+                e.Graphics.DrawRectangle(penWhite, rect.X, rect.Y, rect.Width, rect.Height);
             }
 
             //e.Graphics.ResetClip();

@@ -195,7 +195,61 @@ namespace ImageViewer.Helpers
         }
 
 
+        /// <summary>
+        /// Rotates the given bitmap based off the orientation exif property tag.
+        /// </summary>
+        /// <param name="bmp">The bitmap to rotate flip.</param>
+        /// <param name="removeExifOrientationData">Should the orientation tag be removed.</param>
+        public static void RotateImageByExifOrientationData(Bitmap bmp, bool removeExifOrientationData = true)
+        {
+            const int orientationId = (int)ExifPropertyTag.Orientation;
 
+            if (Array.IndexOf(bmp.PropertyIdList, orientationId) == -1)
+                return;
+           
+            PropertyItem propertyItem = bmp.GetPropertyItem(orientationId);
+            RotateFlipType rotateType = GetRotateFlipTypeByExifOrientationData(propertyItem.Value[0]);
+
+            if (rotateType == RotateFlipType.RotateNoneFlipNone)
+                return;
+            
+            bmp.RotateFlip(rotateType);
+
+            if (removeExifOrientationData)
+            {
+                bmp.RemovePropertyItem(orientationId);
+            }   
+        }
+
+
+        /// <summary>
+        /// Gets the roatefliptype from the exif property tag orientation vlaue.
+        /// </summary>
+        /// <param name="orientation">The int value of the orientation property tag.</param>
+        /// <returns>A <see cref="RotateFlipType"/> for the given orientation.</returns>
+        private static RotateFlipType GetRotateFlipTypeByExifOrientationData(int orientation)
+        {
+            switch (orientation)
+            {
+                default:
+                case 1:
+                    return RotateFlipType.RotateNoneFlipNone;
+                case 2:
+                    return RotateFlipType.RotateNoneFlipX;
+                case 3:
+                    return RotateFlipType.Rotate180FlipNone;
+                case 4:
+                    return RotateFlipType.Rotate180FlipX;
+                case 5:
+                    return RotateFlipType.Rotate90FlipX;
+                case 6:
+                    return RotateFlipType.Rotate90FlipNone;
+                case 7:
+                    return RotateFlipType.Rotate270FlipX;
+                case 8:
+                    return RotateFlipType.Rotate270FlipNone;
+            }
+        }
 
 
 

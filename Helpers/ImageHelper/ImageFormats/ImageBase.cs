@@ -140,7 +140,9 @@ namespace ImageViewer.Helpers
         /// <returns>A <see cref="Bitmap"/> object.</returns>
         public static Bitmap StandardLoad(string path)
         {
-            return (Bitmap)System.Drawing.Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+            Bitmap bmp = (Bitmap)System.Drawing.Image.FromStream(new MemoryStream(File.ReadAllBytes(path)));
+            ImageHelper.RotateImageByExifOrientationData(bmp);
+            return bmp;
         }
 
 
@@ -292,8 +294,6 @@ namespace ImageViewer.Helpers
 
             Clear();
             this.Image = ImageBase.StandardLoad(path);
-            this.Width = this.Image.Width;
-            this.Height = this.Image.Height;
         }
 
         /// <summary>

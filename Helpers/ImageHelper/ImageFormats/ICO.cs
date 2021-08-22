@@ -189,7 +189,9 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                return ImageBase.StandardLoad(path);
+                Bitmap bmp = ImageBase.StandardLoad(path);
+                ImageHelper.RotateImageByExifOrientationData(bmp);
+                return bmp;
             }
             catch (Exception ex)
             {
