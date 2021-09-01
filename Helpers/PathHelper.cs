@@ -10,6 +10,8 @@ namespace ImageViewer.Helpers
 {
     public static class PathHelper
     {
+        public const string InvalidPathCharacters = "/\\:*?\"<>|";
+
         public static void CreateDirectory(string directoryPath)
         {
             if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))

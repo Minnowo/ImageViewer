@@ -25,10 +25,17 @@ namespace ImageViewer
         static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
-            
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            Task.Run(() => { 
+                InternalSettings.EnableWebPIfPossible();
+                SettingsLoader.Load();
+            });
+
             bool singleInstance = true;
 
-            // nyan means run as new instance
+            // -n means run as new instance
             if (args.Contains("-n"))
             {
                 singleInstance = false;
@@ -40,12 +47,6 @@ namespace ImageViewer
 
             using (InstanceManager instanceManager = new InstanceManager(singleInstance, args, SingleInstanceCallback))
             {
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-
-                InternalSettings.EnableWebPIfPossible();
-                SettingsLoader.Load();
-
                 mainForm = new MainForm(args);
                 Application.Run(mainForm);
             }

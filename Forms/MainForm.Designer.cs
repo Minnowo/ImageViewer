@@ -121,6 +121,7 @@
             this.cbAnimationPaused.Name = "cbAnimationPaused";
             this.cbAnimationPaused.Size = new System.Drawing.Size(62, 17);
             this.cbAnimationPaused.TabIndex = 7;
+            this.cbAnimationPaused.TabStop = false;
             this.cbAnimationPaused.Text = "Paused";
             this.cbAnimationPaused.UseVisualStyleBackColor = true;
             this.cbAnimationPaused.CheckedChanged += new System.EventHandler(this.AnimationPaused_CheckChanged);
@@ -131,6 +132,7 @@
             this.nudGifFrame.Name = "nudGifFrame";
             this.nudGifFrame.Size = new System.Drawing.Size(73, 20);
             this.nudGifFrame.TabIndex = 6;
+            this.nudGifFrame.TabStop = false;
             this.nudGifFrame.ValueChanged += new System.EventHandler(this.GifFrame_ValueChanged);
             // 
             // cbLockSelectionToImage
@@ -140,6 +142,7 @@
             this.cbLockSelectionToImage.Name = "cbLockSelectionToImage";
             this.cbLockSelectionToImage.Size = new System.Drawing.Size(145, 17);
             this.cbLockSelectionToImage.TabIndex = 5;
+            this.cbLockSelectionToImage.TabStop = false;
             this.cbLockSelectionToImage.Text = "Lock Selection To Image";
             this.cbLockSelectionToImage.UseVisualStyleBackColor = true;
             this.cbLockSelectionToImage.CheckedChanged += new System.EventHandler(this.LockSelectionToImage_CheckChanged);
@@ -152,6 +155,7 @@
             this.cbInterpolationMode.Name = "cbInterpolationMode";
             this.cbInterpolationMode.Size = new System.Drawing.Size(121, 21);
             this.cbInterpolationMode.TabIndex = 4;
+            this.cbInterpolationMode.TabStop = false;
             this.cbInterpolationMode.SelectedIndexChanged += new System.EventHandler(this.InterpolationMode_SelectedIndexChanged);
             // 
             // nudTopMain_ZoomPercentage
@@ -175,6 +179,7 @@
             this.nudTopMain_ZoomPercentage.Name = "nudTopMain_ZoomPercentage";
             this.nudTopMain_ZoomPercentage.Size = new System.Drawing.Size(64, 20);
             this.nudTopMain_ZoomPercentage.TabIndex = 3;
+            this.nudTopMain_ZoomPercentage.TabStop = false;
             this.nudTopMain_ZoomPercentage.Value = new decimal(new int[] {
             100,
             0,
@@ -189,6 +194,7 @@
             this.btnTopMain_Save.Name = "btnTopMain_Save";
             this.btnTopMain_Save.Size = new System.Drawing.Size(28, 23);
             this.btnTopMain_Save.TabIndex = 2;
+            this.btnTopMain_Save.TabStop = false;
             this.btnTopMain_Save.UseVisualStyleBackColor = true;
             this.btnTopMain_Save.Click += new System.EventHandler(this.btnTopMain_Save_Click);
             // 
@@ -199,6 +205,7 @@
             this.btnTopMain_Open.Name = "btnTopMain_Open";
             this.btnTopMain_Open.Size = new System.Drawing.Size(28, 23);
             this.btnTopMain_Open.TabIndex = 1;
+            this.btnTopMain_Open.TabStop = false;
             this.btnTopMain_Open.UseVisualStyleBackColor = true;
             this.btnTopMain_Open.Click += new System.EventHandler(this.btnTopMain_Open_Click);
             // 

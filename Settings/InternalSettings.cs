@@ -247,6 +247,12 @@ namespace ImageViewer.Settings
             set { CurrentUserSettings.Fit_Image_On_Resize = value; }
         }
 
+        public static bool Fit_To_Viewport_On_Image_Change
+        {
+            get { return CurrentUserSettings.Fit_To_Viewport_On_Image_Change; }
+            set { CurrentUserSettings.Fit_To_Viewport_On_Image_Change = value; }
+        }
+
         public static bool Generate_Random_File_Names
         {
             get { return CurrentUserSettings.Generate_Random_File_Names; }
@@ -541,6 +547,10 @@ namespace ImageViewer.Settings
         public bool Fit_Image_On_Resize { get; set; } = true;
 
 
+        [Description("Should the image be fit to the viewport when an image is loaded / changed."), DisplayName("Fit Image On Image Change")]
+        public bool Fit_To_Viewport_On_Image_Change { get; set; } = true;
+
+
         [Description("Should the selection region be able to leave the image."), DisplayName("Lock Selection To Image")]
         public bool Lock_Selection_To_Image { get; set; } = true;
 
@@ -565,6 +575,9 @@ namespace ImageViewer.Settings
 
         [Description("Should explorer be opened to the file after save as."), DisplayName("Open Explorer After Saving")]
         public bool Open_Explorer_After_SaveAs { get; set; } = true;
+
+
+        
 
 
 

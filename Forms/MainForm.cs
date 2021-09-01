@@ -69,6 +69,8 @@ namespace ImageViewer
             InitializeComponent();
             KeyPreview = true;
 
+            SuspendLayout();
+
             tsmiImageBackColor1.Name = TSMI_IMAGE_BACK_COLOR_1_NAME;
             tsmiImageBackColor2.Name = TSMI_IMAGE_BACK_COLOR_2_NAME;
 
@@ -114,6 +116,8 @@ namespace ImageViewer
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageChanged += _TabPage_ImageChanged;
 
+            ResumeLayout();
+
             UpdatePixelGrid(true);
             UpdateInterpolationMode(true);
             UpdateCurrentPageTransparentBackColor(true);
@@ -145,7 +149,7 @@ namespace ImageViewer
                 case Command.NextImage:                     NextImage();    break;
                 case Command.NextFrame:                     NextFrame();    break;
                 case Command.NextTab:                       NextTab(); break;
-                case Command.PreviousTab:                       NextTab(); break;
+                case Command.PreviousTab:                       PreviousTab(); break;
                 case Command.MoveImage:                     MoveImage();    break;
                 case Command.PasteImage:                     PasteImage();   break;
                 case Command.OpenImage:                     OpenImages();   break;
@@ -209,6 +213,11 @@ namespace ImageViewer
             if (currentPage != null)
             {
                 currentPage.InvalidateImageBox();
+
+                if (InternalSettings.Fit_To_Viewport_On_Image_Change)
+                {
+                    currentPage.ibMain.ZoomToFit();
+                }
             }
 
             if (updateWatcherIndex)
@@ -408,7 +417,22 @@ namespace ImageViewer
 
         public void RenameImage()
         {
+            if (currentPage == null || currentPage.Image == null)
+                return;
 
+            using(RenameFileForm rff = new RenameFileForm(currentPage.ImagePath.FullName))
+            {
+                rff.Owner = this;
+                rff.TopMost = this.TopMost;
+                rff.StartPosition = FormStartPosition.CenterScreen;
+                if (InternalSettings.Parent_Follow_Child)
+                    rff.LocationChanged += ParentFollowChild;
+
+                if (rff.ShowDialog() == DialogResult.OK)
+                {
+                    currentPage.ImagePath = rff.NewPath;
+                }
+            }
         }
 
         public void CropToSelection()

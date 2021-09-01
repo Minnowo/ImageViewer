@@ -263,6 +263,12 @@
     <Compile Include="Misc\Hotkey.cs" />
     <Compile Include="Misc\InstanceManager.cs" />
     <Compile Include="Native\NativeConstants.cs" />
+    <Compile Include="Forms\RenameFileForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RenameFileForm.Designer.cs">
+      <DependentUpon>RenameFileForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Settings\SettingsLoader.cs" />
     <Compile Include="Structs\Structs.cs" />
     <Compile Include="Forms\MainForm.cs">
@@ -316,6 +322,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RenameFileForm.resx">
+      <DependentUpon>RenameFileForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
