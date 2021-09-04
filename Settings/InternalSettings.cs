@@ -41,7 +41,7 @@ namespace ImageViewer.Settings
         public const string Save_File_Dialog_Title = "Save Item";
         public const string Move_File_Dialog_Title = "Move Item";
 
-        public const string All_Files_File_Dialog = "All Files (*.*)|*.";
+        public const string All_Files_File_Dialog = "All Files (*.*)|*.*";
 
         public static string All_Image_Files_File_Dialog = string.Format(
             "Graphic Types ({0})|{1}",

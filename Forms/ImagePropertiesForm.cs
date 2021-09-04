@@ -28,6 +28,8 @@ namespace ImageViewer
 
             using (Image image = ImageHelper.LoadImageAsBitmap(path))
             {
+                if (image == null)
+                    return;
                 tbLocationDisplay.Text = path;
                 tbSizeDisplay.Text = Helper.SizeSuffix(CurrentFile.Length);
                 tbDateCreatedDisplay.Text = CurrentFile.CreationTime.ToString();
@@ -73,10 +75,10 @@ namespace ImageViewer
                 int count = 0;
                 foreach (PropertyItem propItem in propItems)
                 {
-                    sb.Append("Property Item: " + count.ToString() + Environment.NewLine);
-                    sb.Append("    Item ID: " + propItem.Id.ToString("X") + Environment.NewLine);
-                    sb.Append("    Item Type: " + propItem.Type.ToString() + Environment.NewLine);
-                    sb.Append("    Item Length: " + propItem.Len.ToString() + " bytes" + Environment.NewLine);
+                    sb.Append(((ExifPropertyTag)propItem.Id).ToString() + Environment.NewLine);
+                    sb.Append("    ID: " + propItem.Id.ToString("") + Environment.NewLine);
+                    sb.Append("    Type: " + propItem.Type.ToString() + Environment.NewLine);
+                    sb.Append("    Length: " + propItem.Len.ToString() + " bytes" + Environment.NewLine);
 
                     count++;
                 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.Settings;
@@ -24,6 +25,7 @@ namespace ImageViewer.Misc
         private List<FileSystemWatcher> watchers = new List<FileSystemWatcher>();
         private System.Windows.Forms.Timer resortTimer = new System.Windows.Forms.Timer() { Interval = InternalSettings.Folder_Watcher_Resort_Timer_Limit };
         private string directory;
+        private Task SortThread;
 
         public FolderWatcher(string path)
         {
@@ -41,14 +43,33 @@ namespace ImageViewer.Misc
             SetFiles(path);
         }
 
+        /// <summary>
+        /// blocks the thread until the Sortthread is completed
+        /// </summary>
+        private void WaitSortFinish()
+        {
+            if (SortThread == null)
+                return;
+            if (!SortThread.IsCompleted)
+                SortThread.Wait();
+        }
+
         private void ResortTimer_Tick(object sender, EventArgs e)
         {
-            files = files.OrderByNatural(f => f).ToList();
             resortTimer.Stop();
+
+            WaitSortFinish();
+
+            SortThread = Task.Run(() => {
+                files = files.OrderByNatural(f => f).ToList();
+            });
         }
+
 
         private void FolderChanged(object sender, FileSystemEventArgs e)
         {
+            WaitSortFinish();
+
             switch (e.ChangeType)
             {
                 // no need to remove from list we will check if the file exists when fetching
@@ -72,15 +93,14 @@ namespace ImageViewer.Misc
 
         private void SetFiles(string path)
         {
-            files = Directory.EnumerateFiles(path).OrderByNatural(e => e).
+            WaitSortFinish();
+            
+            SortThread = Task.Run(() => {
+                files = Directory.EnumerateFiles(path).OrderByNatural(e => e).
                 Where(e => InternalSettings.Readable_Image_Formats.Contains(Helper.GetFilenameExtension(e))).ToList();
+            });
         }
 
-        public void RefreshAllFiles()
-        {
-            files.Clear();
-            SetFiles(directory);
-        }
 
         private void CreateWatchers(string path, bool enabled = true)
         {
@@ -113,22 +133,29 @@ namespace ImageViewer.Misc
 
             if (!Directory.Exists(path))
             {
+                WaitSortFinish();
                 UpdateWatchers(path, false);
                 files.Clear();
                 return;
             }
 
             UpdateWatchers(path, true);
-            RefreshAllFiles();
+            SetFiles(directory);
         }
 
         public void UpdateIndex(string path)
         {
+            WaitSortFinish();
+
+            if (files == null || files.Count < 1)
+                return;
             CurrentFileIndex = files.IndexOf(path);
         }
 
         public string GetNextFile()
         {
+            WaitSortFinish();
+
             if (files.Count < 1 || files.Count <= CurrentFileIndex + 1)
                 return string.Empty;
 
@@ -138,6 +165,8 @@ namespace ImageViewer.Misc
 
         public string GetPreviousFile()
         {
+            WaitSortFinish();
+
             if (files.Count < 1 || CurrentFileIndex - 1 < 0)
                 return string.Empty;
 
@@ -147,6 +176,8 @@ namespace ImageViewer.Misc
 
         public bool GetNextValidFile(out string path)
         {
+            WaitSortFinish();
+
             if (files.Count < 1) 
             {
                 path = string.Empty;
@@ -178,6 +209,8 @@ namespace ImageViewer.Misc
 
         public bool GetPreviousValidFile(out string path)
         {
+            WaitSortFinish();
+
             if (files.Count < 1)
             {
                 path = string.Empty;
@@ -219,6 +252,9 @@ namespace ImageViewer.Misc
 
             this.watchers.Clear();
             this.files.Clear();
+            this.SortThread?.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -25,10 +25,6 @@ namespace ImageViewer.Controls
 
         public delegate void ImageUnloadedEvent(bool imloaded);
         public static event ImageUnloadedEvent ImageUnloaded;
-
-        public delegate void ImageChangedEvent();
-        public static event ImageChangedEvent ImageChanged;
-
         
 
         /// <summary>
@@ -196,8 +192,7 @@ namespace ImageViewer.Controls
             
             ibMain.GridCellSize = 128;
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
-            
-            ibMain.ImageChanged += IbMain_ImageChanged;
+
             //ibMain.AnimationPauseChanged += IbMain_AnimationPauseChanged;
             
             ibMain.AutoScroll = true;
@@ -367,19 +362,6 @@ namespace ImageViewer.Controls
             if (InternalSettings.Garbage_Collect_On_Image_Unload)
             {
                 GC.Collect();
-            }
-        }
-
-        private void IbMain_ImageChanged(object sender, EventArgs e)
-        {
-            OnImageChanged();
-        }
-
-        private void OnImageChanged()
-        {
-            if(ImageChanged != null)
-            {
-                ImageChanged();
             }
         }
 

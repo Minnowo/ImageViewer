@@ -114,7 +114,6 @@ namespace ImageViewer
 
             _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
-            _TabPage.ImageChanged += _TabPage_ImageChanged;
 
             ResumeLayout();
 
@@ -351,7 +350,12 @@ namespace ImageViewer
                     CurrentFolder.UpdateIndex("<>");
                     return;
                 }
-                CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
+                if(CurrentFolder.CurrentDirectory != Path.GetDirectoryName(currentPage.ImagePath.FullName))
+                {
+                    CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
+                    CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
+                    return;
+                }
                 CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
             }
         }
@@ -1416,10 +1420,6 @@ namespace ImageViewer
             UpdateAll(imageLoaded);
         }
 
-        private void _TabPage_ImageChanged()
-        {
-            UpdateAll(true);
-        }
 
 
 
