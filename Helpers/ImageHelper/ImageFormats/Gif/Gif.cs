@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace ImageViewer.Helpers
     /// <summary>
     /// Provides the necessary information to support gif images.
     /// </summary>
-    public class Gif : ImageBase
+    public class Gif : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -96,6 +97,17 @@ namespace ImageViewer.Helpers
             }
         }
 
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
+            }
+            protected set { }
+        }
+
         public virtual bool IsAnimating { get; protected set; }
 
         private List<EventHandler> FrameChangedHandlerCallbacks = new List<EventHandler>();
@@ -127,7 +139,7 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                return ImageBase.StandardLoad(path);
+                return IMAGE.StandardLoad(path);
             }
             catch (Exception ex)
             {
@@ -370,6 +382,24 @@ namespace ImageViewer.Helpers
 
             if (wasAnimating)
                 _StartAnimate();
+        }
+
+        public override void Reisze(Size newSize, InterpolationMode interp)
+        {
+            if (this.Image == null)
+                return;
+        }
+
+        public override void Reisze(Size newSize, GraphicsUnit units)
+        {
+            if (this.Image == null)
+                return;
+        }
+
+        public override void Reisze(Size newSize, InterpolationMode interp, GraphicsUnit units)
+        {
+            if (this.Image == null)
+                return;
         }
 
         public override ImgFormat GetImageFormat()

@@ -25,11 +25,11 @@ namespace ImageViewer
         public bool Canceled = false;
 
         private Color[] customPalette;
-        private ImageBase originalImage;
+        private IMAGE originalImage;
         private Stopwatch fitToScreenLimiter = new Stopwatch();
         private System.Windows.Forms.Timer updateThresholdTimer = new System.Windows.Forms.Timer();
 
-        public DitherForm(ImageBase img)
+        public DitherForm(IMAGE img)
         {
             if (img == null)
                 return;
@@ -134,7 +134,7 @@ namespace ImageViewer
             }
             else if(!e.Cancelled )
             {
-                ibMain.Image = ImageBase.ProperCast(e.Result as Bitmap, originalImage.GetImageFormat());
+                ibMain.Image = IMAGE.ProperCast(e.Result as Bitmap, originalImage.GetImageFormat());
             }
 
             Cursor.Current = Cursors.Default;

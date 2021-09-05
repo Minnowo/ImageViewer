@@ -72,7 +72,7 @@ namespace ImageViewer.Helpers
                 case ImgFormat.ico:
                     return ICO.MimeType;
             }
-            return ImageBase.MimeType;
+            return IMAGE.MimeType;
         }
 
         /// <summary>

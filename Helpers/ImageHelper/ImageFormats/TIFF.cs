@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ImageViewer.Helpers
 {
-    public class TIFF : ImageBase
+    public class TIFF : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -98,6 +98,21 @@ namespace ImageViewer.Helpers
             }
         }
 
+
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
+            }
+            protected set
+            {
+            }
+        }
+
+
         /// <summary>
         /// Get or Set the tiff bit depth;
         /// </summary>
@@ -129,7 +144,7 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                return ImageBase.StandardLoad(path);
+                return IMAGE.StandardLoad(path);
             }
             catch (Exception ex)
             {

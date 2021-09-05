@@ -1092,7 +1092,7 @@ namespace ImageViewer
 
         public void ResizeImage()
         {
-            /*if (currentPage == null)
+            if (currentPage == null)
                 return;
 
             using (ResizeImageForm f = new ResizeImageForm(currentPage.ibMain.Image.Size))
@@ -1102,21 +1102,24 @@ namespace ImageViewer
                 f.StartPosition = FormStartPosition.CenterScreen;
                 if (InternalSettings.Parent_Follow_Child)
                     f.LocationChanged += ParentFollowChild;
-                f.ShowDialog();
+                
+                DialogResult result = f.ShowDialog();
 
-                ResizeImageFormReturn r = f.GetReturnSize();
+                Size newSize;
+                InterpolationMode interp;
+                GraphicsUnit unit;
 
-                if (r.Result == ResizeImageResult.Cancel)
+                (newSize, interp, unit) = f.GetReturnSize();
+
+                if (result == DialogResult.Cancel)
                     return;
 
-                using (Image tmp = currentPage.Image)
-                {
-                    currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
-                    currentPage.BitmapChangeTracker.ReplaceBitmap(ImageProcessor.ResizeImage(tmp, r.NewImage));
-                    currentPage.ibMain.Image = currentPage.BitmapChangeTracker.CurrentBitmap;
-                }
+                currentPage.BitmapChangeTracker.TrackChange(Helpers.UndoRedo.BitmapChanges.Resized);
+                currentPage.BitmapChangeTracker.CurrentBitmap.Reisze(newSize, interp, unit);
+                currentPage.InvalidateImageBox();
+                
                 UpdateBottomInfoLabel();
-            }*/
+            }
         }
 
         public void OpenSettings()
@@ -1212,50 +1215,6 @@ namespace ImageViewer
 
             if (InternalSettings.CurrentUserSettings.Binds.ContainsKey(e.KeyData))
                 ExecuteCommand(InternalSettings.CurrentUserSettings.Binds[e.KeyData]);
-
-            //if (InternalSettings.CurrentUserSettings._Binds.Count > 0)
-            //    throw new Exception("has items in it bro");
-
-            /*switch (e.KeyData)
-            {
-                case (Keys.Right | Keys.Alt):
-                    NextTab();
-                    break;
-
-                case (Keys.Left | Keys.Alt):
-                    PreviousTab();
-                    break;
-
-                case (Keys.Right | Keys.Control):
-                    NextImage();
-                    break;
-
-                case (Keys.Left | Keys.Control):
-                    PreviousImage();
-                    break;
-
-                case (Keys.S | Keys.LControlKey):
-                case (Keys.S | Keys.Control):
-                    SaveUnscaledImage();
-                    break;
-
-                case (Keys.V | Keys.LControlKey):
-                case (Keys.V | Keys.Control):
-                    PasteImage();
-                    break;
-
-                case (Keys.Z | Keys.Control | Keys.Shift):
-                case (Keys.Z | Keys.LControlKey | Keys.Shift):
-                case (Keys.Y | Keys.Control):
-                case (Keys.Y | Keys.LControlKey):
-                    Redo();
-                    break;
-
-                case (Keys.Z | Keys.Control):
-                case (Keys.Z | Keys.LControlKey):
-                    Undo();
-                    break;
-            }*/
         }
 
 

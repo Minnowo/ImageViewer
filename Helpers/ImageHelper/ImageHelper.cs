@@ -561,7 +561,7 @@ namespace ImageViewer.Helpers
             return null;
         }
 
-        public static ImageBase LoadImage(string path)
+        public static IMAGE LoadImage(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;

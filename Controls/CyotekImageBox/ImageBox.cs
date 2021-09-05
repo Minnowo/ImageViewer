@@ -149,7 +149,7 @@ namespace Cyotek.Windows.Forms
 
         private Bitmap _gridTile;
 
-        private ImageBase _image;
+        private IMAGE _image;
 
         private Color _imageBorderColor;
 
@@ -1185,7 +1185,7 @@ namespace Cyotek.Windows.Forms
         /// <value>The image.</value>
         [Category("Appearance")]
         [DefaultValue(null)]
-        public ImageBase Image
+        public IMAGE Image
         {
             get
             {

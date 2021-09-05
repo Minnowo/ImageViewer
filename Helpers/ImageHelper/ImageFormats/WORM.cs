@@ -18,7 +18,7 @@ namespace ImageViewer.Helpers
     /// <summary>
     /// Provides the necessary information to support WORM images.
     /// </summary>
-    public class WORM : ImageBase
+    public class WORM : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -101,6 +101,19 @@ namespace ImageViewer.Helpers
                 if (this.Image == null)
                     return 0;
                 return this.Image.Height;
+            }
+            protected set
+            {
+            }
+        }
+
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
             }
             protected set
             {

@@ -200,6 +200,34 @@ namespace ImageViewer.Helpers
             return newIm;
         }
 
+        
+        public static Bitmap ResizeImage(Image image, Size newSize, InterpolationMode interp, GraphicsUnit units)
+        {
+            if (image == null)
+                return null;
+
+            Bitmap newIm = new Bitmap(newSize.Width, newSize.Height, PixelFormat.Format32bppArgb);
+
+            newIm.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (Graphics g = Graphics.FromImage(newIm))
+            {
+                g.InterpolationMode = interp;
+                
+                using (ImageAttributes wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+
+                    g.DrawImage(image,
+                        new Rectangle(Point.Empty, newSize),
+                        0, 0, image.Width, image.Height,
+                        units,
+                        wrapMode);
+                }
+            }
+            return newIm;
+        }
+
 
         #endregion
 

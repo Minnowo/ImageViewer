@@ -12,7 +12,6 @@ namespace ImageViewer
     {
         public Size currentImageSize;
 
-        private ResizeImageResult result;
         private bool preventUpdate = false;
 
         public ResizeImageForm(Size curSize)
@@ -96,7 +95,7 @@ namespace ImageViewer
 
             if (Helpers.Helper.ValidSize(newImSize))
             {
-                result = ResizeImageResult.Resized;
+                DialogResult = DialogResult.OK;
                 Close();
             }
             else
@@ -111,23 +110,15 @@ namespace ImageViewer
 
         private void Cancel_Click(object sender, EventArgs e)
         {
-            result = ResizeImageResult.Cancel;
+            DialogResult = DialogResult.Cancel;
             Close();
         }
 
-        public ResizeImageFormReturn GetReturnSize()
+        public (Size, InterpolationMode, GraphicsUnit) GetReturnSize()
         {
-            ResizeImageFormReturn result = new ResizeImageFormReturn();
-            result.Result = this.result;
-            result.NewImageSize = new Size((int)numericUpDown1.Value, (int)numericUpDown2.Value);
-
-            ResizeImage ri = new ResizeImage(result.NewImageSize);
-            ri.InterpolationMode = (InterpolationMode)comboBox1.SelectedItem;
-            ri.PixelOffsetMode = (PixelOffsetMode)comboBox2.SelectedItem;
-
-            result.NewImage = ri;
-
-            return result;
+            return (new Size((int)numericUpDown1.Value, (int)numericUpDown2.Value),
+                (InterpolationMode)comboBox1.SelectedItem,
+                (GraphicsUnit)comboBox2.SelectedItem);
         }
 
         private void ResetSize_Click(object sender, EventArgs e)

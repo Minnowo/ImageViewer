@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ImageViewer.Helpers
 {
-    public class BMP : ImageBase
+    public class BMP : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -86,7 +86,18 @@ namespace ImageViewer.Helpers
             }
         }
 
-
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
+            }
+            protected set
+            {
+            }
+        }
 
         public BMP()
         {
@@ -112,7 +123,7 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                return ImageBase.StandardLoad(path);
+                return IMAGE.StandardLoad(path);
             }
             catch (Exception ex)
             {

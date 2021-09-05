@@ -40,7 +40,7 @@ namespace ImageViewer.Helpers.UndoRedo
             get { return redos.Count; }
         }
 
-        public ImageBase CurrentBitmap
+        public IMAGE CurrentBitmap
         {
             get
             {
@@ -60,7 +60,7 @@ namespace ImageViewer.Helpers.UndoRedo
                 }
             }
         }
-        private ImageBase currentBitmap;
+        private IMAGE currentBitmap;
 
         public ImgFormat Format;
 
@@ -77,7 +77,7 @@ namespace ImageViewer.Helpers.UndoRedo
             bitmapRedoHistoryData = new Stack<Bitmap>();
         }
 
-        public BitmapUndo(ImageBase bmp)
+        public BitmapUndo(IMAGE bmp)
         {
             undos = new Stack<BitmapChanges>();
             redos = new Stack<BitmapChanges>();
@@ -96,7 +96,7 @@ namespace ImageViewer.Helpers.UndoRedo
             if (CurrentBitmap != null)
                 CurrentBitmap.Dispose();
 
-            CurrentBitmap = ImageBase.ProperCast(bmp, this.Format);
+            CurrentBitmap = IMAGE.ProperCast(bmp, this.Format);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace ImageViewer.Helpers.UndoRedo
         /// <param name="bmp">The new bitmap.</param>
         public void UpdateBitmapReferance(Bitmap bmp)
         {
-            CurrentBitmap = ImageBase.ProperCast(bmp, this.Format);
+            CurrentBitmap = IMAGE.ProperCast(bmp, this.Format);
         }
 
         /// <summary>

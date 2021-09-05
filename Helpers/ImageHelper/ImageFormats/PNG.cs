@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ImageViewer.Helpers
 {
-    public class PNG : ImageBase
+    public class PNG : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -87,6 +87,19 @@ namespace ImageViewer.Helpers
         }
 
 
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
+            }
+            protected set
+            {
+            }
+        }
+
 
         public PNG()
         {
@@ -113,7 +126,7 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                return ImageBase.StandardLoad(path);
+                return IMAGE.StandardLoad(path);
             }
             catch (Exception ex)
             {

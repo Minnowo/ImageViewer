@@ -34,7 +34,7 @@ namespace ImageViewer.Helpers
 {
     // https://github.com/JosePineiro/WebP-wrapper
 
-    public sealed class Webp : ImageBase
+    public sealed class Webp : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -79,9 +79,45 @@ namespace ImageViewer.Helpers
 
         public override Bitmap Image { get; protected set; }
 
-        public override int Width { get; protected set; }
+        public override int Width
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Width;
+            }
+            protected set
+            {
+            }
+        }
 
-        public override int Height { get; protected set; }
+
+        public override int Height
+        {
+            get
+            {
+                if (this.Image == null)
+                    return 0;
+                return this.Image.Height;
+            }
+            protected set
+            {
+            }
+        }
+
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
+            }
+            protected set
+            {
+            }
+        }
 
         /// <summary>
         /// Gets or Sets How should the webp should be encoded / what quality and speed should be used.
@@ -106,8 +142,6 @@ namespace ImageViewer.Helpers
                 throw new Exception($"WORM images do not support width or height larger than {WEBP_MAX_DIMENSION}");
 
             this.Image = bmp;
-            this.Width = bmp.Width;
-            this.Height = bmp.Height;
             this.EncodingFormat = WebPQuality.Default;
         }
 
@@ -188,8 +222,6 @@ namespace ImageViewer.Helpers
                 byte[] rawWebP = File.ReadAllBytes(path);
                 this.Image = Decode(rawWebP);
                 ImageHelper.RotateImageByExifOrientationData(this.Image);
-                this.Width = this.Image.Width;
-                this.Height = this.Image.Height;
             }
             catch (Exception ex) 
             { 
@@ -1354,8 +1386,6 @@ namespace ImageViewer.Helpers
                 Image.Dispose();
 
             Image = null;
-            Width = 0;
-            Height = 0;
         }
 
         /// <summary>

@@ -77,7 +77,7 @@ namespace ImageViewer
                 {
                     sb.Append(((ExifPropertyTag)propItem.Id).ToString() + Environment.NewLine);
                     sb.Append("    ID: " + propItem.Id.ToString("") + Environment.NewLine);
-                    sb.Append("    Type: " + propItem.Type.ToString() + Environment.NewLine);
+                    sb.Append("    Type: " + ((ExifPropertyTagType)propItem.Type).ToString() + Environment.NewLine);
                     sb.Append("    Length: " + propItem.Len.ToString() + " bytes" + Environment.NewLine);
 
                     count++;

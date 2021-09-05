@@ -13,7 +13,7 @@ namespace ImageViewer.Helpers
     /// </summary>
     public class GifDecoder
     {
-        private readonly ImageBase image;
+        private readonly IMAGE image;
         private readonly byte[] times = new byte[4];
 
 

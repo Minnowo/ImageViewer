@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Drawing.Drawing2D;
 
 namespace ImageViewer.Helpers
 {
@@ -75,13 +76,34 @@ namespace ImageViewer.Helpers
         /// </summary>
         void ConvertGrayscale();
 
+        /// <summary>
+        /// Reiszes the image using the given interpolation mode.
+        /// </summary>
+        /// <param name="newSize">The new <see cref="Size"/>.</param>
+        /// <param name="interp">The <see cref="InterpolationMode"/>.</param>
+        void Reisze(Size newSize, InterpolationMode interp);
+
+        /// <summary>
+        /// Resizes the image using the given graphics unit.
+        /// </summary>
+        /// <param name="newSize">The new <see cref="Size"/>.</param>
+        /// <param name="units">The <see cref="GraphicsUnit"/>.</param>
+        void Reisze(Size newSize, GraphicsUnit units);
+
+        /// <summary>
+        /// Resizes the image using the given interpolation mode and graphics unit.
+        /// </summary>
+        /// <param name="newSize">The new <see cref="Size"/>.</param>
+        /// <param name="interp">The <see cref="InterpolationMode"/>.</param>
+        /// <param name="units">The <see cref="GraphicsUnit"/>.</param>
+        void Reisze(Size newSize, InterpolationMode interp, GraphicsUnit units);
     }
 
 
     /// <summary>
     /// The supported format base. Implement this class when building a supported format.
     /// </summary>
-    public abstract class ImageBase : IImage
+    public abstract class IMAGE : IImage
     {
         #region Readonly / Const / Static 
 
@@ -130,6 +152,11 @@ namespace ImageViewer.Helpers
         /// </summary>
         public abstract int Height { get; protected set; }
 
+        /// <summary>
+        /// Gets the <see cref="Size"/> of the image.
+        /// </summary>
+        public abstract Size Size { get; protected set; }
+
         #region Static Functions 
 
 
@@ -151,8 +178,8 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="image">The image to cast.</param>
         /// <param name="format">The format to cast.</param>
-        /// <returns>The image as <see cref="ImageBase"/> of its proper format.</returns>
-        public static ImageBase ProperCast(Image image, ImgFormat format)
+        /// <returns>The image as <see cref="IMAGE"/> of its proper format.</returns>
+        public static IMAGE ProperCast(Image image, ImgFormat format)
         {
             switch (format)
             {
@@ -215,8 +242,6 @@ namespace ImageViewer.Helpers
                 copy = quantized;
             }*/
 
-            
-
             return copy;
         }
 
@@ -233,12 +258,12 @@ namespace ImageViewer.Helpers
 
         public virtual ImgFormat GetImageFormat()
         {
-            return ImageBase.ImageFormat;
+            return IMAGE.ImageFormat;
         }
 
         public virtual string GetMimeType()
         {
-            return ImageBase.MimeType;
+            return IMAGE.MimeType;
         }
 
         public virtual void RotateRight90()
@@ -283,6 +308,37 @@ namespace ImageViewer.Helpers
             ImageProcessor.GrayscaleBitmapSafe(this.Image);
         }
 
+        public virtual void Reisze(Size newSize, InterpolationMode interp)
+        {
+            if (this.Image == null)
+                return;
+
+            UpdateImage(ImageProcessor.ResizeImage(this.Image, newSize, interp, GraphicsUnit.Pixel));
+        }
+
+        public virtual void Reisze(Size newSize, GraphicsUnit units)
+        {
+            if (this.Image == null)
+                return;
+
+            if ((newSize.Width + newSize.Height) >> 1 > (this.Image.Width + this.Image.Height) >> 1)
+            {
+                UpdateImage(ImageProcessor.ResizeImage(this.Image, newSize, InterpolationMode.NearestNeighbor, units));
+            }
+            else
+            {
+                UpdateImage(ImageProcessor.ResizeImage(this.Image, newSize, InterpolationMode.HighQualityBicubic, units));
+            }
+        }
+
+        public virtual void Reisze(Size newSize, InterpolationMode interp, GraphicsUnit units)
+        {
+            if (this.Image == null)
+                return;
+
+            UpdateImage(ImageProcessor.ResizeImage(this.Image, newSize, interp, units));
+        }
+
         /// <summary>
         /// Loads an iamge using the standard method.
         /// </summary>
@@ -293,7 +349,7 @@ namespace ImageViewer.Helpers
                 return;
 
             Clear();
-            this.Image = ImageBase.StandardLoad(path);
+            this.Image = IMAGE.StandardLoad(path);
         }
 
         /// <summary>
@@ -328,14 +384,14 @@ namespace ImageViewer.Helpers
             GC.SuppressFinalize(this);
         }
 
-        public static implicit operator Image(ImageBase bas)
+        public static implicit operator Image(IMAGE bas)
         {
             if (bas == null)
                 return null;
             return bas.Image;
         }
 
-        public static implicit operator Bitmap(ImageBase bas)
+        public static implicit operator Bitmap(IMAGE bas)
         {
             if (bas == null)
                 return null;

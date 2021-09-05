@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 
 namespace ImageViewer.Helpers
 {
-    public class ICO : ImageBase
+    public class ICO : IMAGE
     {
         #region Readonly / Const / Static 
 
@@ -111,6 +112,17 @@ namespace ImageViewer.Helpers
             }
         }
 
+        public override Size Size
+        {
+            get
+            {
+                if (this.Image == null)
+                    return Size.Empty;
+                return this.Image.Size;
+            }
+            protected set { }
+        }
+
         /// <summary>
         /// Gets the number of images.
         /// </summary>
@@ -189,7 +201,7 @@ namespace ImageViewer.Helpers
         {
             try
             {
-                Bitmap bmp = ImageBase.StandardLoad(path);
+                Bitmap bmp = IMAGE.StandardLoad(path);
                 ImageHelper.RotateImageByExifOrientationData(bmp);
                 return bmp;
             }
@@ -490,6 +502,24 @@ namespace ImageViewer.Helpers
                 if (this.Images[i] != null)
                     ImageProcessor.InvertBitmapSafe(this.Images[i]);
             }
+        }
+
+        public override void Reisze(Size newSize, InterpolationMode interp)
+        {
+            if (this.Image == null)
+                return;
+        }
+
+        public override void Reisze(Size newSize, GraphicsUnit units)
+        {
+            if (this.Image == null)
+                return;
+        }
+
+        public override void Reisze(Size newSize, InterpolationMode interp, GraphicsUnit units)
+        {
+            if (this.Image == null)
+                return;
         }
 
         public override void Clear()
