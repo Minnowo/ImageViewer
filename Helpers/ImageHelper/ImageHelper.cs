@@ -13,6 +13,7 @@ namespace ImageViewer.Helpers
 {
     public static class ImageHelper
     {
+        public static bool ShowExceptions = false;
         /// <summary>
         /// Reads the <see cref="ImgFormat"/> of an image using the identifier bytes.
         /// </summary>
@@ -275,7 +276,10 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
-                e.ShowError();
+                if (ShowExceptions)
+                {
+                    e.ShowError();
+                }
                 return false;
             }
             finally
@@ -318,7 +322,10 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
-                e.ShowError();
+                if (ShowExceptions)
+                {
+                    e.ShowError();
+                }
             }
             return false;
         }
@@ -368,7 +375,10 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
-                e.ShowError();
+                if (ShowExceptions)
+                {
+                    e.ShowError();
+                }
                 return false;
             }
             finally
@@ -496,7 +506,7 @@ namespace ImageViewer.Helpers
         /// </summary>
         /// <param name="path"> The path to the image. </param>
         /// <returns> A bitmap object if the image is loaded, otherwise null. </returns>
-        public static Bitmap LoadImageAsBitmap(string path)
+        public static Bitmap LoadImageAsBitmap(string path, bool showError = false)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
@@ -556,20 +566,20 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
-                e.ShowError();
+                if (showError)
+                {
+                    e.ShowError();
+                }
             }
             return null;
         }
 
-        public static IMAGE LoadImage(string path)
+        public static IMAGE LoadImage(string path, bool showError = false)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 return null;
 
             ImgFormat fmt = GetImageFormat(path);
-
-            if (fmt == ImgFormat.nil)
-                fmt = GetImageFormatFromPath(path);
 
             try
             {
@@ -619,7 +629,10 @@ namespace ImageViewer.Helpers
             }
             catch (Exception e)
             {
-                e.ShowError();
+                if (showError)
+                {
+                    e.ShowError();
+                }
             }
             return null;
         }

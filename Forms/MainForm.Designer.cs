@@ -113,6 +113,7 @@
             this.pnlTopMain.Name = "pnlTopMain";
             this.pnlTopMain.Size = new System.Drawing.Size(800, 28);
             this.pnlTopMain.TabIndex = 1;
+            this.pnlTopMain.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlTopMain_MouseDown);
             // 
             // cbAnimationPaused
             // 
@@ -676,6 +677,7 @@
             // 
             // MainForm
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
@@ -687,6 +689,7 @@
             this.MinimumSize = new System.Drawing.Size(280, 220);
             this.Name = "MainForm";
             this.Text = "NULL";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Resize += new System.EventHandler(this.MainWindow_Resize);
             this.pnlTopMain.ResumeLayout(false);
             this.pnlTopMain.PerformLayout();

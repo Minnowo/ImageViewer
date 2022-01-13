@@ -193,8 +193,12 @@ namespace ImageViewer.Controls
             ibMain.GridCellSize = 128;
             ibMain.GridDisplayMode = ImageBoxGridDisplayMode.Image;
 
+            ibMain.TextBackColor = Color.White;
+            ibMain.TextDisplayMode = ImageBoxGridDisplayMode.Client;
+            ibMain.Font = new Font(FontFamily.GenericSansSerif, 20);
+
             //ibMain.AnimationPauseChanged += IbMain_AnimationPauseChanged;
-            
+
             ibMain.AutoScroll = true;
             Controls.Add(ibMain);
 
@@ -271,10 +275,17 @@ namespace ImageViewer.Controls
         {
             if (PreventLoadImage)
                 return;
+            
+            ibMain.Text = "";
 
             if (!File.Exists(imagePath.FullName))
             {
-                MessageBox.Show(this, 
+                ibMain.Image = null;
+                ImageShown = false;
+                OnImageUnload();
+                Invalidate();
+                //MessageBox.Show("invalid image");
+                /*MessageBox.Show(this, 
                     InternalSettings.Item_Does_Not_Exist_Message, 
                     InternalSettings.Item_Does_Not_Exist_Title, 
                     MessageBoxButtons.OK);
@@ -285,7 +296,8 @@ namespace ImageViewer.Controls
                 // of the tab that gets selected after CloseCurrentTabPage
                 if (Program.mainForm.CurrentPage != null)
                     Program.mainForm.CurrentPage.LoadImageSafe();
-
+*/
+                ibMain.Text = "The Path: \n" + imagePath.FullName + "\nDoes Not Exists";
                 return;
             }
 
@@ -297,6 +309,14 @@ namespace ImageViewer.Controls
             if (BitmapChangeTracker.CurrentBitmap == null)
             {
                 BitmapChangeTracker.CurrentBitmap = ImageHelper.LoadImage(ImagePath.FullName); //ImageHelper.LoadImageAsBitmap(imagePath.FullName);
+                if(BitmapChangeTracker.CurrentBitmap == null || BitmapChangeTracker.CurrentBitmap.Image == null)
+                {
+                    ibMain.Image = null;
+                    ImageShown = false;
+                    ibMain.Text = "The Path: \n" + imagePath.FullName + "\nCould Not Be Loaded, The Image Is Invalid / Unsupported";
+                    OnImageUnload();
+                    Invalidate();
+                }
             }
 
             if(InternalSettings.Show_Default_Transparent_Colors)

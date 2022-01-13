@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E2B27B28-955B-4BD0-BB36-2C2D6CC32A65}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>ImageViewer</RootNamespace>
     <AssemblyName>imview</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -263,6 +263,7 @@
     </Compile>
     <Compile Include="Misc\Hotkey.cs" />
     <Compile Include="Misc\InstanceManager.cs" />
+    <Compile Include="Misc\WorkerQueue.cs" />
     <Compile Include="Native\NativeConstants.cs" />
     <Compile Include="Forms\RenameFileForm.cs">
       <SubType>Form</SubType>

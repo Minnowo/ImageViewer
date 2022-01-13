@@ -22,6 +22,8 @@ namespace ImageViewer.Settings
 {
     public static class InternalSettings
     {
+        public const string DRIVES_FOLDERNAME = "*Drive(s)";
+
         public const string User_Settings_Path = "usrConfig.xml";
         public static string Temp_Image_Folder = Path.Combine(AppContext.BaseDirectory, "tmp");
 
@@ -145,6 +147,12 @@ namespace ImageViewer.Settings
             set { fill_Alpha_Less_Than = value.Clamp(0, 255); }
         }
         private static int fill_Alpha_Less_Than = 128;
+
+        public static DragDropEffects Drag_Drop_Mode
+        {
+            get { return CurrentUserSettings.Drag_Drop_Mode; }
+            set { CurrentUserSettings.Drag_Drop_Mode = value; }
+        }
 
         public static long Jpeg_Quality
         {
@@ -660,6 +668,18 @@ namespace ImageViewer.Settings
         [Browsable(false)]
         private ImgFormat default_Image_Format = ImgFormat.png;
 
+
+        [XmlIgnore]
+        [Description("The drag drop mode."), DisplayName("Drag Drop Mode")]
+        public DragDropEffects Drag_Drop_Mode { get; set; } = DragDropEffects.Copy;
+
+        [Browsable(false)]
+        [XmlElement("Drag_Drop_Mode")]
+        public int Drag_Drop_ModeAsInt
+        {
+            get { return (int)Drag_Drop_Mode; }
+            set { Drag_Drop_Mode = (DragDropEffects)value.Clamp(0, 2); }
+        }
 
         [XmlIgnore]
         [Description("The default interpolation mode."), DisplayName("Interpolation Mode")]

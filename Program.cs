@@ -17,6 +17,7 @@ namespace ImageViewer
     {
 
         public static MainForm mainForm;
+        public static string BaseDirectory = AppContext.BaseDirectory;
 
         /// <summary>
         /// The main entry point for the application.
@@ -50,6 +51,8 @@ namespace ImageViewer
                 mainForm = new MainForm(args);
                 Application.Run(mainForm);
             }
+
+            Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 
             if (InternalSettings.Delete_Temp_Directory && Directory.Exists(InternalSettings.Temp_Image_Folder))
                 Directory.Delete(InternalSettings.Temp_Image_Folder, true);

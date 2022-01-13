@@ -52,7 +52,10 @@ namespace ImageViewer
         }
         private _TabPage currentPage;
 
+        public int FileIndex = 0;
+
         private bool preventOverflow = false;
+        private bool preventUpdateWatcherIndex = false;
         private bool isValidDrop = false;
         private bool isMaximized = false;
 
@@ -109,8 +112,11 @@ namespace ImageViewer
                 tsbAlwaysOnTop.BackColor = SystemColors.Control;
             }
 
-            if (InternalSettings.Watch_Directory)
-                CurrentFolder = new FolderWatcher("");
+            CurrentFolder = new FolderWatcher("");
+            CurrentFolder.WatcherNotifyFilter = NotifyFilters.FileName;
+            CurrentFolder.FilterFileExtensions = InternalSettings.Readable_Image_Formats.ToArray();
+           // CurrentFolder.FileRemoved += CurrentFolder_FileRemoved;
+           // CurrentFolder.FileAdded += CurrentFolder_FileAdded;
 
             _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
@@ -120,6 +126,50 @@ namespace ImageViewer
             UpdatePixelGrid(true);
             UpdateInterpolationMode(true);
             UpdateCurrentPageTransparentBackColor(true);
+        }
+
+        private void CurrentFolder_FileAdded(string name)
+        {
+            if (currentPage == null || currentPage.ImagePath == null)
+                return;
+
+            this.InvokeSafe(() =>
+            {
+                string filename = currentPage.ImagePath.Name;
+
+                int i = Helper.StringCompareNatural(filename, name);
+
+                // if the current file comes before the added file
+                // we don't need to update the index
+                if(i <= 0)
+                {
+                    return;
+                }
+
+                this.FileIndex++;
+            });
+        }
+
+        private void CurrentFolder_FileRemoved(string name)
+        {
+            if (currentPage == null || currentPage.ImagePath == null)
+                return;
+
+            this.InvokeSafe(() =>
+            {
+                string filename = currentPage.ImagePath.Name;
+
+                int i = Helper.StringCompareNatural(filename, name);
+
+                // if the current file comes before the removed file
+                // we don't need to update the index
+                if (i <= 0)
+                {
+                    return;
+                }
+
+                this.FileIndex--;
+            });
         }
 
         public static void ExecuteCommandS(Command cmd)
@@ -343,21 +393,23 @@ namespace ImageViewer
 
         public void UpdateWatcherIndex()
         {
-            if (InternalSettings.Watch_Directory)
+            if (!InternalSettings.Watch_Directory || preventUpdateWatcherIndex)
+                return;
+            
+            if (currentPage == null)
             {
-                if (currentPage == null)
-                {
-                    CurrentFolder.UpdateIndex("<>");
-                    return;
-                }
-                if(CurrentFolder.CurrentDirectory != Path.GetDirectoryName(currentPage.ImagePath.FullName))
-                {
-                    CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
-                    CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
-                    return;
-                }
-                CurrentFolder.UpdateIndex(currentPage.ImagePath.FullName);
+                FileIndex = 0;
+                return;
             }
+
+            if(CurrentFolder.CurrentDirectory != Path.GetDirectoryName(currentPage.ImagePath.FullName))
+            {
+                CurrentFolder.UpdateDirectory(Path.GetDirectoryName(currentPage.ImagePath.FullName));
+                FileIndex = CurrentFolder.GetFileIndex(currentPage.ImagePath.Name);
+                return;
+            }
+
+            FileIndex = CurrentFolder.GetFileIndex(currentPage.ImagePath.Name);
         }
 
         public void UpdateInterpolationMode(bool suppressRedraw = false)
@@ -683,9 +735,12 @@ namespace ImageViewer
                 CurrentPage.LoadImageSafe();
             }
 
-            if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
+            if (InternalSettings.Watch_Directory)
             {
-                CurrentFolder.UpdateDirectory(dir);
+                if (CurrentFolder.CurrentDirectory != dir)
+                {
+                    CurrentFolder.UpdateDirectory(dir);
+                }
             }
 
             UpdateBottomInfoLabel();
@@ -718,9 +773,12 @@ namespace ImageViewer
             //CurrentPage.PreventLoadImage = false;
             CurrentPage.LoadImageSafe();
 
-            if (CurrentFolder.CurrentDirectory != dir && InternalSettings.Watch_Directory)
+            if (InternalSettings.Watch_Directory)
             {
-                CurrentFolder.UpdateDirectory(dir);
+                if (CurrentFolder.CurrentDirectory != dir)
+                {
+                    CurrentFolder.UpdateDirectory(dir);
+                }
             }
 
             UpdateBottomInfoLabel();
@@ -740,11 +798,21 @@ namespace ImageViewer
                 return;
 
             string newPath;
+            do
+            {
+                this.FileIndex = (this.FileIndex + 1).ClampMax(CurrentFolder.FileCache.Count - 1);
+                newPath = CurrentFolder.GetFile(this.FileIndex);
+                
+                if (string.IsNullOrEmpty(newPath))
+                    return;
 
-            if (!CurrentFolder.GetNextValidFile(out newPath))
-                return;
+                newPath = Path.Combine(CurrentFolder.CurrentDirectory, newPath);
+            }
+            while (!File.Exists(newPath));
 
+            preventUpdateWatcherIndex = true;
             currentPage.ImagePath = new FileInfo(newPath);
+            preventUpdateWatcherIndex = false;
         }
 
         public void PreviousImage()
@@ -753,11 +821,21 @@ namespace ImageViewer
                 return;
 
             string newPath;
+            do
+            {
+                this.FileIndex = (this.FileIndex - 1).ClampMin(0);
+                newPath = CurrentFolder.GetFile(this.FileIndex);
 
-            if (!CurrentFolder.GetPreviousValidFile(out newPath))
-                return;
+                if (string.IsNullOrEmpty(newPath))
+                    return;
 
+                newPath = Path.Combine(CurrentFolder.CurrentDirectory, newPath);
+            }
+            while (!File.Exists(newPath));
+
+            preventUpdateWatcherIndex = true;
             currentPage.ImagePath = new FileInfo(newPath);
+            preventUpdateWatcherIndex = false;
         }
 
         public void NextTab()
@@ -1327,7 +1405,7 @@ namespace ImageViewer
         // Tab Control / Tab Pages
         private void TabControl_DragEnter(object sender, DragEventArgs e)
         {
-            string[] data = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] data = e.Data.GetData(DataFormats.FileDrop) as string[];
 
             if (data == null)
             {
@@ -1717,13 +1795,30 @@ namespace ImageViewer
         }
 
 
-
-
-
-
-
         #endregion
 
+        private void pnlTopMain_MouseDown(object sender, MouseEventArgs e)
+        {
 
+            if (!AllowDrop || e.Button != MouseButtons.Left)
+                return;
+
+            if (this.currentPage == null)
+                return;
+
+            if (this.currentPage.ImagePath == null)
+                return;
+
+            if (!File.Exists(this.currentPage.ImagePath.FullName))
+                return;
+        
+            DoDragDrop(new DataObject(DataFormats.FileDrop, new string[1] { this.currentPage.ImagePath.FullName }), 
+                InternalSettings.Drag_Drop_Mode);
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            CurrentFolder.Dispose();   
+        }
     }
 }

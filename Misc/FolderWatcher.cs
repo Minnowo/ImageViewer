@@ -12,7 +12,30 @@ namespace ImageViewer.Misc
 {
     public class FolderWatcher : IDisposable
     {
-        public int CurrentFileIndex = -1;
+        public delegate void FileAddedEvent(string name);
+        public event FileAddedEvent FileAdded;
+
+        public delegate void FileRemovedEvent(string name);
+        public event FileRemovedEvent FileRemoved;
+
+        public delegate void DirectoryAddedEvent(string name);
+        public event DirectoryAddedEvent DirectoryAdded;
+
+        public delegate void DirectoryRemovedEvent(string name);
+        public event DirectoryRemovedEvent DirectoryRemoved;
+
+        public delegate void FileRenamedEvent(string newName, string oldName);
+        public event FileRenamedEvent FileRenamed;
+
+        public delegate void DirectoryRenamedEvent(string newName, string oldName);
+        public event DirectoryRenamedEvent DirectoryRenamed;
+
+        public delegate void ItemChangedEvent(string name);
+        public event ItemChangedEvent ItemChanged;
+
+        public bool AboveDrives { get { return _AboveDrives; } }
+        private bool _AboveDrives = false;
+
         public string CurrentDirectory
         {
             get
@@ -21,21 +44,77 @@ namespace ImageViewer.Misc
             }
         }
 
-        private List<string> files;
+        public string this[int index]
+        {
+            get
+            {
+                int c = DirectoryCache.Count;
+                if (index < c)
+                    return DirectoryCache[index];
+                return FileCache[index - c];
+            }
+            set
+            {
+                int c = DirectoryCache.Count;
+                if (index < c)
+                    DirectoryCache[index] = value;
+                FileCache[index - c] = value;
+            }
+        }
+
+        public NotifyFilters WatcherNotifyFilter
+        {
+            get
+            {
+                return _watcherNotifyFilter;
+            }
+            set
+            {
+                _watcherNotifyFilter = value;
+
+                foreach (FileSystemWatcher fsw in watchers)
+                {
+                    fsw.NotifyFilter = WatcherNotifyFilter;
+                }
+            }
+        } 
+        private NotifyFilters _watcherNotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName;
+
+        public string[] FilterFileExtensions = null;
+
+        public List<string> DirectoryCache;        // list of sorted directories for the current directory
+        public List<string> FileCache;             // list of sorted files for the current directory
+
+        private WorkerQueue _ProcessFileSystemChange = new WorkerQueue();
+
         private List<FileSystemWatcher> watchers = new List<FileSystemWatcher>();
-        private System.Windows.Forms.Timer resortTimer = new System.Windows.Forms.Timer() { Interval = InternalSettings.Folder_Watcher_Resort_Timer_Limit };
         private string directory;
-        private Task SortThread;
+
+        private Task DirectorySortThread;
+        private Task FileSortThread;
+        public FolderWatcher()
+        {
+            _ProcessFileSystemChange.ProcessFile += Process;
+
+            directory = "";
+            CreateWatchers(Directory.GetCurrentDirectory(), false);
+            FileCache = new List<string>();
+            DirectoryCache = new List<string>();
+            UpdateDirectory("");
+        }
+
 
         public FolderWatcher(string path)
         {
-            resortTimer.Tick += ResortTimer_Tick;
+            _ProcessFileSystemChange.ProcessFile += Process;
+
             directory = path;
-            
+
             if (!Directory.Exists(path))
             {
-                CreateWatchers("C:\\", false);
-                files = new List<string>();
+                CreateWatchers(Directory.GetCurrentDirectory(), false);
+                FileCache = new List<string>();
+                DirectoryCache = new List<string>();
                 return;
             }
 
@@ -43,80 +122,313 @@ namespace ImageViewer.Misc
             SetFiles(path);
         }
 
-        /// <summary>
-        /// blocks the thread until the Sortthread is completed
-        /// </summary>
-        private void WaitSortFinish()
+        public string GetFile(int index)
         {
-            if (SortThread == null)
-                return;
-            if (!SortThread.IsCompleted)
-                SortThread.Wait();
+            if (index < 0)
+                return string.Empty;
+
+            if (index >= FileCache.Count)
+                return string.Empty;
+
+            return FileCache[index];
         }
 
-        private void ResortTimer_Tick(object sender, EventArgs e)
+        public string GetDirectory(int index)
         {
-            resortTimer.Stop();
+            if (index < 0)
+                return string.Empty;
 
-            WaitSortFinish();
+            if (index >= DirectoryCache.Count)
+                return string.Empty;
 
-            SortThread = Task.Run(() => {
-                files = files.OrderByNatural(f => f).ToList();
-            });
+            return DirectoryCache[index];
         }
 
-
-        private void FolderChanged(object sender, FileSystemEventArgs e)
+        public int GetFileIndex(string filename)
         {
-            WaitSortFinish();
+            WaitThreadsFinished(true);
+            return BinarySearchItemIndex(this.FileCache, filename);
+        }
+
+        public int GetFolderIndex(string foldername)
+        {
+            WaitThreadsFinished(false);
+            return BinarySearchItemIndex(this.DirectoryCache, foldername);
+        }
+
+        private void Process(object item)
+        {
+            FileSystemEventArgs e = item as FileSystemEventArgs;
 
             switch (e.ChangeType)
             {
-                // no need to remove from list we will check if the file exists when fetching
-                case WatcherChangeTypes.Deleted:
-                    files.Remove(e.Name);
+                case WatcherChangeTypes.Changed:
+                    OnItemChanged(e.Name);
                     break;
 
-                // using a timer because i don't want to waste cpu resorting the files if lots of files 
-                // are being created / copied
                 case WatcherChangeTypes.Created:
-                case WatcherChangeTypes.Renamed:
-                    files.Add(e.Name);
-
-                    if (!resortTimer.Enabled)
+                    if (File.Exists(e.FullPath))
                     {
-                        resortTimer.Start();
+                        BinaryInsertFileCache(e.Name);
                     }
+                    if (Directory.Exists(e.FullPath))
+                    {
+                        BinaryInsertDirectoryCache(e.Name);
+                    }
+                    break;
+
+                case WatcherChangeTypes.Deleted:
+
+                    if (FileCache.Remove(e.Name))
+                    {
+                        OnFileRemoved(e.Name);
+                    }
+
+                    if (DirectoryCache.Remove(e.Name))
+                    {
+                        OnDirectoryRemoved(e.Name);
+                    }
+                    break;
+
+                case WatcherChangeTypes.Renamed:
+                    Process_ItemRenamed(item as RenamedEventArgs);
                     break;
             }
         }
 
+        private void Process_ItemRenamed(RenamedEventArgs e)
+        {
+            if (FileCache.Remove(e.OldName))
+            {
+                BinaryInsertFileCache(e.Name, false);
+                OnFileRenamed(e.Name, e.OldName);
+            }
+
+            if (DirectoryCache.Remove(e.OldName))
+            {
+                BinaryInsertDirectoryCache(e.Name, false);
+                OnDirectoryRenamed(e.Name, e.OldName);
+            }
+        }
+
+
+
+        /// <summary>
+        /// blocks the thread until the Sortthread is completed
+        /// </summary>
+        public void WaitThreadsFinished(bool isFileThread)
+        {
+            if (isFileThread)
+            {
+                if (FileSortThread == null)
+                    return;
+
+                if (!FileSortThread.IsCompleted)
+                {
+                    FileSortThread.Wait();
+                }
+            }
+            else
+            {
+                if (DirectorySortThread == null)
+                    return;
+                if (!DirectorySortThread.IsCompleted)
+                    DirectorySortThread.Wait();
+            }
+        }
+
+        public void WaitThreadsFinished()
+        {
+            WaitThreadsFinished(true);
+            WaitThreadsFinished(false);
+        }
+
+        /// <summary>
+        /// Returns the index of the given filename.
+        /// </summary>
+        /// <param name="arr"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private int BinarySearchItemIndex(List<string> arr, string name)
+        {
+            int L = 0;
+            int R = arr.Count-1;
+            int mid;
+            int com;
+
+            /*
+            int minNum = 0;
+            int maxNum = arr.Length - 1;
+
+            while (minNum <= maxNum)
+            {
+                int mid = (minNum + maxNum) / 2;
+
+                if (key == arr[mid])
+                {
+                    return ++mid;
+                }
+                else if (key < arr[mid])
+                {
+                    max = mid - 1;
+                }
+                else
+                {
+                    min = mid + 1;
+                }
+            }*/
+
+            while (L <= R)
+            {
+                mid = (L + R) / 2;
+
+                string item = arr[mid];
+                com = Helper.StringCompareNatural(item, name);
+                // Console.WriteLine(mid);
+                if (com == 0)
+                {
+                    return mid;
+                }
+                else if (com < 0)
+                {
+                    Console.WriteLine(item + " < " + name);
+                    L = mid + 1;
+                }
+                else
+                {
+                    Console.WriteLine(item + " > " + name);
+                    R = mid - 1;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Finds where to insert a string in either of the cache lists to avoid re-sorting whenever a file is created.
+        /// </summary>
+        /// <param name="arr">The array to search.</param>
+        /// <param name="name">The filename to search.</param>
+        /// <returns></returns>
+        private int BinarySearchIndex(List<string> arr, string name)
+        {
+            int L = 0;
+            int R = arr.Count;
+            int mid;
+
+            while (L < R)
+            {
+                mid = (L + R) / 2;
+
+                if (Helper.StringCompareNatural(arr[mid], name) <= 0)
+                {
+                    L = mid + 1;
+                }
+                else
+                {
+                    R = mid;
+                }
+            }
+
+            return L;
+        }
+
+        private void BinaryInsertFileCache(string name, bool fireEvent = true)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            int index = BinarySearchIndex(FileCache, name);
+            FileCache.Insert(index, name);
+            if (fireEvent)
+                OnFileAdded(name);
+        }
+
+
+        private void BinaryInsertDirectoryCache(string name, bool fireEvent = true)
+        {
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            int index = BinarySearchIndex(DirectoryCache, name);
+            DirectoryCache.Insert(index, name);
+            if (fireEvent)
+                OnDirectoryAdded(name);
+        }
+
+
+        private void ItemRenamed(object sender, RenamedEventArgs e)
+        {
+            _ProcessFileSystemChange.EnqueueItem(e);
+        }
+
+        private void ItemCreated(object sender, FileSystemEventArgs e)
+        {
+            _ProcessFileSystemChange.EnqueueItem(e);
+        }
+
+        private void FileItemChanged(object sender, FileSystemEventArgs e)
+        {
+            _ProcessFileSystemChange.EnqueueItem(e);
+        }
+
+        private void ItemDeleted(object sender, FileSystemEventArgs e)
+        {
+            _ProcessFileSystemChange.EnqueueItem(e);
+        }
+
         private void SetFiles(string path)
         {
-            WaitSortFinish();
-            
-            SortThread = Task.Run(() => {
-                files = Directory.EnumerateFiles(path).OrderByNatural(e => e).
-                Where(e => InternalSettings.Readable_Image_Formats.Contains(Helper.GetFilenameExtension(e))).ToList();
+            WaitThreadsFinished();
+
+            FileSortThread = Task.Run(() =>
+            {
+                FileCache.Clear();
+                if (FilterFileExtensions == null) 
+                {
+                    foreach (string i in Directory.EnumerateFiles(path).OrderByNatural(e => e))
+                    {
+                        FileCache.Add(Path.GetFileName(i));
+                    }
+                }
+                else
+                {
+                    foreach (string i in Directory.EnumerateFiles(path).OrderByNatural(e => e))
+                    {
+                        if (FilterFileExtensions.Contains(Helper.GetFilenameExtension(i)))
+                        {
+                            FileCache.Add(Path.GetFileName(i));
+                        }
+                    }
+                }
+            });
+
+            DirectorySortThread = Task.Run(() =>
+            {
+                DirectoryCache.Clear();
+                foreach (string i in Directory.EnumerateDirectories(path).OrderByNatural(e => e))
+                {
+                    DirectoryCache.Add(Path.GetFileName(i));
+                }
             });
         }
 
 
         private void CreateWatchers(string path, bool enabled = true)
         {
-            foreach (string f in InternalSettings.Readable_Image_Formats_Dialog_Options)
-            {
-                FileSystemWatcher w = new FileSystemWatcher();
-                w.Path = path;
-                w.IncludeSubdirectories = false;
-                w.Filter = f;
-                w.Created += FolderChanged;
-                w.Renamed += FolderChanged;
-                w.Deleted += FolderChanged;
-                w.EnableRaisingEvents = enabled;
-                watchers.Add(w);
-            }
+            FileSystemWatcher w = new FileSystemWatcher();
+
+            w.Path = path;
+            w.IncludeSubdirectories = false;
+            w.NotifyFilter = WatcherNotifyFilter;
+            w.Changed += FileItemChanged;
+            w.Created += ItemCreated;
+            w.Renamed += ItemRenamed;
+            w.Deleted += ItemDeleted;
+            w.EnableRaisingEvents = enabled;
+            watchers.Add(w);
         }
+
 
         private void UpdateWatchers(string path, bool enable = true)
         {
@@ -124,18 +436,52 @@ namespace ImageViewer.Misc
             {
                 fsw.Path = path;
                 fsw.EnableRaisingEvents = enable;
+                fsw.NotifyFilter = WatcherNotifyFilter;
             }
+        }
+
+        public int GetTotalCount()
+        {
+            WaitThreadsFinished();
+            return FileCache.Count + DirectoryCache.Count;
+        }
+
+        public int GetFileCount()
+        {
+            WaitThreadsFinished();
+            return FileCache.Count;
+        }
+
+        public int GetDirectoryCount()
+        {
+            WaitThreadsFinished();
+            return DirectoryCache.Count();
         }
 
         public void UpdateDirectory(string path)
         {
+            Console.WriteLine("updating directory: " + path);
+            _AboveDrives = false;
             directory = path;
 
             if (!Directory.Exists(path))
             {
-                WaitSortFinish();
-                UpdateWatchers(path, false);
-                files.Clear();
+                WaitThreadsFinished();
+
+                DirectoryCache.Clear();
+                FileCache.Clear();
+                if (!string.IsNullOrEmpty(path) && path != InternalSettings.DRIVES_FOLDERNAME)
+                {
+                    UpdateWatchers(path, false);
+                }
+                else
+                {
+                    foreach (DriveInfo di in DriveInfo.GetDrives())
+                    {
+                        DirectoryCache.Add(di.Name);
+                    }
+                    _AboveDrives = true;
+                }
                 return;
             }
 
@@ -143,116 +489,77 @@ namespace ImageViewer.Misc
             SetFiles(directory);
         }
 
-        public void UpdateIndex(string path)
+        private void OnFileAdded(string name)
         {
-            WaitSortFinish();
-
-            if (files == null || files.Count < 1)
-                return;
-            CurrentFileIndex = files.IndexOf(path);
+            if (FileAdded != null)
+                FileAdded.Invoke(name);
         }
 
-        public string GetNextFile()
+        private void OnFileRemoved(string name)
         {
-            WaitSortFinish();
-
-            if (files.Count < 1 || files.Count <= CurrentFileIndex + 1)
-                return string.Empty;
-
-            CurrentFileIndex++;
-            return files[CurrentFileIndex];
+            if (FileRemoved != null)
+                FileRemoved.Invoke(name);
         }
 
-        public string GetPreviousFile()
+        private void OnDirectoryAdded(string name)
         {
-            WaitSortFinish();
-
-            if (files.Count < 1 || CurrentFileIndex - 1 < 0)
-                return string.Empty;
-
-            CurrentFileIndex--;
-            return files[CurrentFileIndex];
+            if (DirectoryAdded != null)
+                DirectoryAdded.Invoke(name);
         }
 
-        public bool GetNextValidFile(out string path)
+        private void OnDirectoryRemoved(string name)
         {
-            WaitSortFinish();
-
-            if (files.Count < 1) 
-            {
-                path = string.Empty;
-                return false; 
-            }
-
-            while (true)
-            {
-                if(files.Count <= CurrentFileIndex + 1)
-                {
-                    path = string.Empty;
-                    return false;
-                }
-
-                CurrentFileIndex++;
-
-                // the path doesn't exist so remove it from the list
-                if (!File.Exists(files[CurrentFileIndex]))
-                {
-                    files.RemoveAt(CurrentFileIndex);
-                    CurrentFileIndex--; // reset the counter because we need to check the same index
-                    continue;
-                }
-
-                path = files[CurrentFileIndex];
-                return true;
-            }
+            if (DirectoryRemoved != null)
+                DirectoryRemoved.Invoke(name);
         }
 
-        public bool GetPreviousValidFile(out string path)
+        private void OnFileRenamed(string newName, string oldName)
         {
-            WaitSortFinish();
+            if (FileRenamed != null)
+                FileRenamed.Invoke(newName, oldName);
+        }
 
-            if (files.Count < 1)
-            {
-                path = string.Empty;
-                return false;
-            }
+        private void OnDirectoryRenamed(string newName, string oldName)
+        {
+            if (DirectoryRenamed != null)
+                DirectoryRenamed.Invoke(newName, oldName);
+        }
 
-            while (true)
-            {
-                if (CurrentFileIndex - 1 < 0)
-                {
-                    path = string.Empty;
-                    return false;
-                }
-
-                CurrentFileIndex--;
-
-                // the path doesn't exist so remove it from the list
-                if (!File.Exists(files[CurrentFileIndex]))
-                {
-                    files.RemoveAt(CurrentFileIndex);
-                    CurrentFileIndex++; // reset the counter because we need to check the same index
-                    continue;
-                }
-
-                path = files[CurrentFileIndex];
-                return true;
-            }
+        private void OnItemChanged(string name)
+        {
+            if (ItemChanged != null)
+                ItemChanged.Invoke(name);
         }
 
         public void Dispose()
         {
-            foreach(FileSystemWatcher fsw in watchers)
+            foreach (FileSystemWatcher fsw in watchers)
             {
-                fsw.Created -= FolderChanged;
-                fsw.Renamed -= FolderChanged;
-                fsw.Deleted -= FolderChanged;
+                fsw.Created -= ItemCreated;
+                fsw.Renamed -= ItemRenamed;
+                fsw.Deleted -= ItemDeleted;
                 fsw.Dispose();
             }
 
+            WaitThreadsFinished();
             this.watchers.Clear();
-            this.files.Clear();
-            this.SortThread?.Dispose();
+
+            this._ProcessFileSystemChange.ProcessFile -= Process;
+            this._ProcessFileSystemChange?.Dispose();
+            //_ItemRenamed.ProcessFile -= Process_ItemRenamed;
+            //_ItemDeleted.ProcessFile -= Process_ItemDeleted;
+            //_FileCreated.ProcessFile -= Process_FileCreated;
+            //_DirectoryCreated.ProcessFile -= Process_DirectoryCreated;
+
+            //this._ItemDeleted?.Dispose();
+            //this._ItemRenamed?.Dispose();
+            //this._FileCreated?.Dispose();
+            //this._DirectoryCreated?.Dispose();
+
+            this.FileCache.Clear();
+            this.FileSortThread?.Dispose();
+            this.DirectoryCache.Clear();
+            this.DirectorySortThread?.Dispose();
 
             GC.SuppressFinalize(this);
         }

@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Security.Principal;
 using System.Windows.Forms;
 using ImageViewer.Settings;
+using System.Text.RegularExpressions;
 
 namespace ImageViewer.Helpers
 {
@@ -28,6 +29,17 @@ namespace ImageViewer.Helpers
             {
                 return WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid);
             }
+        }
+      
+        public static int StringCompareNatural(string a, string b, StringComparison comparison = StringComparison.CurrentCulture)
+        {
+            Regex regex = new Regex(@"\d+", RegexOptions.Compiled);
+
+            int max = new[] { a, b }.SelectMany(x => regex.Matches(x).Cast<Match>().Select(y => (int?)y.Value.Length)).Max() ?? 0;
+
+            return string.Compare(
+                regex.Replace(a, m => m.Value.PadLeft(max, '0')), 
+                regex.Replace(b, m => m.Value.PadLeft(max, '0')), comparison);
         }
 
         /// <summary>

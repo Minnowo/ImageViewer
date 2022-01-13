@@ -76,6 +76,15 @@ namespace ImageViewer.Helpers
 
         #endregion
 
+        public static IOrderedEnumerable<T> OrderByAlphaNumeric<T>(this IEnumerable<T> source, Func<T, string> selector)
+        {
+            int max = source
+                .SelectMany(i => Regex.Matches(selector(i), @"\d+").Cast<Match>().Select(m => (int?)m.Value.Length))
+                .Max() ?? 0;
+
+            return source.OrderBy(i => Regex.Replace(selector(i), @"\d+", m => m.Value.PadLeft(max, '0')));
+        }
+
         public static IEnumerable<T> OrderByNatural<T>(this IEnumerable<T> items, Func<T, string> selector, StringComparer stringComparer = null)
         {
             Regex regex = new Regex(@"\d+", RegexOptions.Compiled);
