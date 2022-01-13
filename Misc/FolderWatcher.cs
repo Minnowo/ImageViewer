@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Threading;
 using System.IO;
 using ImageViewer.Helpers;
 using ImageViewer.Settings;
@@ -160,6 +158,9 @@ namespace ImageViewer.Misc
         {
             FileSystemEventArgs e = item as FileSystemEventArgs;
 
+            if (!FilterFileExtensions.Contains(Helper.GetFilenameExtension(e.Name)))
+                return;
+
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
@@ -252,56 +253,31 @@ namespace ImageViewer.Misc
         private int BinarySearchItemIndex(List<string> arr, string name)
         {
             int L = 0;
-            int R = arr.Count-1;
+            int R = arr.Count - 1;
             int mid;
             int com;
-
-            /*
-            int minNum = 0;
-            int maxNum = arr.Length - 1;
-
-            while (minNum <= maxNum)
-            {
-                int mid = (minNum + maxNum) / 2;
-
-                if (key == arr[mid])
-                {
-                    return ++mid;
-                }
-                else if (key < arr[mid])
-                {
-                    max = mid - 1;
-                }
-                else
-                {
-                    min = mid + 1;
-                }
-            }*/
 
             while (L <= R)
             {
                 mid = (L + R) / 2;
 
-                string item = arr[mid];
-                com = Helper.StringCompareNatural(item, name);
-                // Console.WriteLine(mid);
+                com = Helper.StringCompareNatural(arr[mid], name);
+                
                 if (com == 0)
                 {
                     return mid;
                 }
                 else if (com < 0)
                 {
-                    Console.WriteLine(item + " < " + name);
                     L = mid + 1;
                 }
                 else
                 {
-                    Console.WriteLine(item + " > " + name);
                     R = mid - 1;
                 }
             }
 
-            return -1;
+            return 0;
         }
 
         /// <summary>
@@ -546,15 +522,6 @@ namespace ImageViewer.Misc
 
             this._ProcessFileSystemChange.ProcessFile -= Process;
             this._ProcessFileSystemChange?.Dispose();
-            //_ItemRenamed.ProcessFile -= Process_ItemRenamed;
-            //_ItemDeleted.ProcessFile -= Process_ItemDeleted;
-            //_FileCreated.ProcessFile -= Process_FileCreated;
-            //_DirectoryCreated.ProcessFile -= Process_DirectoryCreated;
-
-            //this._ItemDeleted?.Dispose();
-            //this._ItemRenamed?.Dispose();
-            //this._FileCreated?.Dispose();
-            //this._DirectoryCreated?.Dispose();
 
             this.FileCache.Clear();
             this.FileSortThread?.Dispose();

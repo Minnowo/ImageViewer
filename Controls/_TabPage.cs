@@ -208,8 +208,16 @@ namespace ImageViewer.Controls
             BitmapUndo.UndoHappened += OnUndoRedo;
         }
 
-        
+        public void UpdateImagePath(FileInfo path)
+        {
+            Text = path.Name.Truncate(25);
+            imagePath = path;
+        }
 
+        public void UpdateImagePath(string path)
+        {
+            UpdateImagePath(new FileInfo(path));
+        }
 
         /// <summary>
         /// Loads the image only if, <see cref="preventLoadImage"/> is false,

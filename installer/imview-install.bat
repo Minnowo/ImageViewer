@@ -53,6 +53,7 @@ call :add_type "image/jpeg"                       "image" "JPG Image"           
 call :add_type "image/webp"                       "image" "WEBP Image"                 ".webp"
 call :add_type "image/tiff"                       "image" "TIFF Image"                 ".tif" ".tiff"
 call :add_type "image/bmp"                        "image" "BMP Image"                  ".bmp"
+call :add_type "image/ico"                        "image" "ICO Image"                  ".ico"
 call :add_type "image/worm"                       "image" "WRM Image"                  ".wrm" ".dwrm"
 
 

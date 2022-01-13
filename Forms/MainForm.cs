@@ -115,8 +115,9 @@ namespace ImageViewer
             CurrentFolder = new FolderWatcher("");
             CurrentFolder.WatcherNotifyFilter = NotifyFilters.FileName;
             CurrentFolder.FilterFileExtensions = InternalSettings.Readable_Image_Formats.ToArray();
-           // CurrentFolder.FileRemoved += CurrentFolder_FileRemoved;
-           // CurrentFolder.FileAdded += CurrentFolder_FileAdded;
+            CurrentFolder.FileRemoved += CurrentFolder_FileRemoved;
+            CurrentFolder.FileAdded += CurrentFolder_FileAdded;
+            CurrentFolder.FileRenamed += CurrentFolder_FileRenamed;
 
             _TabPage.ImageLoaded += _TabPage_ImageLoadChanged;
             _TabPage.ImageUnloaded += _TabPage_ImageLoadChanged;
@@ -128,26 +129,37 @@ namespace ImageViewer
             UpdateCurrentPageTransparentBackColor(true);
         }
 
+        private void CurrentFolder_FileRenamed(string newName, string oldName)
+        {
+            if (currentPage == null || currentPage.ImagePath == null)
+                return;
+
+            if(oldName == currentPage.ImagePath.Name)
+            {
+                this.InvokeSafe(() => { 
+                    currentPage.UpdateImagePath(new FileInfo(Path.Combine(CurrentFolder.CurrentDirectory, newName)));
+                    UpdateWatcherIndex();
+                });
+                return;
+            }
+
+            CurrentFolder_FileAdded(newName);
+            CurrentFolder_FileRemoved(oldName);
+        }
+
         private void CurrentFolder_FileAdded(string name)
         {
             if (currentPage == null || currentPage.ImagePath == null)
                 return;
 
-            this.InvokeSafe(() =>
+            // if the current file comes before the added file
+            // we don't need to update the index
+            if (Helper.StringCompareNatural(currentPage.ImagePath.Name, name) <= 0)
             {
-                string filename = currentPage.ImagePath.Name;
+                return;
+            }
 
-                int i = Helper.StringCompareNatural(filename, name);
-
-                // if the current file comes before the added file
-                // we don't need to update the index
-                if(i <= 0)
-                {
-                    return;
-                }
-
-                this.FileIndex++;
-            });
+            this.FileIndex++;
         }
 
         private void CurrentFolder_FileRemoved(string name)
@@ -155,21 +167,14 @@ namespace ImageViewer
             if (currentPage == null || currentPage.ImagePath == null)
                 return;
 
-            this.InvokeSafe(() =>
+            // if the current file comes before the removed file
+            // we don't need to update the index
+            if (Helper.StringCompareNatural(currentPage.ImagePath.Name, name) <= 0)
             {
-                string filename = currentPage.ImagePath.Name;
+                return;
+            }
 
-                int i = Helper.StringCompareNatural(filename, name);
-
-                // if the current file comes before the removed file
-                // we don't need to update the index
-                if (i <= 0)
-                {
-                    return;
-                }
-
-                this.FileIndex--;
-            });
+            this.FileIndex--;
         }
 
         public static void ExecuteCommandS(Command cmd)
